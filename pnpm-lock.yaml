@@ -221,12 +221,18 @@ importers:
 
   apps/web:
     dependencies:
+      '@kayamo/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@kayamo/db':
         specifier: workspace:*
         version: link:../../packages/db
       '@kayamo/features':
         specifier: workspace:*
         version: link:../../packages/features
+      '@kayamo/food':
+        specifier: workspace:*
+        version: link:../../packages/food
       '@kayamo/offline':
         specifier: workspace:*
         version: link:../../packages/offline
