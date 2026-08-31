@@ -56,25 +56,32 @@ export type CompleteObjectDeps = {
    * Food-log / meal-photo extract schemas must leave this unset.
    */
   allowNutritionKeys?: boolean;
+  /** Override the env model for this call (still billed through the budget gate). */
+  modelId?: string;
 };
 
+function firstEnv(...names: string[]): string | undefined {
+  for (const name of names) {
+    const value = process.env[name]?.trim();
+    if (value) return value;
+  }
+  return undefined;
+}
+
 function envModel(tier: AiTier): string | undefined {
-  const key =
-    tier === 'nano'
-      ? 'MODEL_NANO'
-      : tier === 'small'
-        ? 'MODEL_SMALL'
-        : tier === 'vision'
-          ? 'MODEL_VISION'
-          : 'MODEL_COACH';
-  return process.env[key]?.trim() || undefined;
+  if (tier === 'nano') return firstEnv('MUS_FAST_MODEL', 'MODEL_NANO');
+  if (tier === 'small') return firstEnv('MUS_ORCHESTRATOR_MODEL', 'MODEL_SMALL');
+  if (tier === 'vision') return firstEnv('MUS_VISION_MODEL', 'MODEL_VISION');
+  return firstEnv('MODEL_COACH');
 }
 
 async function liveGenerateObject<S extends z.ZodType>(
   args: GenerateObjectArgs<S>,
+  modelIdOverride?: string,
 ): Promise<{ object: unknown }> {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
-  const modelId = envModel(args.tier) ?? envModel('small');
+  const modelId =
+    modelIdOverride?.trim() || envModel(args.tier) || envModel('small');
   if (!apiKey || !modelId) {
     throw new AiConfigError('OCR is not configured. Fill the label by hand.');
   }
@@ -94,7 +101,7 @@ async function liveGenerateObject<S extends z.ZodType>(
     schema: args.schema,
     system: args.system,
     messages: args.messages,
-    ...(args.tier === 'vision'
+    ...(args.tier === 'vision' || Boolean(modelIdOverride)
       ? { providerOptions: { openai: { reasoningEffort: 'low' } } }
       : {}),
   });
@@ -143,7 +150,8 @@ export async function completeObject<S extends z.ZodType>(
     }
   }
 
-  const generate = deps.generateObject ?? liveGenerateObject;
+  const generate =
+    deps.generateObject ?? ((inner) => liveGenerateObject(inner, deps.modelId));
   const started = Date.now();
   const result = await generate(args);
   const parsed = args.schema.parse(result.object);

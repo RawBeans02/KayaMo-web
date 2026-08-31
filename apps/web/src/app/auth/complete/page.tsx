@@ -3,5 +3,5 @@
 import { CompleteAuthSession } from '@kayamo/features';
 
 export default function AuthCompletePage() {
-  return <CompleteAuthSession afterAuthPath="/app/food" />;
+  return <CompleteAuthSession afterAuthPath="/today" />;
 }

@@ -1,0 +1,12 @@
+category_id,name,life_area
+ACADEMIC,Academic,mind
+WORK,Work / career,work
+ERRAND,Errand,physical
+COMMUNICATION,Communication,relationships
+FITNESS,Fitness,physical
+HOME,Home,physical
+ADMIN,Admin,work
+FAITH,Faith,faith
+MONEY,Money,money
+HEALTH,Health admin,physical
+OTHER,Other,purpose

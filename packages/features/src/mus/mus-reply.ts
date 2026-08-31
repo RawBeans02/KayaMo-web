@@ -1,4 +1,4 @@
-import { cocoResponseSchema, type CocoRouterResult } from '@kayamo/ai';
+import { cocoResponseSchema, type CocoActionProposal, type CocoRouterResult } from '@kayamo/ai';
 import type { LocalCocoMessage } from '@kayamo/offline';
 
 const SOURCES = new Set(['model', 'fallback', 'safety', 'budget']);
@@ -13,6 +13,7 @@ function asSource(value: unknown): LocalCocoMessage['response_source'] {
 export function musReplyFromApi(body: unknown): {
   message: string;
   source: LocalCocoMessage['response_source'];
+  proposals: CocoActionProposal[];
 } | null {
   if (!body || typeof body !== 'object') return null;
   const row = body as Partial<CocoRouterResult> & { message?: unknown };
@@ -23,5 +24,9 @@ export function musReplyFromApi(body: unknown): {
       ? row.message.trim()
       : '';
   if (!message) return null;
-  return { message, source: asSource(row.source) };
+  return {
+    message,
+    source: asSource(row.source),
+    proposals: nested.success ? nested.data.proposals : [],
+  };
 }

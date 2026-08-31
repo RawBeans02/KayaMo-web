@@ -20,6 +20,7 @@ describe('musReplyFromApi', () => {
     expect(musReplyFromApi({ source: 'model', response })).toEqual({
       message: response.message,
       source: 'model',
+      proposals: [],
     });
   });
 
@@ -32,5 +33,29 @@ describe('musReplyFromApi', () => {
   it('returns null when the model text is missing', () => {
     expect(musReplyFromApi({ source: 'model', response: { tone: 'balanced' } })).toBeNull();
     expect(musReplyFromApi({ ok: true })).toBeNull();
+  });
+
+  it('keeps write proposals for the confirm UI', () => {
+    const proposal = {
+      proposalId: 'p1',
+      action: 'create_task' as const,
+      summary: 'Add stretch after work',
+      requiresConfirmation: true as const,
+      arguments: {
+        title: 'Stretch',
+        notes: null,
+        scheduledFor: '2026-09-01',
+        dueAt: null,
+      },
+    };
+    expect(
+      musReplyFromApi({
+        source: 'model',
+        response: { ...response, proposals: [proposal] },
+      }),
+    ).toMatchObject({
+      message: response.message,
+      proposals: [proposal],
+    });
   });
 });

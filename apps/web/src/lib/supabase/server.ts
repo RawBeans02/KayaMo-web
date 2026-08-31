@@ -1,7 +1,17 @@
-import { createCookieSupabase } from '@kayamo/db';
 import { cookies } from 'next/headers';
+import { createBearerSupabase, createCookieSupabase } from '@kayamo/db';
 
-export async function createServerSupabase() {
+function bearerToken(request?: Request): string | null {
+  const header = request?.headers.get('authorization');
+  if (!header?.toLowerCase().startsWith('bearer ')) return null;
+  const token = header.slice(7).trim();
+  return token.length > 0 ? token : null;
+}
+
+export async function createServerSupabase(request?: Request) {
+  const token = bearerToken(request);
+  if (token) return createBearerSupabase(token);
+
   const cookieStore = await cookies();
   return createCookieSupabase({
     getAll: () => cookieStore.getAll(),

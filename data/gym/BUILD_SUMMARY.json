@@ -1,0 +1,10 @@
+{
+  "exercise_count": 302,
+  "unique_exercise_ids": 302,
+  "training_method_count": 77,
+  "workout_type_count": 51,
+  "csv_count": 19,
+  "jsonl_lines": 832,
+  "sqlite_exists": true,
+  "xlsx_exists": true
+}

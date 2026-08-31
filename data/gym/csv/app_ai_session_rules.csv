@@ -1,0 +1,11 @@
+﻿rule_id,rule
+AI_FLOW_001,Manual/locked exercises always outrank AI suggestions. AI fills gaps rather than rebuilding the user's frame.
+AI_FLOW_002,AI may add multiple exercises targeting the same muscle when the workout goal and volume allow it.
+AI_FLOW_003,Intentional duplicate exercise instances are allowed and must have unique plan_item_id values.
+AI_FLOW_004,AI should warn about likely redundant exercise-family overlap but should not prohibit it.
+AI_FLOW_005,"During an active session, substitutions must preserve completed-set history for the original exercise."
+AI_FLOW_006,AI must use current gym/setup equipment profile before proposing an exercise.
+AI_FLOW_007,"AI should use prior performance as context, not overwrite logged history or silently change planned targets."
+AI_FLOW_008,"When live conditions change (machine busy, discomfort, time shortage), AI can re-rank only unfinished work."
+AI_FLOW_009,"The UI order is user-editable at any time; workout sequence is a queue, not a forced wizard."
+AI_FLOW_010,"Post-session progression suggestions should be proposals requiring app rules/user acceptance, not direct history edits."

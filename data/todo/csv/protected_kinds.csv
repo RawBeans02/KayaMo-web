@@ -1,0 +1,8 @@
+protected_id,name,ai_may_fill
+SLEEP,Sleep,0
+PERSONAL,Personal time,0
+FAMILY,Family,0
+COMMUTE,Commute,0
+REST,Rest,0
+FOCUS,User-locked focus,0
+DO_NOT_SCHEDULE,Do not schedule window,0

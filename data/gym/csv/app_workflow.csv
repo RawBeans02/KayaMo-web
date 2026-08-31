@@ -1,0 +1,14 @@
+﻿step,phase,name,user_action,system_action,ai_role,can_skip
+1,SETUP,Create gym/setup profile,"Choose gym, home gym, hotel gym, travel setup, or custom setup.",Load saved equipment profile or ask what equipment is available.,Normalize equipment names and infer usable exercise pool; never invent unavailable equipment.,0
+2,BUILD,Start workout frame,Pick a saved template/program/day or start blank and manually add must-do exercises.,Create an editable ordered workout queue.,Observe locked/manual exercises and unresolved gaps.,0
+3,BUILD,Set workout intent,"Choose goal, target muscles/body region, time available, readiness, and optional style.",Apply hard constraints and retrieve eligible exercises.,Use goal and context to score candidates.,1
+4,BUILD,AI fills missing workout,Tap AI Fill or ask for suggestions.,Keep locked items; fill only open slots or missing movement/muscle needs.,Select from eligible database candidates; explain additions/substitutions.,1
+5,BUILD,Edit prescription,"Adjust exercise order, sets, target reps, load target, RIR/RPE, tempo, notes, and rest time.",Save planned values separately from future performed values.,Offer suggestions but preserve manual overrides.,0
+6,READY,Review workout,Confirm or keep editing. Repeated exercises and multiple exercises for one muscle are allowed.,"Validate equipment, duplicate/family warnings, and session completeness.",Flag likely redundancy without blocking intentional repeats.,0
+7,ACTIVE,Start session,Tap Start Workout.,Snapshot the plan into a live session and start elapsed session timer.,Switch from planning mode to live-assistance mode.,0
+8,ACTIVE,Perform next set,"Choose any queued exercise/set; enter actual reps, weight, RIR/RPE, or other tracking values.",Do not force fixed order; maintain a reorderable to-do queue.,Surface prior performance and target values when useful.,0
+9,RESTING,Complete set + rest,Check the set as done.,Save performance immediately and start that set's configured rest timer automatically.,No regeneration; optionally show next queued task.,0
+10,RESTING,Rest timer notification,"Wait, skip rest, extend rest, or move to another exercise.",Notify/ping when timer expires; timer can be changed or dismissed.,Respect manual timer changes.,1
+11,ACTIVE,Live edits,"Reorder exercises, add/remove sets, substitute an exercise, skip an item, or add an unplanned exercise.",Record plan changes as session events while preserving original planned values.,Suggest compatible substitutions from available equipment.,1
+12,COMPLETE,Finish workout,Tap Finish when done.,"Store completed, skipped, partial, and added items; calculate summary.",Summarize performance and notable changes.,0
+13,HISTORY,Use history next time,"Repeat workout, duplicate it, schedule it, or build from history.","Expose last weight/reps, best performance, adherence, and prior substitutions.","Use history as context for future progression suggestions, subject to rules.",1

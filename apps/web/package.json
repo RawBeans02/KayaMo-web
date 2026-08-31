@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@kayamo/ai": "workspace:*",
     "@kayamo/core": "workspace:*",
     "@kayamo/db": "workspace:*",
     "@kayamo/features": "workspace:*",
@@ -19,7 +20,8 @@
     "@kayamo/ui": "workspace:*",
     "next": "16.3.1",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "zod": "^4"
   },
   "devDependencies": {
     "@kayamo/config": "workspace:*",

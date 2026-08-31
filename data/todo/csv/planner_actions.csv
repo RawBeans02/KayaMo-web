@@ -1,0 +1,13 @@
+action_id,name,writes_plan,requires_approval,notes
+PLAN_MY_DAY,Plan my day,1,1,Build a proposed day from now or from morning
+PLAN_TOMORROW,Plan tomorrow,1,1,Same as Plan my day for the next logical date
+REPLAN_REMAINING,Replan remaining day,1,1,Ignore elapsed clock; only unfinished items
+RESCUE,Rescue this day,1,1,Overload: keep must-do; propose deferrals
+MINIMUM_DAY,Minimum viable day,1,1,User asked for a lighter load
+WHAT_NOW,What can I do now,0,0,Rank options for current window location energy
+FILL_GAPS,Fill my free time,1,1,User already locked the frame
+OPTIMIZE,Optimize my day,1,1,Critique an existing manual schedule
+BRAIN_DUMP,Brain dump,0,1,Parse speech into inbox/task proposals
+CAPTURE,Conversational capture,0,1,Single utterance to one proposed item
+ASK_ITEM,Ask about this item,0,0,Inspector-scoped help; no silent writes
+EVENING_REVIEW,Evening review,0,1,Map what happened; propose moves for leftovers

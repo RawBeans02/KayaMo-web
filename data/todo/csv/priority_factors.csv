@@ -1,0 +1,9 @@
+factor_id,name,weight_hint,notes
+URGENCY,Urgency,3,How soon it becomes a problem
+IMPORTANCE,Importance,3,How much it matters
+DEADLINE_PROXIMITY,Deadline proximity,4,Closer due dates score higher
+CONSEQUENCE,Consequence,2,What breaks if skipped
+DEPENDENCY_IMPACT,Dependency impact,2,Blocks other work
+USER_PREFERENCE,User preference,2,Explicit pin or high flag
+OVERDUE,Already overdue,3,Surface but do not dump the whole backlog
+USER_OVERRIDE,User override,99,Always wins display order

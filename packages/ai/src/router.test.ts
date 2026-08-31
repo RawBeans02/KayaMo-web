@@ -93,4 +93,19 @@ describe('completeObject', () => {
       ),
     ).rejects.toThrow(/nutrition fields \(kcal\)/);
   });
+
+  it('still uses a generateObject double when a live model id is supplied', async () => {
+    const generateObject = vi.fn(async () => ({ object: { name: 'kanin' } }));
+    const budget = createMemoryAiBudgetGate({
+      dailyBudgetUsd: 0.05,
+      estimatedRequestCostUsd: 0.01,
+    });
+    const result = await completeObject(args(), {
+      generateObject,
+      budget,
+      modelId: 'gpt-5.6',
+    });
+    expect(result).toEqual({ name: 'kanin' });
+    expect(generateObject).toHaveBeenCalledOnce();
+  });
 });

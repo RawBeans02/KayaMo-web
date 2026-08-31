@@ -1,0 +1,8 @@
+duration_id,minutes,label
+M5,5,5 min
+M15,15,15 min
+M30,30,30 min
+M45,45,45 min
+H1,60,1h
+H2,120,2h
+CUSTOM,0,Custom

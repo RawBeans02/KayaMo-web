@@ -1,0 +1,8 @@
+entry_id,route,surface,context_focus
+MUS,/mus,fullscreen,whole permitted life
+DASHBOARD,/today,sidebar,today summary + chat
+TODOS,/todos,sidebar,visible tasks + selected row
+GYM,/gym,later,current workout / builder
+CALORIES,/calories,later,today foods + targets
+FOODS,/foods,later,catalog
+VERIFY,/verify,later,read-only

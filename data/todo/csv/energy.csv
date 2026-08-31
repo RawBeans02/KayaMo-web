@@ -1,0 +1,4 @@
+energy_id,name,sort_order
+LOW,Low energy,1
+MEDIUM,Medium energy,2
+HIGH,High energy,3

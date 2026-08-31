@@ -1,0 +1,13 @@
+﻿action,available_pre_session,available_live,description
+ADD_EXERCISE,1,1,Add an exercise manually.
+AI_FILL,1,1,Fill missing slots while keeping locked/manual items.
+LOCK_EXERCISE,1,1,Prevent AI from replacing or removing an item.
+DUPLICATE_EXERCISE,1,1,Add another instance of the same exercise intentionally.
+REORDER,1,1,"Drag items into any sequence; sequence is advisory, not forced."
+EDIT_SETS_REPS,1,1,Edit planned sets/reps before or during the workout.
+EDIT_REST,1,1,Set per-set/per-exercise rest duration.
+SUBSTITUTE,1,1,Replace an exercise using equipment and movement constraints.
+SKIP,0,1,Skip a planned item without deleting it from history.
+ADD_SET,1,1,Add an extra set.
+REMOVE_SET,1,1,Remove a future set; preserve completed set history.
+REPEAT_WORKOUT,1,0,Duplicate a previous workout or use recurring schedule.

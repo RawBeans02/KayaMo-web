@@ -1,13 +1,31 @@
 import { createCookieSupabase, isSupabaseConfigured } from '@kayamo/db';
 import { type NextRequest, NextResponse } from 'next/server';
 
+const PROTECTED = new Set([
+  '/today',
+  '/calories',
+  '/gym',
+  '/todos',
+  '/foods',
+  '/verify',
+  '/goals',
+  '/life',
+  '/grove',
+  '/mus',
+]);
+
+function isProtected(pathname: string): boolean {
+  if (pathname === '/app' || pathname.startsWith('/app/')) return true;
+  return PROTECTED.has(pathname);
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isApp = pathname === '/app' || pathname.startsWith('/app/');
+  const gated = isProtected(pathname);
   const isLogin = pathname === '/login';
 
   if (!isSupabaseConfigured()) {
-    if (isApp) {
+    if (gated) {
       const url = request.nextUrl.clone();
       url.pathname = '/login';
       url.searchParams.set('setup', '1');
@@ -34,7 +52,7 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (isApp && !user) {
+  if (gated && !user) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('next', pathname);
@@ -43,7 +61,7 @@ export async function proxy(request: NextRequest) {
 
   if (isLogin && user) {
     const url = request.nextUrl.clone();
-    url.pathname = '/app/food';
+    url.pathname = '/today';
     url.search = '';
     return NextResponse.redirect(url);
   }
@@ -52,5 +70,18 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/app/:path*', '/login'],
+  matcher: [
+    '/today',
+    '/calories',
+    '/gym',
+    '/todos',
+    '/foods',
+    '/verify',
+    '/goals',
+    '/life',
+    '/grove',
+    '/mus',
+    '/app/:path*',
+    '/login',
+  ],
 };

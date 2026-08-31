@@ -1,0 +1,23 @@
+table_id,status,sync,maps_to,notes
+tasks,SHIPPED,postgres,packages/db schema/planning.ts,title notes scheduled_for due_at origin; missing duration energy location flexibility
+routines,SHIPPED,postgres,packages/db schema/planning.ts,title rrule active
+routine_completions,SHIPPED,postgres,packages/db schema/planning.ts,
+inbox_items,SHIPPED,postgres,packages/db schema/identity.ts,capture inbox
+daily_plans,SHIPPED,postgres,packages/db schema/daily-loop.ts,capacity day_intent plan_mode; not a timetable
+focus_sessions,SHIPPED,postgres,packages/db schema/daily-loop.ts,linked task optional
+busy_blocks,SHIPPED,dexie_only,packages/offline,committed hours local
+goals,SHIPPED,postgres,packages/db schema/journey.ts,not a task list
+habits,SHIPPED,postgres,packages/db schema/journey.ts,separate from tasks
+events,PLANNED,postgres,,calendar events with start_at end_at
+time_blocks,PLANNED,postgres,,day timeline occupancy; planned vs actual
+task_constraints,PLANNED,postgres,,start_after due_at preferred_window earliest latest
+task_dependencies,PLANNED,postgres,,blocks / blocked-by
+projects,PLANNED,postgres,,container; project_tasks join
+task_recurrence,PLANNED,postgres,,richer than routines rrule
+daily_plan_items,PLANNED,postgres,,proposed vs accepted vs performed
+travel_blocks,PLANNED,postgres,,protected transitions
+locations,PLANNED,postgres,,user places; not GPS required in v1
+weather_context,DEFERRED_v1,none,,fetch later; card is optional
+energy_logs,PLANNED,postgres,,I'm tired snapshots for replan
+schedule_changes,PLANNED,postgres,,audit of moves after approval
+ai_planning_sessions,PLANNED,postgres,,proposal JSON + user decision

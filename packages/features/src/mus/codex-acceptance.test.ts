@@ -1,0 +1,47 @@
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+import { nutritionKeysInZod } from '@kayamo/ai';
+import { gymConsultPickSchema } from '../gym/consult-schema';
+import { imageObservationSchema, planDayRequestSchema } from '../todo/planner-schema';
+
+const featuresRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+
+describe('codex acceptance: desks, vision, gym consult', () => {
+  it('keeps gym consult on catalog slugs', () => {
+    const parsed = gymConsultPickSchema.parse({
+      slug: 'barbell-squat',
+      sets: 3,
+      reps: 8,
+      why: 'Compounds first while you are fresh',
+    });
+    expect(parsed.slug).toBe('barbell-squat');
+    expect(gymConsultPickSchema.safeParse({ name: 'Squat', sets: 3, reps: 8, why: 'Nope' }).success).toBe(
+      false,
+    );
+  });
+
+  it('does not let vision or plan-day invent nutrition numbers', () => {
+    expect(nutritionKeysInZod(imageObservationSchema)).toEqual([]);
+    expect(nutritionKeysInZod(planDayRequestSchema)).toEqual([]);
+  });
+
+  it('wires compact Mus onto gym, calories, foods, and verify', () => {
+    const gym = readFileSync(join(featuresRoot, 'desk/gym-desk.tsx'), 'utf8');
+    const calories = readFileSync(join(featuresRoot, 'food/today-table.tsx'), 'utf8');
+    const foods = readFileSync(join(featuresRoot, 'food/foods-table.tsx'), 'utf8');
+    const verify = readFileSync(join(featuresRoot, 'food/verify-table.tsx'), 'utf8');
+    expect(gym).toContain('module="gym"');
+    expect(calories).toContain('module="calories"');
+    expect(foods).toContain('module="foods"');
+    expect(verify).toContain('module="verify"');
+  });
+
+  it('sends chat through /api/mus/respond and photos through observe-image', () => {
+    const thread = readFileSync(join(featuresRoot, 'screens/mus-thread.tsx'), 'utf8');
+    expect(thread).toContain("/api/mus/respond");
+    expect(thread).toContain('/api/mus/observe-image');
+    expect(thread).toContain('Nothing is saved until you confirm');
+  });
+});

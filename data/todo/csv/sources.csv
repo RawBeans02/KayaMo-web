@@ -1,0 +1,4 @@
+source_id,name,authority
+SRC_MUS_SOT,Mus_Build_Source_of_Truth.md sections 12 and A11 Flow C D,product
+SRC_OWNER_2026_09_01,Owner Daily OS spec 2026-09-01,owner_override
+SRC_GYM_PATTERN,Gym KB manual-first AI-fill pattern,design

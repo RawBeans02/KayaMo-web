@@ -1036,7 +1036,7 @@
 
 .chatComposer {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 3rem;
+  grid-template-columns: 3rem minmax(0, 1fr) 3rem;
   align-items: end;
   gap: 0.5rem;
   padding: 0.65rem 1rem max(0.65rem, env(safe-area-inset-bottom));
@@ -1064,6 +1064,35 @@
   background: var(--km-action);
   color: var(--km-action-fg);
   cursor: pointer;
+}
+
+.chatComposer .chatAttach {
+  background: transparent;
+  color: var(--km-muted);
+  border: 1px solid var(--km-hairline);
+}
+
+.chatPendingImage {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--km-hairline);
+  border-radius: 0.45rem;
+  color: var(--km-muted);
+  font-size: 0.75rem;
+}
+
+.chatPendingImage button {
+  width: auto;
+  height: auto;
+  padding: 0.2rem 0.45rem;
+  border-radius: 0.3rem;
+  background: transparent;
+  color: var(--km-muted);
 }
 
 .chatComposer button:disabled {
@@ -1473,6 +1502,24 @@
   flex: 1;
   height: auto;
   min-height: 12rem;
+}
+
+.musCompact {
+  min-height: 32rem;
+}
+
+.musCompact .chatHeader {
+  min-height: 56px;
+  padding-top: 8px;
+}
+
+.musCompact .chatHeader img {
+  width: 36px;
+  height: 36px;
+}
+
+.musCompact .chatPrivacy {
+  display: none;
 }
 
 .habitat {
@@ -2662,7 +2709,7 @@ ul.plainList li:last-child {
 }
 
 .chatComposer {
-  grid-template-columns: minmax(0, 1fr) 48px;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
   align-items: end;
   gap: 10px;
   padding: 10px 12px max(10px, env(safe-area-inset-bottom));

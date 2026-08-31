@@ -1,0 +1,8 @@
+horizon_id,name,dashboard_default
+TODAY,Today,1
+TOMORROW,Tomorrow,1
+THIS_WEEK,This week,1
+NEXT_WEEK,Next week,0
+LATER,Later,0
+SOMEDAY,Someday,0
+OVERDUE,Overdue,1

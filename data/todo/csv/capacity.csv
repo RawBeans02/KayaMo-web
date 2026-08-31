@@ -1,0 +1,6 @@
+capacity_id,maps_to_energy,usable_fraction,notes
+great,HIGH,0.85,Still leave whitespace
+normal,MEDIUM,0.7,Default
+low,LOW,0.45,Prefer MINIMUM_DAY
+overwhelmed,LOW,0.3,Rescue or minimum; never pack the calendar
+sick,LOW,0.15,Protect rest; no gym intensity suggestions

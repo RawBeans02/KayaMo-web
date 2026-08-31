@@ -1,0 +1,10 @@
+step_id,sort_order,name,owner
+CAPTURE,1,Capture to inbox or propose a task,user+mus
+FRAME,2,Place FIXED events and protected time,user
+INTENT,3,Set capacity and Day Intent,user
+PROPOSE,4,Plan my day / Fill gaps,mus
+APPROVE,5,Accept Edit or Replan,user
+EXECUTE,6,Start skip complete on the live day,user
+ADAPT,7,Replan remaining from now,user+mus
+REVIEW,8,Evening what happened,user+mus
+LEARN,9,Store actual duration for next estimates,system

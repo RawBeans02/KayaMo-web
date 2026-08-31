@@ -6,6 +6,7 @@ import {
   createLocalTask,
   listLocalRoutineCompletions,
   listLocalRoutines,
+  listLocalOverdueTasks,
   listLocalTasks,
   listLocalTasksForDate,
   setLocalTaskScheduledFor,
@@ -15,6 +16,7 @@ import {
   tombstoneLocalRoutine,
   tombstoneLocalRoutineCompletion,
   tombstoneLocalTask,
+  updateLocalTask,
 } from './planning';
 import { pendingCount } from './queue';
 
@@ -72,6 +74,34 @@ describe('offline planning', () => {
     expect((await listLocalTasks('user-a')).map((row) => row.id)).toEqual([live.id]);
     expect((await getOfflineDb().tasks.get(live.id))?.scheduled_for).toBeNull();
     expect((await getOfflineDb().tasks.get(live.id))?.deleted_at).toBeNull();
+  });
+
+  it('edits a title and lists overdue off today', async () => {
+    const now = '2026-09-01T04:00:00.000Z';
+    const missed = await createLocalTask({
+      userId: 'user-a',
+      title: 'Submit form',
+      scheduledFor: '2026-08-30',
+    });
+    const due = await createLocalTask({
+      userId: 'user-a',
+      title: 'Pay bill',
+      dueAt: '2026-08-31T00:00:00.000Z',
+    });
+    const today = await createLocalTask({
+      userId: 'user-a',
+      title: 'Stay on today',
+      scheduledFor: '2026-09-01',
+    });
+    const renamed = await updateLocalTask({
+      id: missed.id,
+      userId: 'user-a',
+      title: 'Submit registrar form',
+    });
+    expect(renamed?.title).toBe('Submit registrar form');
+    const overdue = await listLocalOverdueTasks('user-a', '2026-09-01', now);
+    expect(overdue.map((row) => row.id).sort()).toEqual([due.id, missed.id].sort());
+    expect(overdue.map((row) => row.id)).not.toContain(today.id);
   });
 
   it('keeps a task tombstoned after a stale sync round-trip', async () => {

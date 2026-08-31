@@ -1,0 +1,11 @@
+pattern_id,phrase,maps_to,notes
+SOMETIME_TOMORROW,sometime tomorrow,constraint preferred_day=tomorrow,Not a clock time
+LATER_THIS_WEEK,later this week,horizon=THIS_WEEK,
+BEFORE_EVENT,before {event},constraint start_before_event,
+AFTER_EVENT,after {event},constraint start_after_event,
+AT_LOCATION,when I am at {location},constraint location,
+BEFORE_DATE,before {date},constraint due_before,
+FREE_HOUR,whenever I have an hour free,constraint duration+anytime,
+MORNING,tomorrow morning,preferred_window=MORNING,
+NIGHT,sometime at night,preferred_window=EVENING or NIGHT,
+THIS_WEEK_HOURS,this week about N hours,split into blocks; due end of week,

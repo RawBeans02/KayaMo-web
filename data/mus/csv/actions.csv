@@ -1,0 +1,35 @@
+action_id,module,impact,status,notes
+create_task,todo,low,SHIPPED,cocoActionNameSchema
+complete_task,todo,low,SHIPPED,
+create_routine,todo,medium,SHIPPED,
+create_goal,todo,high,SHIPPED,
+start_focus,todo,medium,SHIPPED,desktop may refuse
+log_food,nutrition,medium,SHIPPED,catalog resolve; no LLM nutrients
+remember_this,memory,medium,SHIPPED,explicit confirm
+edit_task,todo,low,SHIPPED,confirm-gated Mus action
+delete_task,todo,medium,SHIPPED,tombstone
+schedule_task,todo,medium,SHIPPED,manual move plus Mus action
+move_task,todo,medium,SHIPPED,schedule_task
+bulk_update,todo,high,SHIPPED,bulk_edit_tasks; confirm-gated
+create_recurring_task,todo,medium,SHIPPED,set_recurrence
+create_project,todo,medium,PLANNED,
+assign_project,todo,low,PLANNED,
+create_block,calendar,medium,SHIPPED,create_time_block
+move_block,calendar,medium,SHIPPED,move_time_block
+resize_block,calendar,medium,PLANNED,
+delete_block,calendar,high,PLANNED,
+plan_day,daily_plan,high,SHIPPED,separate /api/mus/plan-day; confirm
+replan_remaining_day,daily_plan,high,SHIPPED,mode=restructure
+fill_free_time,daily_plan,medium,SHIPPED,Fill button; confirm
+optimize_day,daily_plan,medium,PLANNED,
+read_plan,gym,low,SHIPPED,server context plus gym desk
+schedule_workout,gym,medium,SHIPPED,time block; confirm
+move_workout,gym,medium,SHIPPED,move_time_block
+add_exercise,gym,medium,SHIPPED,add_session_exercise; catalog slugs only
+remove_exercise,gym,medium,SHIPPED,skip_session_exercise; unfinished
+replace_exercise,gym,medium,SHIPPED,replace_session_exercise
+edit_future_sets,gym,medium,SHIPPED,edit_planned_set
+start_workout,gym,medium,SHIPPED,
+read_history,gym,low,SHIPPED,server context; no write
+read_remaining_targets,nutrition,low,SHIPPED,code-derived only
+suggest_meal,nutrition,low,PLANNED,never write targets

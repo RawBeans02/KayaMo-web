@@ -1,0 +1,16 @@
+﻿training_category_id,name,acsm_component,definition,source_ids
+RESISTANCE,Resistance / Muscular Training,muscular,Exercises using external or bodyweight resistance to develop muscular fitness.,SRC_ACSM_2026_FITNESS;SRC_CURATED_V1
+CARDIO,Cardiorespiratory Training,cardiorespiratory,Continuous or intermittent work primarily targeting cardiorespiratory fitness.,SRC_ACSM_2026_FITNESS;SRC_CURATED_V1
+POWER,Power / Explosive Training,muscular,Training emphasizing force production at high movement velocity.,SRC_ACSM_2026_FITNESS;SRC_CURATED_V1
+PLYOMETRIC,Plyometric Training,neuromotor,"Explosive stretch-shortening-cycle jumps, hops, bounds, and throws.",SRC_ACSM_2026_FITNESS;SRC_CURATED_V1
+SPEED,Speed / Sprint Training,neuromotor,Training to improve acceleration and maximal movement speed.,SRC_ACSM_2026_FITNESS;SRC_CURATED_V1
+AGILITY,Agility / Change-of-Direction,neuromotor,"Planned or reactive acceleration, deceleration, and direction change.",SRC_ACSM_2026_FITNESS;SRC_CURATED_V1
+MOBILITY,Mobility Training,flexibility,Active movement through usable ranges of motion.,SRC_ACSM_2026_FITNESS;SRC_CURATED_V1
+FLEXIBILITY,Flexibility / Stretching,flexibility,Training designed to maintain or increase passive/active range of motion.,SRC_ACSM_2026_FITNESS;SRC_CURATED_V1
+BALANCE,Balance / Proprioception,neuromotor,Training postural control and stability.,SRC_ACSM_2026_FITNESS;SRC_CURATED_V1
+CORE,Core / Trunk Training,muscular,"Training trunk force production, transfer, and stability.",SRC_ACSM_2026_FITNESS;SRC_CURATED_V1
+FUNCTIONAL,Functional / Integrated Training,mixed,Multi-joint or task-oriented movement integrating multiple regions.,SRC_ACSM_2026_FITNESS;SRC_CURATED_V1
+CONDITIONING,Metabolic Conditioning,cardiorespiratory,Mixed exercise arranged to challenge work capacity and energy systems.,SRC_ACSM_2026_FITNESS;SRC_CURATED_V1
+RECOVERY,Recovery / Regeneration,recovery,"Low-intensity activity, mobility, and tissue-care sessions supporting recovery.",SRC_ACSM_2026_FITNESS;SRC_CURATED_V1
+SPORT,Sport-Specific Training,mixed,Training designed around demands of a particular sport.,SRC_ACSM_2026_FITNESS;SRC_CURATED_V1
+ASSESSMENT,Fitness Testing / Assessment,assessment,Structured tests used to establish baselines and monitor progress.,SRC_ACSM_2026_FITNESS;SRC_CURATED_V1

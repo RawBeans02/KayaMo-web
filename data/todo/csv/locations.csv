@@ -1,0 +1,8 @@
+location_id,name,requires_travel
+HOME,Home,0
+SCHOOL,School,1
+WORK,Work,1
+GYM,Gym,1
+MALL,Mall / errands,1
+ANYWHERE,Anywhere,0
+ONLINE,Online,0

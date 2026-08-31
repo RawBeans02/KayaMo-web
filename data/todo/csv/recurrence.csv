@@ -1,0 +1,12 @@
+recurrence_id,name,notes
+DAILY,Every day,
+WEEKDAYS,Weekdays,
+WEEKENDS,Weekends,
+WEEKLY,Every week,
+BIWEEKLY,Every 2 weeks,
+MONTHLY,Monthly calendar,
+QUARTERLY,Every 3 months,
+ANNUAL,Annually,
+AFTER_COMPLETION,Every N days after completion,Not the same as calendar interval
+FIRST_WORKING_DAY,First working day of month,
+CUSTOM,Custom,

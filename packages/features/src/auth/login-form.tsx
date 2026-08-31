@@ -36,6 +36,7 @@ export function LoginForm({
   localDev,
   localDevAction,
   localDevEmail,
+  magicLinkOnly = false,
 }: {
   ports: AuthRedirectPorts;
   sent: boolean;
@@ -44,6 +45,8 @@ export function LoginForm({
   localDev: boolean;
   localDevAction?: string;
   localDevEmail?: string;
+  /** Desktop web: magic link only. PWA keeps Google until both surfaces stabilize. */
+  magicLinkOnly?: boolean;
 }) {
   const [pending, setPending] = useState<'email' | 'google' | null>(null);
   const [clientError, setClientError] = useState<string | null>(null);
@@ -125,17 +128,20 @@ export function LoginForm({
         </button>
       </form>
 
-      <p className={styles.rule}>or</p>
-
-      <button
-        type="button"
-        className={styles.secondary}
-        disabled={setup || pending !== null}
-        onClick={() => void onGoogle()}
-      >
-        <GoogleMark />
-        Continue with Google
-      </button>
+      {magicLinkOnly ? null : (
+        <>
+          <p className={styles.rule}>or</p>
+          <button
+            type="button"
+            className={styles.secondary}
+            disabled={setup || pending !== null}
+            onClick={() => void onGoogle()}
+          >
+            <GoogleMark />
+            Continue with Google
+          </button>
+        </>
+      )}
 
       {localDev && !setup && localDevAction && localDevEmail ? (
         <div className={styles.local}>

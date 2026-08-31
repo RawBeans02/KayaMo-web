@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createCocoRouter, type CocoProvider } from '@kayamo/ai';
+import { cocoActionNameSchema, createCocoRouter, musEntrySchema, type CocoProvider } from '@kayamo/ai';
 import { createOpenAICocoProvider } from '@kayamo/ai/server';
 import { getAgentSpendUsd, insertAgentRunTelemetry } from '@kayamo/db';
 import { z } from 'zod';
@@ -12,18 +12,11 @@ const requestSchema = z
     mode: z.enum(['chat', 'focus', 'workout']),
     message: z.string().trim().min(1).max(5000),
     logicalDate: z.string().date(),
+    entry: musEntrySchema.optional(),
   })
   .strict();
 
-const ALLOWED_ACTIONS = [
-  'create_task',
-  'complete_task',
-  'create_routine',
-  'create_goal',
-  'start_focus',
-  'log_food',
-  'remember_this',
-] as const;
+const ALLOWED_ACTIONS = cocoActionNameSchema.options;
 
 function nonnegativeEnvNumber(name: string, fallback: number): number {
   const value = Number(process.env[name]);
@@ -61,6 +54,9 @@ export async function POST(request: Request) {
     userId: user.id,
     logicalDate: parsed.data.logicalDate,
   });
+  const contextWithEntry = parsed.data.entry
+    ? { ...context, entry: parsed.data.entry }
+    : context;
 
   const routeCoco = createCocoRouter({
     provider: configuredProvider(),
@@ -98,7 +94,7 @@ export async function POST(request: Request) {
     userId: user.id,
     mode: parsed.data.mode,
     message: parsed.data.message,
-    context,
+    context: contextWithEntry,
     allowedActions: [...ALLOWED_ACTIONS],
   });
   return NextResponse.json(result);

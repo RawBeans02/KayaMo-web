@@ -1,0 +1,9 @@
+module_id,ai_read_default,ai_suggest_default,ai_auto_write,require_approval,notes
+TASKS,1,1,0,1,Core planner input
+CALENDAR,1,1,0,1,Fixed events
+GYM,1,1,0,1,Planned session duration and travel; no silent workout edits
+NUTRITION,0,1,0,1,Opt-in summaries only; never write calories
+WEATHER,1,1,0,1,Planning context; not a decoration-only card
+ROUTINES,1,1,0,1,
+JOURNAL,0,0,0,1,Off until the user grants
+MONEY,0,0,0,1,Never in daily planner context by default

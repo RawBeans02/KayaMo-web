@@ -1,0 +1,12 @@
+kind_id,name,has_fixed_time,appears_on_today,notes
+TASK,Task,0,1,Work to do; due or window optional; not a clock event by default
+EVENT,Calendar event,1,1,Fixed start and end; tasks schedule around these
+ROUTINE,Routine,0,1,Repeating expected work; preferred window not a hard start
+HABIT,Habit,0,1,Streak-optional practice; separate from a one-off task
+PROJECT,Project,0,0,Container for tasks; not itself a timeline block
+INBOX,Inbox item,0,0,Unclassified capture; not scheduled until processed
+TIME_BLOCK,Time block,1,1,Planned occupancy on the day timeline (task or event snapshot)
+BUSY_BLOCK,Busy block,1,1,SHIPPED local-only committed hours
+MEAL_BLOCK,Meal window,0,1,Flexible meal window unless the meal is a fixed event
+TRAVEL_BLOCK,Travel / transition,1,1,Protected travel between locations
+PROTECTED,Protected time,1,1,Sleep family commute rest; AI must not fill

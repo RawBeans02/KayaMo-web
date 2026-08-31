@@ -1,0 +1,5 @@
+confidence_id,name,ai_may_auto_move
+CONFIDENT,Confident,0
+LIKELY,Likely,0
+FLEXIBLE,Flexible,1
+OPTIONAL,Optional,1

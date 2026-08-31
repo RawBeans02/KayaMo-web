@@ -96,6 +96,31 @@ export async function setLocalTaskCompleted(params: {
   return row;
 }
 
+export async function updateLocalTask(params: {
+  id: string;
+  userId: string;
+  title?: string;
+  notes?: string | null;
+}): Promise<LocalTask | null> {
+  const db = getOfflineDb();
+  const existing = await db.tasks.get(params.id);
+  if (!existing || existing.user_id !== params.userId || existing.deleted_at) return null;
+  const title =
+    params.title === undefined ? existing.title : params.title.trim();
+  if (title.length < 1 || title.length > 160) return existing;
+  const at = nowIso();
+  const row: LocalTask = {
+    ...existing,
+    title,
+    notes: params.notes === undefined ? existing.notes : params.notes,
+    updated_at: at,
+  };
+  await db.tasks.put(row);
+  await enqueueUpsert('tasks', row.id, taskPayload(row));
+  void drainQueue();
+  return row;
+}
+
 export async function setLocalTaskScheduledFor(params: {
   id: string;
   userId: string;
@@ -130,6 +155,12 @@ export async function tombstoneLocalTask(params: {
   void drainQueue();
 }
 
+export async function getLocalTask(id: string, userId: string): Promise<LocalTask | null> {
+  const row = await getOfflineDb().tasks.get(id);
+  if (!row || row.user_id !== userId || row.deleted_at) return null;
+  return row;
+}
+
 export async function listLocalTasks(userId: string): Promise<LocalTask[]> {
   return (await getOfflineDb().tasks.where('user_id').equals(userId).toArray())
     .filter((row) => !row.deleted_at)
@@ -145,6 +176,25 @@ export async function listLocalTasksForDate(
   const rows = await getOfflineDb().tasks.where('user_id').equals(userId).toArray();
   return rows
     .filter((row) => !row.deleted_at && row.scheduled_for === logicalDate)
+    .sort(
+      (a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at),
+    );
+}
+
+export async function listLocalOverdueTasks(
+  userId: string,
+  today: string,
+  nowIso: string,
+): Promise<LocalTask[]> {
+  const rows = await getOfflineDb().tasks.where('user_id').equals(userId).toArray();
+  return rows
+    .filter((row) => {
+      if (row.deleted_at || row.completed_at) return false;
+      if (row.scheduled_for === today) return false;
+      if (row.due_at && row.due_at < nowIso) return true;
+      if (row.scheduled_for && row.scheduled_for < today) return true;
+      return false;
+    })
     .sort(
       (a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at),
     );

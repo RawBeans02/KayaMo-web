@@ -13,12 +13,22 @@ export const BIDIRECTIONAL_SYNC_REGISTRY: readonly SyncTableSpec[] =
 export const LOCAL_ONLY_TABLES = [
   'local_journal_entries',
   'busy_blocks',
+  'planning_projects',
+  'task_meta',
+  'task_dependencies',
+  'time_blocks',
+  'mus_action_log',
   'action_grants',
   'life_story_entries',
   'grove_chapters',
   'circles',
   'social_prefs',
   'rest_timers',
+  'gym_session_items',
+  'gym_planned_sets',
+  'gym_session_events',
+  'gym_prefs',
+  'gym_busy_equipment',
 ] as const;
 
 export function syncSpecFor(table: SyncableTable): SyncTableSpec {

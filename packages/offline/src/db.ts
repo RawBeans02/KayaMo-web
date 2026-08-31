@@ -98,6 +98,89 @@ export type LocalBusyBlock = {
   deleted_at: string | null;
 };
 
+export type ScheduleFlexibility = 'FIXED' | 'FLEXIBLE' | 'AUTO' | 'ANYTIME' | 'PROTECTED';
+export type ScheduleKind =
+  | 'TASK'
+  | 'EVENT'
+  | 'ROUTINE'
+  | 'GYM'
+  | 'MEAL'
+  | 'TRAVEL'
+  | 'PROTECTED';
+export type AiAccess = 'READ' | 'SUGGEST' | 'EDIT';
+export type RecurrenceKind =
+  | 'none'
+  | 'daily'
+  | 'weekdays'
+  | 'weekly'
+  | 'monthly'
+  | 'after_completion';
+
+export type LocalPlanningProject = {
+  id: string;
+  user_id: string;
+  title: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type LocalTaskMeta = {
+  task_id: string;
+  user_id: string;
+  flexibility: ScheduleFlexibility;
+  estimated_duration_min: number;
+  ai_access: AiAccess;
+  locked: boolean;
+  project_id: string | null;
+  recurrence: RecurrenceKind;
+  recurrence_interval_days: number;
+  energy: 'LOW' | 'MEDIUM' | 'HIGH' | null;
+  focus: string | null;
+  location: string | null;
+  instance_of: string | null;
+  updated_at: string;
+};
+
+export type LocalTaskDependency = {
+  id: string;
+  user_id: string;
+  task_id: string;
+  blocks_task_id: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type LocalTimeBlock = {
+  id: string;
+  user_id: string;
+  logical_date: string;
+  title: string;
+  kind: ScheduleKind;
+  start_min: number;
+  end_min: number;
+  flexibility: ScheduleFlexibility;
+  locked: boolean;
+  source_table: 'tasks' | 'workouts' | 'none';
+  source_id: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type LocalMusActionLog = {
+  id: string;
+  user_id: string;
+  action: string;
+  summary: string;
+  inverse: Record<string, unknown>;
+  created_at: string;
+  undone_at: string | null;
+};
+
 export type LocalActionGrants = {
   user_id: string;
   levels: Record<string, string>;
@@ -222,6 +305,78 @@ export type LocalRestTimer = {
   user_id: string;
   started_at: string;
   ends_at: string;
+  performed_set_id?: string | null;
+  duration_seconds?: number;
+  status?: 'running' | 'expired' | 'dismissed';
+};
+
+export type GymSessionItemState =
+  | 'QUEUED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'PARTIAL'
+  | 'SKIPPED'
+  | 'SUBSTITUTED'
+  | 'ADDED_LIVE';
+
+export type LocalGymSessionItem = {
+  id: string;
+  user_id: string;
+  session_id: string;
+  slug: string;
+  exercise_name: string;
+  sequence_index: number;
+  source: 'manual' | 'ai' | 'copy' | 'live';
+  locked: boolean;
+  state: GymSessionItemState;
+  substituted_from_id: string | null;
+  notes: string | null;
+  discomfort: boolean;
+  target_sets: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type LocalGymPlannedSet = {
+  id: string;
+  user_id: string;
+  item_id: string;
+  set_index: number;
+  set_type: 'warmup' | 'normal' | 'dropset';
+  target_reps: number;
+  target_weight_kg: number | null;
+  target_rir: number | null;
+  rest_seconds: number | null;
+  performed_set_id: string | null;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type LocalGymPrefs = {
+  user_id: string;
+  default_rest_seconds: number;
+  favorite_slugs: string[];
+  avoid_slugs: string[];
+  updated_at: string;
+};
+
+export type LocalGymBusyEquipment = {
+  id: string;
+  user_id: string;
+  logical_date: string;
+  equipment_id: string;
+  updated_at: string;
+};
+
+export type LocalGymSessionEvent = {
+  id: string;
+  user_id: string;
+  session_id: string;
+  event_type: string;
+  entity_id: string;
+  summary: string;
+  created_at: string;
 };
 
 export type LocalFoodCacheAccess = {
@@ -248,6 +403,11 @@ export class KayaMoDB extends Dexie {
   workout_plans!: Table<LocalWorkoutPlan, string>;
   workout_plan_exercises!: Table<LocalWorkoutPlanExercise, string>;
   rest_timers!: Table<LocalRestTimer, string>;
+  gym_session_items!: Table<LocalGymSessionItem, string>;
+  gym_planned_sets!: Table<LocalGymPlannedSet, string>;
+  gym_session_events!: Table<LocalGymSessionEvent, string>;
+  gym_prefs!: Table<LocalGymPrefs, string>;
+  gym_busy_equipment!: Table<LocalGymBusyEquipment, string>;
   foods!: Table<LocalFood, string>;
   servings!: Table<LocalServing, string>;
   meal_templates!: Table<LocalMealTemplate, string>;
@@ -278,6 +438,11 @@ export class KayaMoDB extends Dexie {
   scripture_passages!: Table<LocalScripturePassage, string>;
   local_journal_entries!: Table<LocalJournalEntry, string>;
   busy_blocks!: Table<LocalBusyBlock, string>;
+  planning_projects!: Table<LocalPlanningProject, string>;
+  task_meta!: Table<LocalTaskMeta, string>;
+  task_dependencies!: Table<LocalTaskDependency, string>;
+  time_blocks!: Table<LocalTimeBlock, string>;
+  mus_action_log!: Table<LocalMusActionLog, string>;
   action_grants!: Table<LocalActionGrants, string>;
   life_story_entries!: Table<LocalLifeStoryEntry, string>;
   grove_chapters!: Table<LocalGroveChapter, string>;
@@ -408,6 +573,20 @@ export class KayaMoDB extends Dexie {
     this.version(16).stores({
       sync_checkpoints: 'id, user_id, table, [user_id+table], updatedAt',
     });
+    this.version(17).stores({
+      planning_projects: 'id, user_id, updated_at, deleted_at',
+      task_meta: 'task_id, user_id, project_id, updated_at',
+      task_dependencies: 'id, user_id, task_id, blocks_task_id, updated_at, deleted_at',
+      time_blocks: 'id, user_id, logical_date, updated_at, deleted_at',
+      mus_action_log: 'id, user_id, created_at, undone_at',
+    });
+    this.version(18).stores({
+      gym_session_items: 'id, user_id, session_id, updated_at, deleted_at',
+      gym_planned_sets: 'id, user_id, item_id, updated_at, deleted_at',
+      gym_session_events: 'id, user_id, session_id, created_at',
+      gym_prefs: 'user_id, updated_at',
+      gym_busy_equipment: 'id, user_id, logical_date',
+    });
   }
 }
 
@@ -453,11 +632,21 @@ const USER_SCOPED_TABLES = [
   'daily_loop_preferences',
   'local_journal_entries',
   'busy_blocks',
+  'planning_projects',
+  'task_meta',
+  'task_dependencies',
+  'time_blocks',
+  'mus_action_log',
   'action_grants',
   'life_story_entries',
   'grove_chapters',
   'circles',
   'social_prefs',
+  'gym_session_items',
+  'gym_planned_sets',
+  'gym_session_events',
+  'gym_prefs',
+  'gym_busy_equipment',
   'guidance_snapshots',
   'sync_queue',
   'sync_checkpoints',

@@ -1,0 +1,1101 @@
+{
+  "version": 1,
+  "itemKinds": [
+    {
+      "id": "TASK",
+      "name": "Task",
+      "hasFixedTime": false,
+      "appearsOnToday": true,
+      "notes": "Work to do; due or window optional; not a clock event by default"
+    },
+    {
+      "id": "EVENT",
+      "name": "Calendar event",
+      "hasFixedTime": true,
+      "appearsOnToday": true,
+      "notes": "Fixed start and end; tasks schedule around these"
+    },
+    {
+      "id": "ROUTINE",
+      "name": "Routine",
+      "hasFixedTime": false,
+      "appearsOnToday": true,
+      "notes": "Repeating expected work; preferred window not a hard start"
+    },
+    {
+      "id": "HABIT",
+      "name": "Habit",
+      "hasFixedTime": false,
+      "appearsOnToday": true,
+      "notes": "Streak-optional practice; separate from a one-off task"
+    },
+    {
+      "id": "PROJECT",
+      "name": "Project",
+      "hasFixedTime": false,
+      "appearsOnToday": false,
+      "notes": "Container for tasks; not itself a timeline block"
+    },
+    {
+      "id": "INBOX",
+      "name": "Inbox item",
+      "hasFixedTime": false,
+      "appearsOnToday": false,
+      "notes": "Unclassified capture; not scheduled until processed"
+    },
+    {
+      "id": "TIME_BLOCK",
+      "name": "Time block",
+      "hasFixedTime": true,
+      "appearsOnToday": true,
+      "notes": "Planned occupancy on the day timeline (task or event snapshot)"
+    },
+    {
+      "id": "BUSY_BLOCK",
+      "name": "Busy block",
+      "hasFixedTime": true,
+      "appearsOnToday": true,
+      "notes": "SHIPPED local-only committed hours"
+    },
+    {
+      "id": "MEAL_BLOCK",
+      "name": "Meal window",
+      "hasFixedTime": false,
+      "appearsOnToday": true,
+      "notes": "Flexible meal window unless the meal is a fixed event"
+    },
+    {
+      "id": "TRAVEL_BLOCK",
+      "name": "Travel / transition",
+      "hasFixedTime": true,
+      "appearsOnToday": true,
+      "notes": "Protected travel between locations"
+    },
+    {
+      "id": "PROTECTED",
+      "name": "Protected time",
+      "hasFixedTime": true,
+      "appearsOnToday": true,
+      "notes": "Sleep family commute rest; AI must not fill"
+    }
+  ],
+  "flexibility": [
+    {
+      "id": "FIXED",
+      "name": "Fixed",
+      "aiMaySuggestMove": false,
+      "aiMayAutoMove": false,
+      "notes": "Exact time; user must approve any move"
+    },
+    {
+      "id": "FLEXIBLE",
+      "name": "Flexible today",
+      "aiMaySuggestMove": true,
+      "aiMayAutoMove": false,
+      "notes": "Should happen today; Mus suggests a slot"
+    },
+    {
+      "id": "AUTO",
+      "name": "Auto within window",
+      "aiMaySuggestMove": true,
+      "aiMayAutoMove": true,
+      "notes": "May move inside earliest/latest after the user accepted a plan"
+    },
+    {
+      "id": "ANYTIME",
+      "name": "Anytime",
+      "aiMaySuggestMove": false,
+      "aiMayAutoMove": false,
+      "notes": "No clock; do not force onto the timeline"
+    },
+    {
+      "id": "PROTECTED",
+      "name": "Protected",
+      "aiMaySuggestMove": false,
+      "aiMayAutoMove": false,
+      "notes": "Never auto-fill"
+    }
+  ],
+  "energy": [
+    {
+      "id": "LOW",
+      "name": "Low energy"
+    },
+    {
+      "id": "MEDIUM",
+      "name": "Medium energy"
+    },
+    {
+      "id": "HIGH",
+      "name": "High energy"
+    }
+  ],
+  "focus": [
+    {
+      "id": "LOW_FOCUS",
+      "name": "Low focus"
+    },
+    {
+      "id": "DEEP_FOCUS",
+      "name": "Deep focus"
+    },
+    {
+      "id": "SOCIAL",
+      "name": "Social"
+    },
+    {
+      "id": "PHYSICAL",
+      "name": "Physical"
+    },
+    {
+      "id": "ADMINISTRATIVE",
+      "name": "Administrative"
+    }
+  ],
+  "locations": [
+    {
+      "id": "HOME",
+      "name": "Home",
+      "requiresTravel": false
+    },
+    {
+      "id": "SCHOOL",
+      "name": "School",
+      "requiresTravel": true
+    },
+    {
+      "id": "WORK",
+      "name": "Work",
+      "requiresTravel": true
+    },
+    {
+      "id": "GYM",
+      "name": "Gym",
+      "requiresTravel": true
+    },
+    {
+      "id": "MALL",
+      "name": "Mall / errands",
+      "requiresTravel": true
+    },
+    {
+      "id": "ANYWHERE",
+      "name": "Anywhere",
+      "requiresTravel": false
+    },
+    {
+      "id": "ONLINE",
+      "name": "Online",
+      "requiresTravel": false
+    }
+  ],
+  "horizons": [
+    {
+      "id": "TODAY",
+      "name": "Today",
+      "dashboardDefault": true
+    },
+    {
+      "id": "TOMORROW",
+      "name": "Tomorrow",
+      "dashboardDefault": true
+    },
+    {
+      "id": "THIS_WEEK",
+      "name": "This week",
+      "dashboardDefault": true
+    },
+    {
+      "id": "NEXT_WEEK",
+      "name": "Next week",
+      "dashboardDefault": false
+    },
+    {
+      "id": "LATER",
+      "name": "Later",
+      "dashboardDefault": false
+    },
+    {
+      "id": "SOMEDAY",
+      "name": "Someday",
+      "dashboardDefault": false
+    },
+    {
+      "id": "OVERDUE",
+      "name": "Overdue",
+      "dashboardDefault": true
+    }
+  ],
+  "plannerActions": [
+    {
+      "id": "PLAN_MY_DAY",
+      "name": "Plan my day",
+      "writesPlan": true,
+      "requiresApproval": true,
+      "notes": "Build a proposed day from now or from morning"
+    },
+    {
+      "id": "PLAN_TOMORROW",
+      "name": "Plan tomorrow",
+      "writesPlan": true,
+      "requiresApproval": true,
+      "notes": "Same as Plan my day for the next logical date"
+    },
+    {
+      "id": "REPLAN_REMAINING",
+      "name": "Replan remaining day",
+      "writesPlan": true,
+      "requiresApproval": true,
+      "notes": "Ignore elapsed clock; only unfinished items"
+    },
+    {
+      "id": "RESCUE",
+      "name": "Rescue this day",
+      "writesPlan": true,
+      "requiresApproval": true,
+      "notes": "Overload: keep must-do; propose deferrals"
+    },
+    {
+      "id": "MINIMUM_DAY",
+      "name": "Minimum viable day",
+      "writesPlan": true,
+      "requiresApproval": true,
+      "notes": "User asked for a lighter load"
+    },
+    {
+      "id": "WHAT_NOW",
+      "name": "What can I do now",
+      "writesPlan": false,
+      "requiresApproval": false,
+      "notes": "Rank options for current window location energy"
+    },
+    {
+      "id": "FILL_GAPS",
+      "name": "Fill my free time",
+      "writesPlan": true,
+      "requiresApproval": true,
+      "notes": "User already locked the frame"
+    },
+    {
+      "id": "OPTIMIZE",
+      "name": "Optimize my day",
+      "writesPlan": true,
+      "requiresApproval": true,
+      "notes": "Critique an existing manual schedule"
+    },
+    {
+      "id": "BRAIN_DUMP",
+      "name": "Brain dump",
+      "writesPlan": false,
+      "requiresApproval": true,
+      "notes": "Parse speech into inbox/task proposals"
+    },
+    {
+      "id": "CAPTURE",
+      "name": "Conversational capture",
+      "writesPlan": false,
+      "requiresApproval": true,
+      "notes": "Single utterance to one proposed item"
+    },
+    {
+      "id": "ASK_ITEM",
+      "name": "Ask about this item",
+      "writesPlan": false,
+      "requiresApproval": false,
+      "notes": "Inspector-scoped help; no silent writes"
+    },
+    {
+      "id": "EVENING_REVIEW",
+      "name": "Evening review",
+      "writesPlan": false,
+      "requiresApproval": true,
+      "notes": "Map what happened; propose moves for leftovers"
+    }
+  ],
+  "plannerRules": [
+    {
+      "id": "NO_SILENT_WRITE",
+      "severity": "HARD",
+      "appliesTo": "all",
+      "statement": "Mus never writes tasks events or plans without user confirmation"
+    },
+    {
+      "id": "NO_MOVE_FIXED",
+      "severity": "HARD",
+      "appliesTo": "schedule",
+      "statement": "FIXED and PROTECTED blocks are not auto-moved"
+    },
+    {
+      "id": "LEAVE_WHITESPACE",
+      "severity": "HARD",
+      "appliesTo": "plan",
+      "statement": "Do not fill every free minute; respect daily_plans capacity"
+    },
+    {
+      "id": "TASK_NOT_EVENT",
+      "severity": "HARD",
+      "appliesTo": "model",
+      "statement": "A task without start/end is not an event; do not invent a clock time"
+    },
+    {
+      "id": "ANYTIME_OFF_CLOCK",
+      "severity": "HARD",
+      "appliesTo": "schedule",
+      "statement": "ANYTIME items stay off the timeline unless the user asks"
+    },
+    {
+      "id": "EVENTS_FIRST",
+      "severity": "HARD",
+      "appliesTo": "plan",
+      "statement": "Place FIXED events before fitting FLEXIBLE tasks"
+    },
+    {
+      "id": "DEPENDENCIES",
+      "severity": "HARD",
+      "appliesTo": "plan",
+      "statement": "Do not schedule a task before its unfinished prerequisites"
+    },
+    {
+      "id": "OVERLOAD_NEGOTIATE",
+      "severity": "HARD",
+      "appliesTo": "plan",
+      "statement": "If work exceeds usable open time say so and propose deferrals"
+    },
+    {
+      "id": "PLAN_FROM_NOW",
+      "severity": "HARD",
+      "appliesTo": "replan",
+      "statement": "Replan remaining day never rewrites completed history"
+    },
+    {
+      "id": "NO_CALORIE_WRITE",
+      "severity": "HARD",
+      "appliesTo": "nutrition",
+      "statement": "Planner must not change calorie floors or logged food numbers"
+    },
+    {
+      "id": "NO_DIAGNOSIS",
+      "severity": "HARD",
+      "appliesTo": "copy",
+      "statement": "Energy and mood flags are not medical diagnoses"
+    },
+    {
+      "id": "NO_SHAME",
+      "severity": "HARD",
+      "appliesTo": "copy",
+      "statement": "No cheat guilty earned or failed language; use Released for goals set down"
+    },
+    {
+      "id": "USER_OVERRIDE",
+      "severity": "HARD",
+      "appliesTo": "all",
+      "statement": "User edits always win over a proposal"
+    },
+    {
+      "id": "ZOD_OUTPUT",
+      "severity": "HARD",
+      "appliesTo": "ai",
+      "statement": "Every planner LLM call uses a Zod schema"
+    },
+    {
+      "id": "GYM_DURATION_HISTORY",
+      "severity": "SOFT",
+      "appliesTo": "gym",
+      "statement": "Prefer historical session length over the user's optimistic estimate"
+    },
+    {
+      "id": "WEATHER_OUTDOOR",
+      "severity": "SOFT",
+      "appliesTo": "weather",
+      "statement": "Rain may suggest moving outdoor items; user chooses"
+    },
+    {
+      "id": "TRAVEL_BLOCKS",
+      "severity": "SOFT",
+      "appliesTo": "travel",
+      "statement": "Do not abut distant locations without a travel block"
+    },
+    {
+      "id": "FOOD_OPT_IN",
+      "severity": "SOFT",
+      "appliesTo": "nutrition",
+      "statement": "Meal-aware suggestions only if food planning is enabled"
+    }
+  ],
+  "permissions": [
+    {
+      "id": "TASKS",
+      "aiReadDefault": true,
+      "aiSuggestDefault": true,
+      "aiAutoWrite": false,
+      "requireApproval": true,
+      "notes": "Core planner input"
+    },
+    {
+      "id": "CALENDAR",
+      "aiReadDefault": true,
+      "aiSuggestDefault": true,
+      "aiAutoWrite": false,
+      "requireApproval": true,
+      "notes": "Fixed events"
+    },
+    {
+      "id": "GYM",
+      "aiReadDefault": true,
+      "aiSuggestDefault": true,
+      "aiAutoWrite": false,
+      "requireApproval": true,
+      "notes": "Planned session duration and travel; no silent workout edits"
+    },
+    {
+      "id": "NUTRITION",
+      "aiReadDefault": false,
+      "aiSuggestDefault": true,
+      "aiAutoWrite": false,
+      "requireApproval": true,
+      "notes": "Opt-in summaries only; never write calories"
+    },
+    {
+      "id": "WEATHER",
+      "aiReadDefault": true,
+      "aiSuggestDefault": true,
+      "aiAutoWrite": false,
+      "requireApproval": true,
+      "notes": "Planning context; not a decoration-only card"
+    },
+    {
+      "id": "ROUTINES",
+      "aiReadDefault": true,
+      "aiSuggestDefault": true,
+      "aiAutoWrite": false,
+      "requireApproval": true,
+      "notes": ""
+    },
+    {
+      "id": "JOURNAL",
+      "aiReadDefault": false,
+      "aiSuggestDefault": false,
+      "aiAutoWrite": false,
+      "requireApproval": true,
+      "notes": "Off until the user grants"
+    },
+    {
+      "id": "MONEY",
+      "aiReadDefault": false,
+      "aiSuggestDefault": false,
+      "aiAutoWrite": false,
+      "requireApproval": true,
+      "notes": "Never in daily planner context by default"
+    }
+  ],
+  "dataModel": [
+    {
+      "id": "tasks",
+      "status": "SHIPPED",
+      "sync": "postgres",
+      "mapsTo": "packages/db schema/planning.ts",
+      "notes": "title notes scheduled_for due_at origin; missing duration energy location flexibility"
+    },
+    {
+      "id": "routines",
+      "status": "SHIPPED",
+      "sync": "postgres",
+      "mapsTo": "packages/db schema/planning.ts",
+      "notes": "title rrule active"
+    },
+    {
+      "id": "routine_completions",
+      "status": "SHIPPED",
+      "sync": "postgres",
+      "mapsTo": "packages/db schema/planning.ts",
+      "notes": ""
+    },
+    {
+      "id": "inbox_items",
+      "status": "SHIPPED",
+      "sync": "postgres",
+      "mapsTo": "packages/db schema/identity.ts",
+      "notes": "capture inbox"
+    },
+    {
+      "id": "daily_plans",
+      "status": "SHIPPED",
+      "sync": "postgres",
+      "mapsTo": "packages/db schema/daily-loop.ts",
+      "notes": "capacity day_intent plan_mode; not a timetable"
+    },
+    {
+      "id": "focus_sessions",
+      "status": "SHIPPED",
+      "sync": "postgres",
+      "mapsTo": "packages/db schema/daily-loop.ts",
+      "notes": "linked task optional"
+    },
+    {
+      "id": "busy_blocks",
+      "status": "SHIPPED",
+      "sync": "dexie_only",
+      "mapsTo": "packages/offline",
+      "notes": "committed hours local"
+    },
+    {
+      "id": "goals",
+      "status": "SHIPPED",
+      "sync": "postgres",
+      "mapsTo": "packages/db schema/journey.ts",
+      "notes": "not a task list"
+    },
+    {
+      "id": "habits",
+      "status": "SHIPPED",
+      "sync": "postgres",
+      "mapsTo": "packages/db schema/journey.ts",
+      "notes": "separate from tasks"
+    },
+    {
+      "id": "events",
+      "status": "PLANNED",
+      "sync": "postgres",
+      "mapsTo": "",
+      "notes": "calendar events with start_at end_at"
+    },
+    {
+      "id": "time_blocks",
+      "status": "PLANNED",
+      "sync": "postgres",
+      "mapsTo": "",
+      "notes": "day timeline occupancy; planned vs actual"
+    },
+    {
+      "id": "task_constraints",
+      "status": "PLANNED",
+      "sync": "postgres",
+      "mapsTo": "",
+      "notes": "start_after due_at preferred_window earliest latest"
+    },
+    {
+      "id": "task_dependencies",
+      "status": "PLANNED",
+      "sync": "postgres",
+      "mapsTo": "",
+      "notes": "blocks / blocked-by"
+    },
+    {
+      "id": "projects",
+      "status": "PLANNED",
+      "sync": "postgres",
+      "mapsTo": "",
+      "notes": "container; project_tasks join"
+    },
+    {
+      "id": "task_recurrence",
+      "status": "PLANNED",
+      "sync": "postgres",
+      "mapsTo": "",
+      "notes": "richer than routines rrule"
+    },
+    {
+      "id": "daily_plan_items",
+      "status": "PLANNED",
+      "sync": "postgres",
+      "mapsTo": "",
+      "notes": "proposed vs accepted vs performed"
+    },
+    {
+      "id": "travel_blocks",
+      "status": "PLANNED",
+      "sync": "postgres",
+      "mapsTo": "",
+      "notes": "protected transitions"
+    },
+    {
+      "id": "locations",
+      "status": "PLANNED",
+      "sync": "postgres",
+      "mapsTo": "",
+      "notes": "user places; not GPS required in v1"
+    },
+    {
+      "id": "weather_context",
+      "status": "DEFERRED_v1",
+      "sync": "none",
+      "mapsTo": "",
+      "notes": "fetch later; card is optional"
+    },
+    {
+      "id": "energy_logs",
+      "status": "PLANNED",
+      "sync": "postgres",
+      "mapsTo": "",
+      "notes": "I'm tired snapshots for replan"
+    },
+    {
+      "id": "schedule_changes",
+      "status": "PLANNED",
+      "sync": "postgres",
+      "mapsTo": "",
+      "notes": "audit of moves after approval"
+    },
+    {
+      "id": "ai_planning_sessions",
+      "status": "PLANNED",
+      "sync": "postgres",
+      "mapsTo": "",
+      "notes": "proposal JSON + user decision"
+    }
+  ],
+  "dashboardModules": [
+    {
+      "id": "NOW",
+      "name": "Now / next",
+      "surface": "home+web",
+      "v1": true
+    },
+    {
+      "id": "WEATHER",
+      "name": "Weather",
+      "surface": "home+web",
+      "v1": false
+    },
+    {
+      "id": "TODAY",
+      "name": "Today counts",
+      "surface": "home+web",
+      "v1": true
+    },
+    {
+      "id": "COMING_UP",
+      "name": "Coming up",
+      "surface": "home+web",
+      "v1": true
+    },
+    {
+      "id": "OVERDUE",
+      "name": "Overdue",
+      "surface": "home+web",
+      "v1": true
+    },
+    {
+      "id": "AI_INSIGHT",
+      "name": "Day insights",
+      "surface": "home+web",
+      "v1": true
+    },
+    {
+      "id": "TIMELINE",
+      "name": "Day timeline",
+      "surface": "home+web",
+      "v1": false
+    },
+    {
+      "id": "NUTRITION",
+      "name": "Nutrition summary",
+      "surface": "home+web",
+      "v1": true
+    },
+    {
+      "id": "FITNESS",
+      "name": "Fitness block",
+      "surface": "home+web",
+      "v1": true
+    },
+    {
+      "id": "HABITS",
+      "name": "Habits",
+      "surface": "home+web",
+      "v1": true
+    }
+  ],
+  "a11": [
+    {
+      "id": "A11_01",
+      "name": "Plan My Day",
+      "status": "SHIPPED",
+      "notes": "Signature command; Home not a sixth tab"
+    },
+    {
+      "id": "A11_02",
+      "name": "Plan Tomorrow",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_03",
+      "name": "Restructure My Day",
+      "status": "SHIPPED",
+      "notes": "Replan remaining from now"
+    },
+    {
+      "id": "A11_04",
+      "name": "Rescue My Day",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_05",
+      "name": "Morning Check-in",
+      "status": "SHIPPED",
+      "notes": "daily_plans.morning_completed_at; copy not planner yet"
+    },
+    {
+      "id": "A11_06",
+      "name": "Evening Check-in",
+      "status": "SHIPPED",
+      "notes": "daily_plans.evening_completed_at"
+    },
+    {
+      "id": "A11_07",
+      "name": "Daily capacity selection",
+      "status": "SHIPPED",
+      "notes": "daily_plans.capacity"
+    },
+    {
+      "id": "A11_08",
+      "name": "Automatic capacity estimation",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_09",
+      "name": "Fixed Flexible Floating Routine Protected",
+      "status": "SHIPPED",
+      "notes": "Inspector + timetable flexibility"
+    },
+    {
+      "id": "A11_10",
+      "name": "Activity clumping",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_11",
+      "name": "Travel-time inclusion",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_12",
+      "name": "Preparation-time inclusion",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_13",
+      "name": "Meal/cooking-time inclusion",
+      "status": "PLANNED",
+      "notes": "Food-aware opt-in"
+    },
+    {
+      "id": "A11_14",
+      "name": "Buffer/transition time",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_15",
+      "name": "Intentional free time",
+      "status": "PLANNED",
+      "notes": "LEAVE_WHITESPACE hard rule"
+    },
+    {
+      "id": "A11_16",
+      "name": "Top 3 priorities",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_17",
+      "name": "Non-negotiables",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_18",
+      "name": "Bonus tasks",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_19",
+      "name": "Minimum Viable Day",
+      "status": "PLANNED",
+      "notes": "plan_mode=minimum already in schema"
+    },
+    {
+      "id": "A11_20",
+      "name": "Focus blocks",
+      "status": "SHIPPED",
+      "notes": "focus_sessions"
+    },
+    {
+      "id": "A11_21",
+      "name": "Break planning",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_22",
+      "name": "Distraction tracking",
+      "status": "DEFERRED_v1",
+      "notes": ""
+    },
+    {
+      "id": "A11_23",
+      "name": "Schedule conflict detection",
+      "status": "SHIPPED",
+      "notes": "conflictIds on the timetable"
+    },
+    {
+      "id": "A11_24",
+      "name": "Automatic low-priority task movement",
+      "status": "PLANNED",
+      "notes": "Never silent; approval required"
+    },
+    {
+      "id": "A11_25",
+      "name": "Overload detection",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_26",
+      "name": "Late-start adaptation",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_27",
+      "name": "Unexpected-event adaptation",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_28",
+      "name": "Task duration learning",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_29",
+      "name": "Personal productivity-hour learning",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_30",
+      "name": "Energy-aware scheduling",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_31",
+      "name": "Mood-aware scheduling",
+      "status": "DEFERRED_SAFETY_REVIEW",
+      "notes": "No diagnosis"
+    },
+    {
+      "id": "A11_32",
+      "name": "Workout/recovery-aware scheduling",
+      "status": "SHIPPED",
+      "notes": "Read gym duration; do not auto-write workouts"
+    },
+    {
+      "id": "A11_33",
+      "name": "Location-aware scheduling",
+      "status": "SHIPPED",
+      "notes": "Manual location first; geofence later"
+    },
+    {
+      "id": "A11_34",
+      "name": "Weather-aware scheduling",
+      "status": "DEFERRED_v1",
+      "notes": "User-stated weatherNote only; no weather fetch"
+    },
+    {
+      "id": "A11_35",
+      "name": "Deadline-risk awareness",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_36",
+      "name": "Dependencies/blockers awareness",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_37",
+      "name": "Personal rules enforcement",
+      "status": "PLANNED",
+      "notes": ""
+    },
+    {
+      "id": "A11_38",
+      "name": "Accountability contracts",
+      "status": "DEFERRED_v1",
+      "notes": ""
+    },
+    {
+      "id": "A11_39",
+      "name": "Conscious override for blocked distractions",
+      "status": "DEFERRED_v1",
+      "notes": ""
+    },
+    {
+      "id": "A11_40",
+      "name": "End-of-day unfinished-task handling",
+      "status": "PLANNED",
+      "notes": "Do not dump overdue onto Today"
+    },
+    {
+      "id": "A11_41",
+      "name": "Day Intent",
+      "status": "SHIPPED",
+      "notes": "daily_plans.day_intent"
+    }
+  ],
+  "capturePatterns": [
+    {
+      "id": "SOMETIME_TOMORROW",
+      "phrase": "sometime tomorrow",
+      "mapsTo": "constraint preferred_day=tomorrow",
+      "notes": "Not a clock time"
+    },
+    {
+      "id": "LATER_THIS_WEEK",
+      "phrase": "later this week",
+      "mapsTo": "horizon=THIS_WEEK",
+      "notes": ""
+    },
+    {
+      "id": "BEFORE_EVENT",
+      "phrase": "before {event}",
+      "mapsTo": "constraint start_before_event",
+      "notes": ""
+    },
+    {
+      "id": "AFTER_EVENT",
+      "phrase": "after {event}",
+      "mapsTo": "constraint start_after_event",
+      "notes": ""
+    },
+    {
+      "id": "AT_LOCATION",
+      "phrase": "when I am at {location}",
+      "mapsTo": "constraint location",
+      "notes": ""
+    },
+    {
+      "id": "BEFORE_DATE",
+      "phrase": "before {date}",
+      "mapsTo": "constraint due_before",
+      "notes": ""
+    },
+    {
+      "id": "FREE_HOUR",
+      "phrase": "whenever I have an hour free",
+      "mapsTo": "constraint duration+anytime",
+      "notes": ""
+    },
+    {
+      "id": "MORNING",
+      "phrase": "tomorrow morning",
+      "mapsTo": "preferred_window=MORNING",
+      "notes": ""
+    },
+    {
+      "id": "NIGHT",
+      "phrase": "sometime at night",
+      "mapsTo": "preferred_window=EVENING or NIGHT",
+      "notes": ""
+    },
+    {
+      "id": "THIS_WEEK_HOURS",
+      "phrase": "this week about N hours",
+      "mapsTo": "split into blocks; due end of week",
+      "notes": ""
+    }
+  ],
+  "constraints": [
+    {
+      "id": "DUE_AT",
+      "name": "Due at",
+      "notes": "Hard deadline"
+    },
+    {
+      "id": "START_AFTER",
+      "name": "Start after",
+      "notes": "Work window opens"
+    },
+    {
+      "id": "START_BEFORE",
+      "name": "Start before",
+      "notes": "Must begin before a clock or event"
+    },
+    {
+      "id": "FINISH_BEFORE",
+      "name": "Finish before",
+      "notes": "Must end before a clock or event"
+    },
+    {
+      "id": "AFTER_TASK",
+      "name": "After task",
+      "notes": "Dependency"
+    },
+    {
+      "id": "BEFORE_EVENT",
+      "name": "Before event",
+      "notes": "Relative to a calendar event"
+    },
+    {
+      "id": "AFTER_EVENT",
+      "name": "After event",
+      "notes": "Relative to a calendar event"
+    },
+    {
+      "id": "PREFERRED_WINDOW",
+      "name": "Preferred window",
+      "notes": "Morning afternoon evening night"
+    },
+    {
+      "id": "EARLIEST",
+      "name": "Earliest start",
+      "notes": "Flexible window"
+    },
+    {
+      "id": "LATEST_FINISH",
+      "name": "Latest finish",
+      "notes": "Flexible window"
+    },
+    {
+      "id": "LOCATION",
+      "name": "Location",
+      "notes": "Home school work gym mall anywhere online"
+    },
+    {
+      "id": "WEATHER",
+      "name": "Weather",
+      "notes": "Avoid rain / outdoor only"
+    },
+    {
+      "id": "ENERGY",
+      "name": "Energy",
+      "notes": "Low medium high"
+    },
+    {
+      "id": "FOCUS",
+      "name": "Focus kind",
+      "notes": "Deep vs admin vs physical"
+    },
+    {
+      "id": "TRAVEL",
+      "name": "Requires travel",
+      "notes": ""
+    },
+    {
+      "id": "PROTECTED_AVOID",
+      "name": "Do not schedule in protected time",
+      "notes": ""
+    }
+  ]
+}

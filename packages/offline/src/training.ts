@@ -129,6 +129,21 @@ export async function completeLocalWorkoutSet(input: {
   return row;
 }
 
+export async function tombstoneLocalWorkoutSet(params: {
+  id: string;
+  userId: string;
+}): Promise<LocalWorkoutSet | null> {
+  const db = getOfflineDb();
+  const existing = await db.workout_sets.get(params.id);
+  if (!existing || existing.user_id !== params.userId || existing.deleted_at) return null;
+  const at = nowIso();
+  const row: LocalWorkoutSet = { ...existing, deleted_at: at, updated_at: at };
+  await db.workout_sets.put(row);
+  await enqueueUpsert('workout_sets', row.id, setPayload(row));
+  void drainQueue();
+  return row;
+}
+
 export async function finishLocalWorkout(params: {
   id: string;
   userId: string;
@@ -208,6 +223,7 @@ export async function startLocalRestTimer(params: {
   userId: string;
   seconds: number;
   startedAt?: string;
+  performedSetId?: string | null;
 }): Promise<LocalRestTimer> {
   const workout = await getOfflineDb().workouts.get(params.workoutId);
   if (!workout || workout.user_id !== params.userId || workout.status !== 'active') {
@@ -219,6 +235,9 @@ export async function startLocalRestTimer(params: {
     user_id: params.userId,
     started_at: startedAt,
     ends_at: restTimerDeadline(startedAt, params.seconds),
+    performed_set_id: params.performedSetId ?? null,
+    duration_seconds: params.seconds,
+    status: 'running',
   };
   await getOfflineDb().rest_timers.put(row);
   return row;
@@ -247,6 +266,7 @@ export async function extendLocalRestTimer(
   const row: LocalRestTimer = {
     ...existing,
     ends_at: new Date(base + extraSeconds * 1_000).toISOString(),
+    status: 'running',
   };
   await getOfflineDb().rest_timers.put(row);
   return row;

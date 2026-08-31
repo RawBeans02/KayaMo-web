@@ -1,0 +1,20 @@
+﻿split_id,name,days_per_cycle,sequence,ai_selectable,source_ids
+FULL_BODY_2,Full Body 2-Day,2,Full Body;Full Body,1,SRC_CURATED_V1
+FULL_BODY_3,Full Body 3-Day,3,Full Body;Full Body;Full Body,1,SRC_CURATED_V1
+UPPER_LOWER_4,Upper / Lower 4-Day,4,Upper Body;Lower Body;Upper Body;Lower Body,1,SRC_CURATED_V1
+UPPER_LOWER_3,Upper / Lower 3-Day Rotating,3,Upper Body;Lower Body;Full Body,1,SRC_CURATED_V1
+PPL_3,Push / Pull / Legs 3-Day,3,Push;Pull;Legs,1,SRC_CURATED_V1
+PPL_6,Push / Pull / Legs 6-Day,6,Push;Pull;Legs;Push;Pull;Legs,1,SRC_CURATED_V1
+PUSH_PULL_4,Push / Pull 4-Day,4,Push;Pull;Push;Pull,1,SRC_CURATED_V1
+BODY_PART_5,Classic Body-Part 5-Day,5,Chest;Back;Shoulders;Legs;Arms,1,SRC_CURATED_V1
+BODY_PART_6,Body-Part 6-Day,6,Chest;Back;Shoulders;Quadriceps;Hamstrings + Glutes;Arms,1,SRC_CURATED_V1
+CHEST_TRI_BACK_BI_LEGS_SHOULDERS,Chest+Triceps / Back+Biceps / Legs / Shoulders,4,Chest + Triceps;Back + Biceps;Legs;Shoulders,1,SRC_CURATED_V1
+TORSO_LIMBS_4,Torso / Limbs 4-Day,4,Torso;Limbs;Torso;Limbs,1,SRC_CURATED_V1
+ANTERIOR_POSTERIOR_4,Anterior / Posterior 4-Day,4,Anterior Chain;Posterior Chain;Anterior Chain;Posterior Chain,1,SRC_CURATED_V1
+STRENGTH_CONDITIONING_4,Strength / Conditioning 4-Day,4,Strength;Conditioning;Strength;Conditioning,1,SRC_CURATED_V1
+POWER_HYPERTROPHY_4,Power / Hypertrophy 4-Day,4,Power Upper;Power Lower;Hypertrophy Upper;Hypertrophy Lower,1,SRC_CURATED_V1
+UPPER_LOWER_FULL_3,Upper / Lower / Full 3-Day,3,Upper Body;Lower Body;Full Body,1,SRC_CURATED_V1
+PPL_UL_5,Push / Pull / Legs / Upper / Lower,5,Push;Pull;Legs;Upper Body;Lower Body,1,SRC_CURATED_V1
+FULL_UPPER_LOWER_4,Full / Upper / Lower / Full,4,Full Body;Upper Body;Lower Body;Full Body,1,SRC_CURATED_V1
+ATHLETE_4,Strength / Power / Speed / Conditioning,4,Strength;Power;Speed;Conditioning,1,SRC_CURATED_V1
+CUSTOM,Custom Split,1-7,User-defined,1,SRC_CURATED_V1

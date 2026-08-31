@@ -37,6 +37,19 @@ export type CocoCitation = z.infer<typeof cocoCitationSchema>;
 export const cocoActionNameSchema = z.enum([
   'create_task',
   'complete_task',
+  'edit_task',
+  'delete_task',
+  'schedule_task',
+  'create_time_block',
+  'move_time_block',
+  'start_workout',
+  'bulk_edit_tasks',
+  'set_recurrence',
+  'add_session_exercise',
+  'replace_session_exercise',
+  'skip_session_exercise',
+  'edit_planned_set',
+  'schedule_workout',
   'create_routine',
   'create_goal',
   'start_focus',
@@ -202,9 +215,221 @@ const memoryProposalSchema = z
   })
   .strict();
 
+const hhmmArg = z
+  .string()
+  .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+  .nullable();
+
+const editTaskProposalSchema = z
+  .object({
+    proposalId: z.string().min(1).max(100),
+    action: z.literal('edit_task'),
+    summary: z.string().trim().min(1).max(180),
+    requiresConfirmation: z.literal(true),
+    arguments: z
+      .object({
+        taskId: z.string().min(1).max(200),
+        title: z.string().trim().min(1).max(160).nullable(),
+        notes: z.string().trim().max(1000).nullable(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const deleteTaskProposalSchema = z
+  .object({
+    proposalId: z.string().min(1).max(100),
+    action: z.literal('delete_task'),
+    summary: z.string().trim().min(1).max(180),
+    requiresConfirmation: z.literal(true),
+    arguments: z.object({ taskId: z.string().min(1).max(200) }).strict(),
+  })
+  .strict();
+
+const scheduleTaskProposalSchema = z
+  .object({
+    proposalId: z.string().min(1).max(100),
+    action: z.literal('schedule_task'),
+    summary: z.string().trim().min(1).max(180),
+    requiresConfirmation: z.literal(true),
+    arguments: z
+      .object({
+        taskId: z.string().min(1).max(200),
+        scheduledFor: calendarDateFromModel.nullable(),
+        start: hhmmArg,
+        durationMin: z.number().int().min(5).max(8 * 60).nullable(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const createTimeBlockProposalSchema = z
+  .object({
+    proposalId: z.string().min(1).max(100),
+    action: z.literal('create_time_block'),
+    summary: z.string().trim().min(1).max(180),
+    requiresConfirmation: z.literal(true),
+    arguments: z
+      .object({
+        title: z.string().trim().min(1).max(160),
+        logicalDate: calendarDateFromModel,
+        start: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+        end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+        flexibility: z.enum(['FIXED', 'FLEXIBLE', 'AUTO', 'ANYTIME', 'PROTECTED']),
+      })
+      .strict(),
+  })
+  .strict();
+
+const moveTimeBlockProposalSchema = z
+  .object({
+    proposalId: z.string().min(1).max(100),
+    action: z.literal('move_time_block'),
+    summary: z.string().trim().min(1).max(180),
+    requiresConfirmation: z.literal(true),
+    arguments: z
+      .object({
+        blockId: z.string().min(1).max(200),
+        start: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+        end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+      })
+      .strict(),
+  })
+  .strict();
+
+const startWorkoutProposalSchema = z
+  .object({
+    proposalId: z.string().min(1).max(100),
+    action: z.literal('start_workout'),
+    summary: z.string().trim().min(1).max(180),
+    requiresConfirmation: z.literal(true),
+    arguments: z.object({ notes: z.string().trim().max(300).nullable() }).strict(),
+  })
+  .strict();
+
+const bulkEditTasksProposalSchema = z
+  .object({
+    proposalId: z.string().min(1).max(100),
+    action: z.literal('bulk_edit_tasks'),
+    summary: z.string().trim().min(1).max(180),
+    requiresConfirmation: z.literal(true),
+    arguments: z
+      .object({
+        taskIds: z.array(z.string().min(1).max(200)).min(1).max(20),
+        scheduledFor: calendarDateFromModel.nullable(),
+        complete: z.boolean().nullable(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const setRecurrenceProposalSchema = z
+  .object({
+    proposalId: z.string().min(1).max(100),
+    action: z.literal('set_recurrence'),
+    summary: z.string().trim().min(1).max(180),
+    requiresConfirmation: z.literal(true),
+    arguments: z
+      .object({
+        taskId: z.string().min(1).max(200),
+        recurrence: z.enum(['none', 'daily', 'weekdays', 'weekly', 'monthly', 'after_completion']),
+        intervalDays: z.number().int().min(1).max(30).nullable(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const addSessionExerciseProposalSchema = z
+  .object({
+    proposalId: z.string().min(1).max(100),
+    action: z.literal('add_session_exercise'),
+    summary: z.string().trim().min(1).max(180),
+    requiresConfirmation: z.literal(true),
+    arguments: z
+      .object({
+        slug: z.string().trim().min(1).max(80),
+        targetSets: z.number().int().min(1).max(8).nullable(),
+        targetReps: z.number().int().min(1).max(30).nullable(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const replaceSessionExerciseProposalSchema = z
+  .object({
+    proposalId: z.string().min(1).max(100),
+    action: z.literal('replace_session_exercise'),
+    summary: z.string().trim().min(1).max(180),
+    requiresConfirmation: z.literal(true),
+    arguments: z
+      .object({
+        itemId: z.string().min(1).max(200),
+        slug: z.string().trim().min(1).max(80),
+      })
+      .strict(),
+  })
+  .strict();
+
+const skipSessionExerciseProposalSchema = z
+  .object({
+    proposalId: z.string().min(1).max(100),
+    action: z.literal('skip_session_exercise'),
+    summary: z.string().trim().min(1).max(180),
+    requiresConfirmation: z.literal(true),
+    arguments: z.object({ itemId: z.string().min(1).max(200) }).strict(),
+  })
+  .strict();
+
+const editPlannedSetProposalSchema = z
+  .object({
+    proposalId: z.string().min(1).max(100),
+    action: z.literal('edit_planned_set'),
+    summary: z.string().trim().min(1).max(180),
+    requiresConfirmation: z.literal(true),
+    arguments: z
+      .object({
+        plannedSetId: z.string().min(1).max(200),
+        targetReps: z.number().int().min(1).max(30).nullable(),
+        targetWeightKg: z.number().min(0).max(500).nullable(),
+        restSeconds: z.number().int().min(0).max(600).nullable(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const scheduleWorkoutProposalSchema = z
+  .object({
+    proposalId: z.string().min(1).max(100),
+    action: z.literal('schedule_workout'),
+    summary: z.string().trim().min(1).max(180),
+    requiresConfirmation: z.literal(true),
+    arguments: z
+      .object({
+        logicalDate: calendarDateFromModel,
+        start: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+        durationMin: z.number().int().min(15).max(240),
+        title: z.string().trim().min(1).max(160).nullable(),
+      })
+      .strict(),
+  })
+  .strict();
+
 export const cocoActionProposalSchema = z.discriminatedUnion('action', [
   taskProposalSchema,
   completeTaskProposalSchema,
+  editTaskProposalSchema,
+  deleteTaskProposalSchema,
+  scheduleTaskProposalSchema,
+  createTimeBlockProposalSchema,
+  moveTimeBlockProposalSchema,
+  startWorkoutProposalSchema,
+  bulkEditTasksProposalSchema,
+  setRecurrenceProposalSchema,
+  addSessionExerciseProposalSchema,
+  replaceSessionExerciseProposalSchema,
+  skipSessionExerciseProposalSchema,
+  editPlannedSetProposalSchema,
+  scheduleWorkoutProposalSchema,
   routineProposalSchema,
   goalProposalSchema,
   focusProposalSchema,
@@ -231,11 +456,32 @@ export const cocoSafetyResultSchema = z
   .strict();
 export type CocoSafetyResult = z.infer<typeof cocoSafetyResultSchema>;
 
+export const musEntryModuleSchema = z.enum([
+  'mus',
+  'todos',
+  'gym',
+  'calories',
+  'foods',
+  'dashboard',
+  'verify',
+]);
+export type MusEntryModule = z.infer<typeof musEntryModuleSchema>;
+
+export const musEntrySchema = z
+  .object({
+    module: musEntryModuleSchema,
+    view: z.string().trim().max(80).nullable(),
+    selectedIds: z.array(z.string().min(1).max(200)).max(20),
+  })
+  .strict();
+export type MusEntry = z.infer<typeof musEntrySchema>;
+
 export const cocoContextSnapshotSchema = z
   .object({
     version: z.literal(1),
     logicalDate: z.string().date(),
     timezone: z.string().min(1).max(100),
+    entry: musEntrySchema.optional(),
     recommendedAction: z
       .object({
         kind: z.enum(['task', 'routine', 'food', 'check_in']),

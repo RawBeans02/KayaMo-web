@@ -1,0 +1,42 @@
+a11_id,name,status,notes
+A11_01,Plan My Day,SHIPPED,Signature command; Home not a sixth tab
+A11_02,Plan Tomorrow,PLANNED,
+A11_03,Restructure My Day,SHIPPED,Replan remaining from now
+A11_04,Rescue My Day,PLANNED,
+A11_05,Morning Check-in,SHIPPED,daily_plans.morning_completed_at; copy not planner yet
+A11_06,Evening Check-in,SHIPPED,daily_plans.evening_completed_at
+A11_07,Daily capacity selection,SHIPPED,daily_plans.capacity
+A11_08,Automatic capacity estimation,PLANNED,
+A11_09,Fixed Flexible Floating Routine Protected,SHIPPED,Inspector + timetable flexibility
+A11_10,Activity clumping,PLANNED,
+A11_11,Travel-time inclusion,PLANNED,
+A11_12,Preparation-time inclusion,PLANNED,
+A11_13,Meal/cooking-time inclusion,PLANNED,Food-aware opt-in
+A11_14,Buffer/transition time,PLANNED,
+A11_15,Intentional free time,PLANNED,LEAVE_WHITESPACE hard rule
+A11_16,Top 3 priorities,PLANNED,
+A11_17,Non-negotiables,PLANNED,
+A11_18,Bonus tasks,PLANNED,
+A11_19,Minimum Viable Day,PLANNED,plan_mode=minimum already in schema
+A11_20,Focus blocks,SHIPPED,focus_sessions
+A11_21,Break planning,PLANNED,
+A11_22,Distraction tracking,DEFERRED_v1,
+A11_23,Schedule conflict detection,SHIPPED,conflictIds on the timetable
+A11_24,Automatic low-priority task movement,PLANNED,Never silent; approval required
+A11_25,Overload detection,PLANNED,
+A11_26,Late-start adaptation,PLANNED,
+A11_27,Unexpected-event adaptation,PLANNED,
+A11_28,Task duration learning,PLANNED,
+A11_29,Personal productivity-hour learning,PLANNED,
+A11_30,Energy-aware scheduling,PLANNED,
+A11_31,Mood-aware scheduling,DEFERRED_SAFETY_REVIEW,No diagnosis
+A11_32,Workout/recovery-aware scheduling,SHIPPED,Read gym duration; do not auto-write workouts
+A11_33,Location-aware scheduling,SHIPPED,Manual location first; geofence later
+A11_34,Weather-aware scheduling,DEFERRED_v1,User-stated weatherNote only; no weather fetch
+A11_35,Deadline-risk awareness,PLANNED,
+A11_36,Dependencies/blockers awareness,PLANNED,
+A11_37,Personal rules enforcement,PLANNED,
+A11_38,Accountability contracts,DEFERRED_v1,
+A11_39,Conscious override for blocked distractions,DEFERRED_v1,
+A11_40,End-of-day unfinished-task handling,PLANNED,Do not dump overdue onto Today
+A11_41,Day Intent,SHIPPED,daily_plans.day_intent

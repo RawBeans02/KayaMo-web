@@ -18,6 +18,8 @@ pnpm db:migrate
 npx supabase start    # local Postgres + Auth (Docker)
 npx supabase status   # URL, anon key, service role
 pnpm ph-core:build    # validate + upsert data/ph-core/foods.yaml
+pnpm gym:kb:build     # compile data/gym CSV → packages/features gym KB
+pnpm todo:kb:build    # compile data/todo CSV → packages/features todo KB
 pnpm mobile:sync      # copy PWA build into the Capacitor shell
 ```
 

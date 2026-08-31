@@ -1,0 +1,6 @@
+flexibility_id,name,ai_may_suggest_move,ai_may_auto_move,notes
+FIXED,Fixed,0,0,Exact time; user must approve any move
+FLEXIBLE,Flexible today,1,0,Should happen today; Mus suggests a slot
+AUTO,Auto within window,1,1,May move inside earliest/latest after the user accepted a plan
+ANYTIME,Anytime,0,0,No clock; do not force onto the timeline
+PROTECTED,Protected,0,0,Never auto-fill

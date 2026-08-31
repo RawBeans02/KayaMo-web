@@ -1,0 +1,34 @@
+field_id,required_in_ui,status,notes
+title,1,SHIPPED,
+description,0,PLANNED,Longer than notes
+status,0,PLANNED,open in_progress completed skipped released
+created_at,0,SHIPPED,
+due_at,0,SHIPPED,Deadline; not the same as start
+scheduled_for,0,SHIPPED,Logical date pin; not a clock
+start_after,0,PLANNED,Work window
+estimated_duration_min,0,PLANNED,
+actual_duration_min,0,PLANNED,From focus sessions / complete
+priority,0,PLANNED,User low medium high still allowed
+urgency,0,PLANNED,
+importance,0,PLANNED,
+energy_required,0,PLANNED,
+focus_required,0,PLANNED,
+location_id,0,PLANNED,
+category_id,0,PLANNED,
+project_id,0,PLANNED,
+tags,0,PLANNED,
+recurrence,0,PLANNED,Routines table covers some of this
+dependencies,0,PLANNED,
+preferred_time,0,PLANNED,
+preferred_day,0,PLANNED,
+weather_dependency,0,PLANNED,
+requires_travel,0,PLANNED,
+people,0,DEFERRED_v1,
+attachments,0,DEFERRED_v1,
+notes,0,SHIPPED,
+source,0,SHIPPED,origin user|coco_confirmed
+ai_created,0,PLANNED,
+ai_confidence,0,PLANNED,
+locked,0,PLANNED,FIXED flexibility
+completed_at,0,SHIPPED,
+flexibility,0,PLANNED,

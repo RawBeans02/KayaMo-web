@@ -1,0 +1,8 @@
+﻿state,meaning,allowed_next
+DRAFT,Workout is being built and freely edited.,READY;ACTIVE;ABANDONED
+READY,Workout has passed basic validation and is ready to start.,DRAFT;ACTIVE;ABANDONED
+ACTIVE,Live workout session is in progress.,RESTING;PAUSED;COMPLETED;ABANDONED
+RESTING,At least one active rest timer is running after a completed set.,ACTIVE;PAUSED;COMPLETED;ABANDONED
+PAUSED,Session is paused without being finished.,ACTIVE;COMPLETED;ABANDONED
+COMPLETED,Session was intentionally finished and saved.,
+ABANDONED,Session was exited without normal completion; data can still be retained.,

@@ -1,0 +1,7 @@
+link_id,from_module,to_module,read,write,example
+GYM_DURATION,gym,todo,1,0,Reserve historical session length plus travel
+GYM_SLOT,todo,gym,1,0,Ask if a 90m lower-body fits between meeting and dinner
+MEAL_WINDOW,nutrition,todo,1,0,Restaurant lunch may suggest a simpler breakfast
+PREWORKOUT_SNACK,todo,nutrition,1,0,Long gap before gym; optional snack block
+WEATHER_OUTDOOR,weather,todo,1,0,Move outdoor errand before rain
+NO_CALORIE_GOAL,todo,nutrition,0,0,Planner never writes calorie targets

@@ -1,0 +1,5 @@
+env_id,maps_to,example_alias,notes
+MUS_ORCHESTRATOR_MODEL,MODEL_SMALL,gpt-5.6-luna,Optional; existing MODEL_SMALL still works
+MUS_VISION_MODEL,MODEL_VISION,gpt-5.4-mini,Do not use orchestrator to detect attachments
+MUS_FAST_MODEL,MODEL_NANO,gpt-5.4-mini,Classification
+MODEL_COACH,MODEL_COACH,gpt-5.6-terra,Unchanged weekly narrative tier

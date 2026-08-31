@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "csv_count": 28,
+  "item_kind_count": 11,
+  "planner_action_count": 12,
+  "planner_rule_count": 18,
+  "dashboard_module_count": 10,
+  "permission_row_count": 8,
+  "data_model_row_count": 22,
+  "a11_count": 41
+}

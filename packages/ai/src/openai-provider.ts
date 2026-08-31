@@ -25,9 +25,9 @@ export function createOpenAICocoProvider(
   const apiKey = options.apiKey ?? process.env.OPENAI_API_KEY?.trim();
   const model =
     options.model ??
-    process.env.MODEL_COACH?.trim() ??
+    process.env.MUS_ORCHESTRATOR_MODEL?.trim() ??
     process.env.MODEL_SMALL?.trim() ??
-    'gpt-5.4-mini';
+    'gpt-5.6-luna';
   const inputUsdPerMillion =
     options.inputUsdPerMillion ?? envNumber('MODEL_INPUT_USD_PER_MILLION');
   const outputUsdPerMillion =

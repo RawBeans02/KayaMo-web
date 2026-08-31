@@ -1,0 +1,5 @@
+batch_id,signal,example
+ERRAND_TRIP,same location or requires_travel,Printer ink + groceries + pickup
+ADMIN_BLOCK,focus=ADMINISTRATIVE or COMMUNICATION,Email professor + registrar + send document
+DEEP_WORK,focus=DEEP_FOCUS and same project,Paper outline + figures
+GYM_PLUS_TRAVEL,FITNESS + travel_blocks,Session plus commute each way

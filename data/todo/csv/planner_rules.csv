@@ -1,0 +1,19 @@
+rule_id,severity,applies_to,statement
+NO_SILENT_WRITE,HARD,all,Mus never writes tasks events or plans without user confirmation
+NO_MOVE_FIXED,HARD,schedule,FIXED and PROTECTED blocks are not auto-moved
+LEAVE_WHITESPACE,HARD,plan,Do not fill every free minute; respect daily_plans capacity
+TASK_NOT_EVENT,HARD,model,A task without start/end is not an event; do not invent a clock time
+ANYTIME_OFF_CLOCK,HARD,schedule,ANYTIME items stay off the timeline unless the user asks
+EVENTS_FIRST,HARD,plan,Place FIXED events before fitting FLEXIBLE tasks
+DEPENDENCIES,HARD,plan,Do not schedule a task before its unfinished prerequisites
+OVERLOAD_NEGOTIATE,HARD,plan,If work exceeds usable open time say so and propose deferrals
+PLAN_FROM_NOW,HARD,replan,Replan remaining day never rewrites completed history
+NO_CALORIE_WRITE,HARD,nutrition,Planner must not change calorie floors or logged food numbers
+NO_DIAGNOSIS,HARD,copy,Energy and mood flags are not medical diagnoses
+NO_SHAME,HARD,copy,No cheat guilty earned or failed language; use Released for goals set down
+USER_OVERRIDE,HARD,all,User edits always win over a proposal
+ZOD_OUTPUT,HARD,ai,Every planner LLM call uses a Zod schema
+GYM_DURATION_HISTORY,SOFT,gym,Prefer historical session length over the user's optimistic estimate
+WEATHER_OUTDOOR,SOFT,weather,Rain may suggest moving outdoor items; user chooses
+TRAVEL_BLOCKS,SOFT,travel,Do not abut distant locations without a travel block
+FOOD_OPT_IN,SOFT,nutrition,Meal-aware suggestions only if food planning is enabled

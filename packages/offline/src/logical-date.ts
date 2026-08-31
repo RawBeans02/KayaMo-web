@@ -27,6 +27,13 @@ export function localHourFromInstant(instantIso: string, timeZone = 'Asia/Manila
   return localParts(new Date(instantIso), timeZone).hour;
 }
 
+export function addLogicalCalendarDays(logicalDate: string, days: number): string {
+  const [year, month, day] = logicalDate.split('-').map(Number);
+  if (!year || !month || !day) throw new Error(`Invalid logical date: ${logicalDate}`);
+  const next = new Date(Date.UTC(year, month - 1, day + days));
+  return `${next.getUTCFullYear()}-${pad(next.getUTCMonth() + 1)}-${pad(next.getUTCDate())}`;
+}
+
 /**
  * An instant that still maps to `logicalDate` after the day-boundary rule.
  * Used when the user is writing onto a selected day that is not "now".

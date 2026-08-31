@@ -1,0 +1,17 @@
+constraint_id,name,notes
+DUE_AT,Due at,Hard deadline
+START_AFTER,Start after,Work window opens
+START_BEFORE,Start before,Must begin before a clock or event
+FINISH_BEFORE,Finish before,Must end before a clock or event
+AFTER_TASK,After task,Dependency
+BEFORE_EVENT,Before event,Relative to a calendar event
+AFTER_EVENT,After event,Relative to a calendar event
+PREFERRED_WINDOW,Preferred window,Morning afternoon evening night
+EARLIEST,Earliest start,Flexible window
+LATEST_FINISH,Latest finish,Flexible window
+LOCATION,Location,Home school work gym mall anywhere online
+WEATHER,Weather,Avoid rain / outdoor only
+ENERGY,Energy,Low medium high
+FOCUS,Focus kind,Deep vs admin vs physical
+TRAVEL,Requires travel,
+PROTECTED_AVOID,Do not schedule in protected time,

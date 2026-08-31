@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   const code = url.searchParams.get('code');
   const tokenHash = url.searchParams.get('token_hash');
   const otpType = url.searchParams.get('type');
-  const next = authCallbackNextPath(url.searchParams.get('next'), '/app/food');
+  const next = authCallbackNextPath(url.searchParams.get('next'), '/today');
   const destination = new URL(next, url.origin);
 
   const cookieStore = await cookies();

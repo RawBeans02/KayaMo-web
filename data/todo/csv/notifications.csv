@@ -1,0 +1,6 @@
+notification_id,when_to_fire,copy_pattern
+LEAVE_SOON,before a travel+event block,You planned to leave for {title} in {minutes} min.
+WEATHER_OVERLAP,outdoor item overlaps rain window,{title} overlaps expected rain. Leave earlier or move?
+NEXT_BLOCK,before next deep-work or meeting,Next: {title} in {minutes} min.
+FOCUS_END,focus session near target,Focus block for {title} is near the planned duration.
+NEVER_GENERIC_DUE,n/a,Do not send a bare Task due ping when a richer cue exists.

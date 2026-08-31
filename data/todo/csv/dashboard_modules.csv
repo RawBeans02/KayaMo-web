@@ -1,0 +1,11 @@
+module_id,name,surface,v1
+NOW,Now / next,home+web,1
+WEATHER,Weather,home+web,0
+TODAY,Today counts,home+web,1
+COMING_UP,Coming up,home+web,1
+OVERDUE,Overdue,home+web,1
+AI_INSIGHT,Day insights,home+web,1
+TIMELINE,Day timeline,home+web,0
+NUTRITION,Nutrition summary,home+web,1
+FITNESS,Fitness block,home+web,1
+HABITS,Habits,home+web,1

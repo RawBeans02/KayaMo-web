@@ -1,12 +1,19 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Barlow_Condensed, IBM_Plex_Mono, Source_Sans_3 } from 'next/font/google';
+import { Barlow_Condensed, IBM_Plex_Mono, Source_Sans_3, Source_Serif_4 } from 'next/font/google';
 import './globals.css';
 
 const sourceSans = Source_Sans_3({
   subsets: ['latin'],
   weight: ['400', '600'],
   variable: '--font-source-sans',
+  display: 'swap',
+});
+
+const sourceSerif = Source_Serif_4({
+  subsets: ['latin'],
+  weight: ['600'],
+  variable: '--font-source-serif',
   display: 'swap',
 });
 
@@ -26,14 +33,14 @@ const plex = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: 'KayaMo',
-  description: 'Desktop review — food history and confirmed records.',
+  description: 'Desktop KayaMo — log food from the keyboard, verify PH core.',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${sourceSans.variable} ${barlow.variable} ${plex.variable} h-full`}
+      className={`${sourceSans.variable} ${sourceSerif.variable} ${barlow.variable} ${plex.variable} h-full`}
     >
       <body className="min-h-full bg-bg font-body text-text antialiased">{children}</body>
     </html>
