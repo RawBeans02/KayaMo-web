@@ -1,0 +1,13 @@
+# Generated — never commit. This is what made the folder look ~1.6GB.
+.next/
+out/
+node_modules/
+.turbo/
+*.tsbuildinfo
+*.log
+.DS_Store
+
+# Secrets — keep local overrides off git
+.env
+.env.local
+.env.*.local
