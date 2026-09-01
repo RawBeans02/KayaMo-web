@@ -92,6 +92,10 @@ test.describe('verify desk', () => {
     await page.locator('[data-verify-cell]').first().click();
     await expect(page.locator('[data-verify-row]').first()).toHaveAttribute('data-active', 'true');
 
+    await page.getByLabel('Jump to a dish by name or alias').fill('Sinigang');
+    await expect(page.locator('[data-verify-row][data-active="true"] strong')).toContainText(/Sinigang/i);
+    await page.locator('[data-verify-cell]').first().click();
+
     await page.getByRole('button', { name: 'Mark verified' }).click();
     await expect(page.getByRole('status')).toContainText('Verified');
     await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();

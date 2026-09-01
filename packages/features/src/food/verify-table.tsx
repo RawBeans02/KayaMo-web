@@ -5,17 +5,19 @@ import { createBrowserSupabase, listServingsByFoodIds, listVisibleFoods } from '
 import { logCountsFromHistory, type SearchHistoryEntry } from '@kayamo/food/search-ui';
 import {
   cacheFoodWithServings,
-  getOfflineScope,
   listCachedFoodsWithServings,
   recoverClosedOfflineDb,
   useLiveFoodHistory,
 } from '@kayamo/offline';
 import { ProposalCard, Toast } from '@kayamo/ui';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { macrosOffByMoreThanFivePercent } from './atwater-check';
 import { DeskMusPane } from '../desk/desk-mus';
 import { useDeskClock } from '../desk/use-desk-clock';
+import { indexMatchingQuery } from './foods-model';
+import { migrateVerifyOverlay } from './verify-rpc';
 import { readVerifyOverlay, replaceVerifyOverlay, upsertVerifyOverlay } from './verify-overlay';
+import { waitForUserDb } from './wait-user-db';
 import {
   applyOverlayToFood,
   atwaterFromDraft,
@@ -35,19 +37,6 @@ import { moveVerifyIndex, sortVerifyRows } from './verify-rows';
 import styles from './desk.module.css';
 
 const UNDO_MS = 8000;
-
-async function waitForUserDb(userId: string, isCancelled: () => boolean): Promise<boolean> {
-  const deadline = Date.now() + 15_000;
-  while (Date.now() < deadline && !isCancelled()) {
-    try {
-      if (getOfflineScope().userId === userId) return true;
-    } catch {
-      /* Dexie has not opened the account database yet. */
-    }
-    await new Promise((resolve) => window.setTimeout(resolve, 50));
-  }
-  return false;
-}
 
 function toHistory(entry: {
   food_id: string | null;
@@ -93,6 +82,8 @@ export function VerifyTable({ userId }: { userId: string }) {
     null,
   );
   const [batchOpen, setBatchOpen] = useState(false);
+  const [jumpQuery, setJumpQuery] = useState('');
+  const jumpRef = useRef<HTMLInputElement>(null);
   const historyRows = useLiveFoodHistory(userId);
 
   const applyRows = useCallback((rows: Food[], nextOverlay: Record<string, VerifyOverlayEntry>) => {
@@ -105,9 +96,26 @@ export function VerifyTable({ userId }: { userId: string }) {
     const isCancelled = () => cancelled;
     void (async () => {
       const stored = readVerifyOverlay();
+      let overlayForPaint = stored;
       if (!cancelled) setOverlay(stored);
       await waitForUserDb(userId, isCancelled);
       if (cancelled) return;
+
+      try {
+        const migrated = await migrateVerifyOverlay(
+          {
+            rpc: async (fn, args) => {
+              const { error } = await client.rpc(fn as never, args as never);
+              return { error };
+            },
+          },
+          stored,
+        );
+        overlayForPaint = migrated.overlay;
+        if (!cancelled) setOverlay(overlayForPaint);
+      } catch {
+        /* RPC is a database-lane concern; keep the local overlay. */
+      }
 
       let cachedCount = 0;
       try {
@@ -119,7 +127,7 @@ export function VerifyTable({ userId }: { userId: string }) {
           setServings(new Map(cached.map((row) => [row.food.id, row.servings])));
           applyRows(
             cached.map((row) => row.food),
-            stored,
+            overlayForPaint,
           );
         }
       } catch {
@@ -137,11 +145,11 @@ export function VerifyTable({ userId }: { userId: string }) {
           rows.map((row) => row.id),
         );
         for (const food of rows) {
-          await cacheFoodWithServings(applyOverlayToFood(food, stored[food.id]), byId.get(food.id) ?? []);
+          await cacheFoodWithServings(applyOverlayToFood(food, overlayForPaint[food.id]), byId.get(food.id) ?? []);
         }
         if (cancelled) return;
         setServings(byId);
-        applyRows(rows, stored);
+        applyRows(rows, overlayForPaint);
         setError(null);
       } catch {
         if (!cancelled && cachedCount === 0) setError('Could not load PH core foods.');
@@ -316,6 +324,12 @@ export function VerifyTable({ userId }: { userId: string }) {
         jumpUnverified(-1);
         return;
       }
+      if (event.key === '/') {
+        event.preventDefault();
+        jumpRef.current?.focus();
+        jumpRef.current?.select();
+        return;
+      }
       if (event.key === 'Enter' || event.key === 'v') {
         event.preventDefault();
         void verifyActive();
@@ -335,6 +349,7 @@ export function VerifyTable({ userId }: { userId: string }) {
     { key: 'Enter', label: 'verify' },
     { key: '⌘S', label: 'save' },
     { key: '] / [', label: 'next unverified' },
+    { key: '/', label: 'jump' },
   ];
 
   return (
@@ -353,6 +368,23 @@ export function VerifyTable({ userId }: { userId: string }) {
               <span>{item.label}</span>
             </span>
           ))}
+          <label className={styles.verifyJump}>
+            <span className={styles.statLabel}>Jump</span>
+            <input
+              ref={jumpRef}
+              type="search"
+              value={jumpQuery}
+              placeholder="kanin, adobo…"
+              aria-label="Jump to a dish by name or alias"
+              data-verify-jump=""
+              onChange={(event) => {
+                const next = event.currentTarget.value;
+                setJumpQuery(next);
+                const index = indexMatchingQuery(rows, next);
+                if (index >= 0) setActive(index);
+              }}
+            />
+          </label>
         </div>
       </header>
 
@@ -402,6 +434,7 @@ export function VerifyTable({ userId }: { userId: string }) {
                 data-verify-cell=""
                 data-kind={kind}
                 aria-label={`${food.name}${food.verified_by_user ? ', verified' : ''}`}
+                title={food.name}
                 aria-current={index === active ? 'true' : undefined}
                 onClick={() => setActive(index)}
               />
@@ -555,9 +588,9 @@ export function VerifyTable({ userId }: { userId: string }) {
                   Skip for later
                 </button>
                 <p className={styles.verifyFoot}>
-                  Verifying raises confidence to 1.00 and swaps the estimate mark for a verified mark
-                  everywhere this dish appears on this machine. Canonical PH core still needs a catalog
-                  grant to land in the shared table.
+                  Verifying raises confidence to 1.00 on this browser and this machine&apos;s Dexie
+                  cache. It is not written to the server — another device, a cleared cache, or Android
+                  still sees the catalog estimate until verify_ph_core_food exists.
                 </p>
               </div>
             </>

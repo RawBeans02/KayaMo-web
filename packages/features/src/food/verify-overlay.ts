@@ -1,3 +1,14 @@
+/**
+ * Machine-local PH-core verify overlay.
+ *
+ * Authenticated clients cannot UPDATE `foods` where `source != 'user'`.
+ * Until `verify_ph_core_food` exists as SECURITY DEFINER, a verify on this
+ * screen is Dexie + localStorage on this browser only. Clearing site data
+ * drops it. Another device, including Android, never sees it.
+ *
+ * When the RPC lands, `migrateVerifyOverlay` pushes verified rows once and
+ * drops them from this key so the sitting is not done twice.
+ */
 const STORAGE_KEY = 'kayamo:ph-core-verify';
 
 import type { VerifyOverlayEntry } from './verify-model';

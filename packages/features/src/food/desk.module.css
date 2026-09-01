@@ -1486,6 +1486,24 @@
   font-size: 12.5px;
 }
 
+.verifyJump {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.verifyJump input {
+  width: 160px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 7px;
+  background: var(--color-surface);
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+}
+
 .verifyProgress {
   padding: 17px 20px 18px;
   border: 1px solid var(--color-line);
@@ -1803,7 +1821,8 @@
 
 .verifyMacros input,
 .verifyField input,
-.verifyField textarea {
+.verifyField textarea,
+.verifyField select {
   width: 100%;
   border: 1px solid var(--color-line-strong);
   border-radius: 6px;
@@ -1911,4 +1930,286 @@
 
 .verify .statLabel {
   color: var(--color-muted-2);
+}
+
+.foods {
+  gap: 1rem;
+}
+
+.foodsLede {
+  margin: 0;
+  max-width: 34ch;
+  color: var(--color-muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.foodsShape {
+  padding: 17px 20px 18px;
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  background: var(--color-surface);
+}
+
+.foodsBar {
+  display: flex;
+  height: 12px;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-surface-2);
+}
+
+.foodsBar span {
+  display: block;
+  height: 12px;
+}
+
+.foodsLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin-top: 14px;
+}
+
+.foodsLegendItem {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.foodsSwatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.foodsLegendCount {
+  font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.foodsLegendSub {
+  color: var(--color-muted-2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 9.5px;
+}
+
+.foodsToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.foodsToolbar input[type='search'] {
+  width: 320px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 7px;
+  background: var(--color-surface);
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+}
+
+.foodsPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.foodsPill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  height: 36px;
+  padding: 0 11px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.foodsPill[data-on='true'] {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.foodsPillCount {
+  font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+.foodsCount {
+  margin-left: auto;
+  color: var(--color-muted-2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 10.5px;
+}
+
+.foodsGrid {
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.foodsCols,
+.foodsRow {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 200px 116px 148px 66px;
+  align-items: center;
+  padding: 8px 14px;
+}
+
+.foodsCols {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-surface-2);
+  color: var(--color-muted);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.foodsCols span:nth-child(4),
+.foodsCols span:nth-child(6) {
+  text-align: right;
+}
+
+.foodsBody {
+  max-height: min(520px, 55vh);
+  overflow-y: auto;
+}
+
+.foodsRow {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--color-line);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.foodsRow[data-active='true'] {
+  background: var(--color-surface-2);
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.foodsName {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+  padding-right: 14px;
+}
+
+.foodsName strong {
+  font-size: 14.5px;
+  font-weight: 500;
+}
+
+.foodsName span {
+  overflow: hidden;
+  color: var(--color-muted-2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.foodsProv {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.foodsBadge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--color-line-strong);
+  color: var(--color-muted);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.foodsBadge[data-source='ph_core'] {
+  color: var(--color-accent);
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+.foodsBadge[data-source='off'] {
+  color: var(--color-proposal);
+  border-color: color-mix(in srgb, var(--color-proposal) 40%, transparent);
+}
+
+.foodsBadge[data-source='usda_fdc'] {
+  color: var(--color-source-usda);
+  border-color: color-mix(in srgb, var(--color-source-usda) 50%, transparent);
+}
+
+.foodsBadge[data-source='user'] {
+  color: var(--color-source-user);
+  border-color: color-mix(in srgb, var(--color-source-user) 40%, transparent);
+}
+
+.foodsBadge[data-source='llm'] {
+  color: var(--color-warning);
+  border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
+}
+
+.foodsKcal {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 4px;
+  padding-right: 16px;
+  font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.foodsKcalUnit {
+  color: var(--color-muted-2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.foodsServing {
+  overflow: hidden;
+  color: var(--color-muted);
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.foodsConf {
+  color: var(--color-muted);
+  font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
