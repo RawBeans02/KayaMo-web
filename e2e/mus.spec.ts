@@ -34,6 +34,10 @@ test.describe('Mus rail vocabulary', () => {
     await expect(page.locator('[data-mus-rail="page"]')).toBeVisible();
     await expect(page.getByText('ask first')).toHaveCount(0);
     await expect(page.locator('[data-mus-perm="today"]')).toHaveAttribute('data-mus-perm-level', 'edit');
+    await expect(page.locator('[data-mus-face="happy"] img')).toHaveAttribute('src', /mus-happy\.png/);
+    await expect(page.locator('[data-mus-face="concerned"] img')).toHaveAttribute('src', /mus-concerned\.png/);
+    await expect(page.locator('[data-mus-face="neutral"] img')).toHaveAttribute('src', /mus-neutral\.png/);
+    await expect(page.locator('[data-mus-face="thinking"] img')).toHaveAttribute('src', /mus-thinking\.png/);
     await expect(page.locator('[data-mus-face="concerned"]')).toContainText('Concern for the user');
     await expect(page.locator('[data-mus-face="happy"]')).toContainText('milestone the user chose');
     await expect(page.getByRole('navigation', { name: 'Conversations' })).toBeVisible();

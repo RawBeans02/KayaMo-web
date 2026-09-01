@@ -1,42 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import {
-  clearLocalRestTimer,
-  extendLocalRestTimer,
-  type LocalRestTimer,
-} from '@kayamo/offline';
+import { useEffect, useRef } from 'react';
 import styles from '../food/desk.module.css';
+import { useGymSession } from './gym-session-provider';
 
-function remainingSeconds(timer: LocalRestTimer, nowMs: number): number {
-  return Math.max(0, Math.round((Date.parse(timer.ends_at) - nowMs) / 1000));
-}
-
-function formatRemain(total: number): string {
-  const min = Math.floor(total / 60);
-  const sec = total % 60;
-  return `${min}:${String(sec).padStart(2, '0')}`;
-}
-
-export function GymRestOverlay({
-  timer,
-  onChange,
-}: {
-  timer: LocalRestTimer;
-  onChange: () => Promise<void>;
-}) {
-  const [nowMs, setNowMs] = useState(() => Date.now());
-  const [pinged, setPinged] = useState(false);
-  const left = remainingSeconds(timer, nowMs);
+export function GymRestBar() {
+  const session = useGymSession();
+  const pinged = useRef(false);
 
   useEffect(() => {
-    const id = window.setInterval(() => setNowMs(Date.now()), 250);
-    return () => window.clearInterval(id);
-  }, [timer.ends_at]);
+    pinged.current = false;
+  }, [session.timer?.ends_at]);
 
   useEffect(() => {
-    if (left > 0 || pinged) return;
-    setPinged(true);
+    if (!session.timer || session.remainingSeconds > 0 || pinged.current) return;
+    pinged.current = true;
     try {
       const ctx = new AudioContext();
       const osc = ctx.createOscillator();
@@ -48,38 +26,40 @@ export function GymRestOverlay({
       osc.start();
       osc.stop(ctx.currentTime + 0.18);
     } catch {
-      // In-app visual ping is enough if audio is blocked.
+      // Visual ping is enough if audio is blocked.
     }
-  }, [left, pinged]);
+  }, [session.remainingSeconds, session.timer]);
+
+  if (!session.timer || !session.workout) return null;
+
+  const done = session.remainingSeconds === 0;
 
   return (
-    <div className={styles.restOverlay} role="status" aria-live="polite">
-      <p className={styles.statLabel}>{left === 0 ? 'Rest done' : 'Rest'}</p>
-      <p className={styles.dashMetric}>{formatRemain(left)}</p>
-      <p className={styles.statNote}>
-        Timer stays up if you start another lift. It does not check the next set for you.
+    <div
+      className={styles.restBar}
+      data-gym-rest=""
+      data-urgent={session.urgent ? 'true' : undefined}
+      data-done={done ? 'true' : undefined}
+      role="status"
+      aria-live="polite"
+    >
+      <p className={styles.restBarLabel}>{done ? 'Rest done' : 'Rest'}</p>
+      <p className={styles.restBarClock} data-gym-rest-clock="">
+        {session.restLabel}
       </p>
-      <div className={styles.formRow}>
-        <button
-          type="button"
-          className={styles.ghost}
-          onClick={() => void extendLocalRestTimer(timer.workout_id, -30).then(onChange)}
-        >
+      <p className={styles.restBarNote}>
+        {session.elapsedLabel ? `${session.elapsedLabel} · ` : ''}
+        Timer keeps running if you leave Gym.
+      </p>
+      <div className={styles.restBarActions}>
+        <button type="button" onClick={() => void session.extend(-30)}>
           −30s
         </button>
-        <button
-          type="button"
-          className={styles.ghost}
-          onClick={() => void extendLocalRestTimer(timer.workout_id, 30).then(onChange)}
-        >
+        <button type="button" onClick={() => void session.extend(30)}>
           +30s
         </button>
-        <button
-          type="button"
-          className={styles.ghost}
-          onClick={() => void clearLocalRestTimer(timer.workout_id).then(onChange)}
-        >
-          Skip
+        <button type="button" onClick={() => void session.skip()}>
+          Skip rest
         </button>
       </div>
     </div>

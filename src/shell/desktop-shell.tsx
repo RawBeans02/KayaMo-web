@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { CommandLog, OPEN_LOG_EVENT } from '@kayamo/features/desktop';
+import { CommandLog, GymRestBar, GymSessionProvider, OPEN_LOG_EVENT } from '@kayamo/features/desktop';
 import { SyncStatusBar } from '@kayamo/features';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -71,7 +71,8 @@ export function DesktopShell({
           deliberately desktop-only.
         </p>
       </div>
-      <div className={styles.shell} data-desk-shell="" data-rail={railState}>
+      <GymSessionProvider userId={userId}>
+        <div className={styles.shell} data-desk-shell="" data-rail={railState}>
         <aside className={styles.sidebar} data-shell="sidebar">
           <div className={styles.brandRow}>
             <div className={styles.brandAvatar}>
@@ -133,8 +134,11 @@ export function DesktopShell({
           </div>
         </aside>
 
-        <div className={styles.main} data-shell="main" data-mus-page={pathname === '/mus' ? '' : undefined}>
-          {children}
+        <div className={styles.mainStack}>
+          <GymRestBar />
+          <div className={styles.main} data-shell="main" data-mus-page={pathname === '/mus' ? '' : undefined}>
+            {children}
+          </div>
         </div>
 
         {hideRail ? null : (
@@ -146,8 +150,9 @@ export function DesktopShell({
           />
         )}
 
-        <CommandLog userId={userId} onLeave={(href) => router.push(href)} />
-      </div>
+          <CommandLog userId={userId} onLeave={(href) => router.push(href)} />
+        </div>
+      </GymSessionProvider>
     </>
   );
 }

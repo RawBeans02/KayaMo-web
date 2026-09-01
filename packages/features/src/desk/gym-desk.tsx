@@ -10,7 +10,6 @@ import {
   duplicateGymSessionItem,
   finishLocalWorkout,
   getLocalGymPrefs,
-  getLocalRestTimer,
   gymDraftSessionId,
   listGymBusyEquipment,
   listGymPlannedSets,
@@ -30,7 +29,6 @@ import {
   updateGymSessionItem,
   type LocalGymPlannedSet,
   type LocalGymSessionItem,
-  type LocalRestTimer,
   type LocalWorkout,
   type LocalWorkoutSet,
 } from '@kayamo/offline';
@@ -44,7 +42,7 @@ import { familyOverlapWarnings } from '../gym/redundancy';
 import styles from '../food/desk.module.css';
 import { DeskMusPane } from './desk-mus';
 import { GymPicker } from './gym-picker';
-import { GymRestOverlay } from './gym-rest';
+import { useGymSession } from './gym-session-provider';
 import { useDeskClock } from './use-desk-clock';
 
 const BUSY_GEAR = [
@@ -67,11 +65,6 @@ function formatTime(iso: string, timeZone: string): string {
   }
 }
 
-function elapsedLabel(startedAt: string, nowMs: number): string {
-  const minutes = Math.max(0, Math.floor((nowMs - Date.parse(startedAt)) / 60_000));
-  return `${minutes} min elapsed`;
-}
-
 function nextSetIndex(sets: LocalWorkoutSet[], exerciseId: string): number {
   return sets
     .filter((row) => row.exercise_id === exerciseId)
@@ -84,13 +77,13 @@ function setsDone(planned: LocalGymPlannedSet[]): number {
 
 export function GymDesk({ userId }: { userId: string }) {
   const { clock, today } = useDeskClock(userId);
+  const session = useGymSession();
   const draftId = gymDraftSessionId(userId);
   const [workouts, setWorkouts] = useState<LocalWorkout[]>([]);
   const [sets, setSets] = useState<LocalWorkoutSet[]>([]);
   const [historySets, setHistorySets] = useState<LocalWorkoutSet[]>([]);
   const [items, setItems] = useState<LocalGymSessionItem[]>([]);
   const [plannedByItem, setPlannedByItem] = useState<Map<string, LocalGymPlannedSet[]>>(new Map());
-  const [timer, setTimer] = useState<LocalRestTimer | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [actuals, setActuals] = useState<Record<string, { kg: string; reps: string; rir: string }>>({});
   const [error, setError] = useState<string | null>(null);
@@ -99,7 +92,6 @@ export function GymDesk({ userId }: { userId: string }) {
   const [consult, setConsult] = useState<BoundConsult | null>(null);
   const [undoId, setUndoId] = useState<string | null>(null);
   const [busyGear, setBusyGear] = useState<string[]>([]);
-  const [nowMs, setNowMs] = useState(() => Date.now());
   const [avoid, setAvoid] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
 
@@ -117,10 +109,8 @@ export function GymDesk({ userId }: { userId: string }) {
     const sid = live?.id ?? draftId;
     if (live) {
       setSets(await listLocalWorkoutSets(live.id));
-      setTimer((await getLocalRestTimer(live.id)) ?? null);
     } else {
       setSets([]);
-      setTimer(null);
     }
     const queue = await listGymSessionItems(userId, sid);
     setItems(queue);
@@ -141,11 +131,7 @@ export function GymDesk({ userId }: { userId: string }) {
   useEffect(() => {
     void load();
     const timerId = window.setInterval(() => void load(), 4000);
-    const tick = window.setInterval(() => setNowMs(Date.now()), 1000);
-    return () => {
-      window.clearInterval(timerId);
-      window.clearInterval(tick);
-    };
+    return () => window.clearInterval(timerId);
   }, [load]);
 
   const overlap = useMemo(
@@ -192,6 +178,7 @@ export function GymDesk({ userId }: { userId: string }) {
       });
       await attachGymDraftToWorkout({ userId, workoutId: workout.id });
       await load();
+      await session.refresh();
     } catch {
       setError('Could not start a session.');
     } finally {
@@ -206,6 +193,7 @@ export function GymDesk({ userId }: { userId: string }) {
       await clearLocalRestTimer(active.id);
       await finishLocalWorkout({ id: active.id, userId });
       await load();
+      await session.refresh();
     } catch {
       setError('Could not finish that session.');
     } finally {
@@ -360,6 +348,7 @@ export function GymDesk({ userId }: { userId: string }) {
     }
     setUndoId(performed.id);
     await load();
+    await session.refresh();
   }
 
   async function onUndo() {
@@ -372,15 +361,18 @@ export function GymDesk({ userId }: { userId: string }) {
         await refreshGymItemState({ userId, itemId: hit.item_id });
       }
     }
-    if (active && timer?.performed_set_id === undoId) {
+    if (active && session.timer?.performed_set_id === undoId) {
       await clearLocalRestTimer(active.id);
     }
     setUndoId(null);
-    if (removed) await load();
+    if (removed) {
+      await load();
+      await session.refresh();
+    }
   }
 
   return (
-    <section className={styles.panel} aria-labelledby="gym-title">
+    <section className={styles.panel} aria-labelledby="gym-title" data-gym="">
       <header className={styles.header}>
         <div>
           <p className={styles.eyebrow}>Training</p>
@@ -388,9 +380,8 @@ export function GymDesk({ userId }: { userId: string }) {
             Gym
           </h1>
           <p className={styles.lede}>
-            Build a frame, lock what must stay, fill the gaps, then run it as a to-do queue.
-            Planned targets stay even when the set comes in lighter. Consult only picks catalog
-            slugs.
+            Rest keeps running if you leave this screen. Completing a set starts the
+            timer; −30 / +30 / Skip live in the bar at the top of the desk.
           </p>
         </div>
       </header>
@@ -414,14 +405,12 @@ export function GymDesk({ userId }: { userId: string }) {
         ) : null}
         <p className={styles.statNote}>
           {active
-            ? `${elapsedLabel(active.started_at, nowMs)} · started ${formatTime(active.started_at, clock.timeZone)}`
+            ? `${session.elapsedLabel ?? '0 min elapsed'} · started ${formatTime(active.started_at, clock.timeZone)}`
             : items.length > 0
               ? `${items.length} lifts in the frame`
               : 'Add must-do lifts, then start. An interrupted session resumes from this screen.'}
         </p>
       </div>
-
-      {timer && active ? <GymRestOverlay timer={timer} onChange={load} /> : null}
 
       <div className={styles.consultBar}>
         <label className={styles.grow}>

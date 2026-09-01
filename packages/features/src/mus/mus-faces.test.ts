@@ -15,10 +15,10 @@ describe('Mus faces', () => {
     expect(musFaceFor({ kind: 'thinking' })).toBe('thinking');
   });
 
-  it('has no raster for happy or concerned yet — those stay labeled slots', () => {
+  it('ships all four faces from the same generation pass', () => {
     expect(musFaceSrc('neutral')).toBe('/mus-neutral.png');
     expect(musFaceSrc('thinking')).toBe('/mus-thinking.png');
-    expect(musFaceSrc('happy')).toBeNull();
-    expect(musFaceSrc('concerned')).toBeNull();
+    expect(musFaceSrc('happy')).toBe('/mus-happy.png');
+    expect(musFaceSrc('concerned')).toBe('/mus-concerned.png');
   });
 });

@@ -1,7 +1,7 @@
 'use client';
 
 import type { LocalTimeBlock } from '@kayamo/offline';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import styles from '../food/desk.module.css';
 import {
   DAY_END_MIN,
@@ -12,62 +12,96 @@ import {
   blockTopPx,
   hourMarks,
   minutesToLabel,
-  snapMinutes,
+  shiftTimeRange,
   yToMinutes,
 } from '../todo/timetable';
 
 type Draft = { start: number; end: number };
 
+export type TimelineGhost = {
+  id: string;
+  title: string;
+  startMin: number;
+  endMin: number;
+};
+
+type TimelineItem = {
+  id: string;
+  title: string;
+  start_min: number;
+  end_min: number;
+  locked?: boolean;
+  flexibility?: LocalTimeBlock['flexibility'];
+  ghost?: boolean;
+};
+
 export function TodosTimeline({
   blocks,
+  ghosts = [],
   conflicts,
   selectedId,
+  readOnly = false,
   onSelect,
   onCommit,
   onCreateAt,
+  onDelete,
+  onGhostCommit,
 }: {
   blocks: LocalTimeBlock[];
+  ghosts?: TimelineGhost[];
   conflicts: Set<string>;
   selectedId: string | null;
-  onSelect: (id: string) => void;
+  readOnly?: boolean;
+  onSelect: (id: string | null) => void;
   onCommit: (id: string, startMin: number, endMin: number) => void;
   onCreateAt: (startMin: number) => void;
+  onDelete?: (id: string) => void;
+  onGhostCommit?: (id: string, startMin: number, endMin: number) => void;
 }) {
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
+  const rootRef = useRef<HTMLDivElement>(null);
 
-  function shown(block: LocalTimeBlock): Draft {
-    return drafts[block.id] ?? { start: block.start_min, end: block.end_min };
+  const items: TimelineItem[] = [
+    ...blocks.map((block) => ({
+      id: block.id,
+      title: block.title,
+      start_min: block.start_min,
+      end_min: block.end_min,
+      locked: block.locked,
+      flexibility: block.flexibility,
+    })),
+    ...ghosts.map((ghost) => ({
+      id: ghost.id,
+      title: ghost.title,
+      start_min: ghost.startMin,
+      end_min: ghost.endMin,
+      ghost: true,
+    })),
+  ];
+
+  function shown(item: TimelineItem): Draft {
+    return drafts[item.id] ?? { start: item.start_min, end: item.end_min };
   }
 
   function beginDrag(
     event: React.PointerEvent<HTMLElement>,
-    block: LocalTimeBlock,
+    item: TimelineItem,
     mode: 'move' | 'resize',
   ) {
     event.preventDefault();
     event.stopPropagation();
-    onSelect(block.id);
+    onSelect(item.id);
     const originY = event.clientY;
-    const origin: Draft = { start: block.start_min, end: block.end_min };
+    const origin: Draft = { start: item.start_min, end: item.end_min };
     let latest = origin;
     const target = event.currentTarget;
     target.setPointerCapture(event.pointerId);
 
     function move(ev: PointerEvent) {
       const delta = ((ev.clientY - originY) / HOUR_PX) * 60;
-      if (mode === 'move') {
-        const duration = origin.end - origin.start;
-        const start = snapMinutes(
-          Math.max(DAY_START_MIN, Math.min(DAY_END_MIN - duration, origin.start + delta)),
-        );
-        latest = { start, end: start + duration };
-      } else {
-        const end = snapMinutes(
-          Math.max(origin.start + SNAP_MIN, Math.min(DAY_END_MIN, origin.end + delta)),
-        );
-        latest = { start: origin.start, end };
-      }
-      setDrafts((current) => ({ ...current, [block.id]: latest }));
+      const shifted = shiftTimeRange(origin.start, origin.end, delta, mode);
+      latest = { start: shifted.startMin, end: shifted.endMin };
+      setDrafts((current) => ({ ...current, [item.id]: latest }));
     }
 
     function up(ev: PointerEvent) {
@@ -75,10 +109,11 @@ export function TodosTimeline({
       target.removeEventListener('pointerup', up);
       target.removeEventListener('pointercancel', up);
       if (target.hasPointerCapture(ev.pointerId)) target.releasePointerCapture(ev.pointerId);
-      onCommit(block.id, latest.start, latest.end);
+      if (item.ghost) onGhostCommit?.(item.id, latest.start, latest.end);
+      else onCommit(item.id, latest.start, latest.end);
       setDrafts((current) => {
         const copy = { ...current };
-        delete copy[block.id];
+        delete copy[item.id];
         return copy;
       });
     }
@@ -88,30 +123,73 @@ export function TodosTimeline({
     target.addEventListener('pointercancel', up);
   }
 
+  function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return;
+    if (!selectedId) return;
+    const item = items.find((row) => row.id === selectedId);
+    if (!item) return;
+    const pos = shown(item);
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onSelect(null);
+      return;
+    }
+    if (event.key === 'Delete' || event.key === 'Backspace') {
+      event.preventDefault();
+      onDelete?.(item.id);
+      return;
+    }
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      onSelect(item.id);
+      return;
+    }
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+    event.preventDefault();
+    const delta = event.key === 'ArrowUp' ? -SNAP_MIN : SNAP_MIN;
+    const next = shiftTimeRange(pos.start, pos.end, delta, event.shiftKey ? 'resize' : 'move');
+    setDrafts((current) => ({ ...current, [item.id]: { start: next.startMin, end: next.endMin } }));
+    if (item.ghost) onGhostCommit?.(item.id, next.startMin, next.endMin);
+    else onCommit(item.id, next.startMin, next.endMin);
+  }
+
   return (
     <div
+      ref={rootRef}
       className={styles.timeline}
-      onDoubleClick={(event) => {
-        const rect = event.currentTarget.getBoundingClientRect();
-        const start = yToMinutes(event.clientY - rect.top);
-        onCreateAt(Math.max(DAY_START_MIN, Math.min(DAY_END_MIN - 30, start)));
-      }}
+      tabIndex={0}
+      role="list"
+      aria-label={readOnly ? 'Day timeline' : 'Day timeline. Arrow keys move a selected block 15 minutes. Shift+arrow resizes. Delete removes it.'}
+      onKeyDown={readOnly ? undefined : onKeyDown}
+      onDoubleClick={
+        readOnly
+          ? undefined
+          : (event) => {
+              const rect = event.currentTarget.getBoundingClientRect();
+              const start = yToMinutes(event.clientY - rect.top);
+              onCreateAt(Math.max(DAY_START_MIN, Math.min(DAY_END_MIN - 30, start)));
+            }
+      }
     >
       {hourMarks().map((mark) => (
         <div key={mark} className={styles.hourLane} style={{ top: blockTopPx(mark), height: HOUR_PX }}>
           <span>{minutesToLabel(mark)}</span>
         </div>
       ))}
-      {blocks.map((block) => {
-        const pos = shown(block);
+      {items.map((item) => {
+        const pos = shown(item);
         return (
           <div
-            key={block.id}
+            key={item.id}
             className={styles.timeBlock}
-            data-selected={selectedId === block.id ? 'true' : undefined}
-            data-conflict={conflicts.has(block.id) ? 'true' : undefined}
-            data-locked={block.locked ? 'true' : undefined}
-            data-flex={block.flexibility}
+            data-selected={selectedId === item.id ? 'true' : undefined}
+            data-conflict={conflicts.has(item.id) ? 'true' : undefined}
+            data-locked={item.locked ? 'true' : undefined}
+            data-flex={item.flexibility}
+            data-ghost={item.ghost ? 'true' : undefined}
             style={{
               top: blockTopPx(pos.start),
               height: blockHeightPx(pos.start, pos.end),
@@ -120,21 +198,26 @@ export function TodosTimeline({
             <button
               type="button"
               className={styles.timeBlockHit}
-              onClick={() => onSelect(block.id)}
-              onPointerDown={(event) => beginDrag(event, block, 'move')}
+              onClick={() => onSelect(item.id)}
+              onPointerDown={readOnly ? undefined : (event) => beginDrag(event, item, 'move')}
             >
-              <strong>{block.title}</strong>
+              <strong>
+                {item.ghost ? 'Proposed · ' : ''}
+                {item.title}
+              </strong>
               <small>
                 {minutesToLabel(pos.start)}–{minutesToLabel(pos.end)}
-                {block.locked ? ' · locked' : ''}
+                {item.locked ? ' · locked' : ''}
               </small>
             </button>
+            {readOnly ? null : (
             <button
               type="button"
               className={styles.resizeHandle}
-              aria-label={`Resize ${block.title}`}
-              onPointerDown={(event) => beginDrag(event, block, 'resize')}
+              aria-label={`Resize ${item.title}`}
+              onPointerDown={(event) => beginDrag(event, item, 'resize')}
             />
+            )}
           </div>
         );
       })}

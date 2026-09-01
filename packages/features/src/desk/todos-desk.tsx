@@ -5,7 +5,6 @@ import {
   createLocalGoal,
   createLocalProject,
   createLocalTask,
-  createLocalTimeBlock,
   getLocalTaskMeta,
   listLocalGoals,
   listLocalOpenTasks,
@@ -14,8 +13,6 @@ import {
   listLocalTasksForDate,
   listLocalTimeBlocks,
   listLocalTimeBlocksRange,
-  listLocalWorkoutHistory,
-  listLocalFoodEntries,
   setLocalTaskCompleted,
   setLocalTaskScheduledFor,
   spawnRecurrenceIfNeeded,
@@ -23,7 +20,6 @@ import {
   tombstoneLocalTask,
   undoLatestMusAction,
   updateLocalTask,
-  updateLocalTimeBlock,
   type LocalGoal,
   type LocalPlanningProject,
   type LocalTask,
@@ -31,17 +27,7 @@ import {
   type LocalTimeBlock,
 } from '@kayamo/offline';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { apiFetch } from '../api/api-origin';
-import { applyCaptureItems, applyDayPlan, applyWhatNowPick } from '../todo/apply-plan';
-import {
-  captureProposalSchema,
-  dayPlanProposalSchema,
-  whatNowSchema,
-  type CaptureProposal,
-  type DayPlanProposal,
-  type WhatNow,
-} from '../todo/planner-schema';
-import { conflictIds, firstFit, minutesToLabel, openWindows, weekDates } from '../todo/timetable';
+import { conflictIds, minutesToLabel, weekDates } from '../todo/timetable';
 import styles from '../food/desk.module.css';
 import { DeskMusPane } from './desk-mus';
 import { TodosInspector } from './todos-inspector';
@@ -182,18 +168,6 @@ function TaskRows({
   );
 }
 
-function localMinutes(nowMs: number, timeZone: string): number {
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone,
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-  }).formatToParts(new Date(nowMs));
-  const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? 0);
-  const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? 0);
-  return hour * 60 + minute;
-}
-
 export function TodosDesk({ userId }: { userId: string }) {
   const { clock, today, nowMs } = useDeskClock(userId);
   const tomorrow = useMemo(() => addLogicalCalendarDays(today, 1), [today]);
@@ -221,13 +195,6 @@ export function TodosDesk({ userId }: { userId: string }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [energy, setEnergy] = useState<'LOW' | 'MEDIUM' | 'HIGH' | ''>('');
-  const [location, setLocation] = useState('');
-  const [weather, setWeather] = useState('');
-  const [plan, setPlan] = useState<DayPlanProposal | null>(null);
-  const [whatNow, setWhatNow] = useState<WhatNow | null>(null);
-  const [capture, setCapture] = useState<CaptureProposal | null>(null);
 
   const week = useMemo(() => weekDates(date), [date]);
 
@@ -301,45 +268,6 @@ export function TodosDesk({ userId }: { userId: string }) {
     }
   }
 
-  async function onParseDump() {
-    const text = draft.trim();
-    if (!text || busy) return;
-    setBusy(true);
-    setError(null);
-    setPlan(null);
-    setWhatNow(null);
-    try {
-      const response = await apiFetch('/api/mus/capture', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ logicalDate: date, text }),
-      });
-      const body: unknown = await response.json().catch(() => null);
-      if (!response.ok) {
-        const message =
-          body && typeof body === 'object' && 'error' in body && typeof body.error === 'string'
-            ? body.error
-            : 'Could not parse that dump.';
-        setError(message);
-        return;
-      }
-      const parsed = captureProposalSchema.safeParse(
-        body && typeof body === 'object' && 'capture' in body
-          ? (body as { capture: unknown }).capture
-          : body,
-      );
-      if (!parsed.success) {
-        setError('Mus returned a dump I could not use. Split it by hand.');
-        return;
-      }
-      setCapture(parsed.data);
-    } catch {
-      setError('Could not parse that dump.');
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function onToggle(task: LocalTask) {
     setError(null);
     if (!task.completed_at && blockedIds.has(task.id)) {
@@ -405,194 +333,6 @@ export function TodosDesk({ userId }: { userId: string }) {
     await load();
   }
 
-  async function onPlace(task: LocalTask) {
-    const meta = metaByTask.get(task.id);
-    if (meta?.flexibility === 'ANYTIME') {
-      await setLocalTaskScheduledFor({ id: task.id, userId, scheduledFor: date });
-      await load();
-      return;
-    }
-    const duration = meta?.estimated_duration_min ?? 30;
-    const slot = firstFit(openWindows(blocks), duration);
-    if (!slot) {
-      setError('No open window that long is left on this day.');
-      return;
-    }
-    await setLocalTaskScheduledFor({ id: task.id, userId, scheduledFor: date });
-    await createLocalTimeBlock({
-      userId,
-      logicalDate: date,
-      title: task.title,
-      startMin: slot.startMin,
-      endMin: slot.endMin,
-      sourceTable: 'tasks',
-      sourceId: task.id,
-    });
-    setSelectedBlockId(null);
-    setSelectedId(task.id);
-    await load();
-  }
-
-  async function onCommitBlock(id: string, startMin: number, endMin: number) {
-    await updateLocalTimeBlock({ id, userId, start_min: startMin, end_min: endMin });
-    await load();
-  }
-
-  async function onCreateAt(startMin: number) {
-    const row = await createLocalTimeBlock({
-      userId,
-      logicalDate: date,
-      title: 'Block',
-      startMin,
-      endMin: startMin + 30,
-    });
-    setSelectedBlockId(row.id);
-    setSelectedId(null);
-    await load();
-  }
-
-  async function collectPlanContext() {
-    const open = await listLocalOpenTasks(userId);
-    const history = await listLocalWorkoutHistory(userId);
-    const last = history.find((row) => row.ended_at);
-    const typical =
-      last?.ended_at && last.started_at
-        ? Math.max(15, Math.round((Date.parse(last.ended_at) - Date.parse(last.started_at)) / 60_000))
-        : 75;
-    const meals = await listLocalFoodEntries(userId, date);
-    const active = history.find((row) => row.status === 'active' && row.logical_date === date);
-    const done = history.some((row) => row.status === 'completed' && row.logical_date === date);
-    return {
-      tasks: await Promise.all(
-        open.slice(0, 80).map(async (task) => {
-          const meta = await getLocalTaskMeta(task.id);
-          return {
-            id: task.id,
-            title: task.title,
-            scheduledFor: task.scheduled_for,
-            dueAt: task.due_at,
-            durationMin: meta?.estimated_duration_min ?? 30,
-            flexibility: meta?.flexibility ?? 'FLEXIBLE',
-            locked: meta?.locked ?? false,
-            blocked: await taskIsBlocked(userId, task.id),
-            energy: meta?.energy ?? null,
-            location: meta?.location ?? null,
-          };
-        }),
-      ),
-      blocks: blocks.map((row) => ({
-        id: row.id,
-        title: row.title,
-        startMin: row.start_min,
-        endMin: row.end_min,
-        flexibility: row.flexibility,
-        locked: row.locked,
-        kind: row.kind,
-      })),
-      windows: openWindows(blocks).map((row) => ({ startMin: row.startMin, endMin: row.endMin })),
-      gym: {
-        status: active ? ('active' as const) : done ? ('completed' as const) : ('none' as const),
-        typicalDurationMin: typical,
-      },
-      mealsLogged: meals.length,
-    };
-  }
-
-  async function requestPlan(mode: DayPlanProposal['mode'], note: string | null) {
-    setBusy(true);
-    setError(null);
-    setWhatNow(null);
-    try {
-      const context = await collectPlanContext();
-      const response = await apiFetch('/api/mus/plan-day', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          logicalDate: date,
-          mode,
-          nowMin: localMinutes(nowMs, clock.timeZone),
-          energy: energy || null,
-          location: location.trim() || null,
-          weatherNote: weather.trim() || null,
-          note,
-          ...context,
-        }),
-      });
-      const body: unknown = await response.json().catch(() => null);
-      if (!response.ok) {
-        const message =
-          body && typeof body === 'object' && 'error' in body && typeof body.error === 'string'
-            ? body.error
-            : 'Could not plan the day.';
-        setError(message);
-        return;
-      }
-      const parsed = dayPlanProposalSchema.safeParse(
-        body && typeof body === 'object' && 'plan' in body ? body.plan : body,
-      );
-      if (!parsed.success) {
-        setError('Mus returned a plan we could not read.');
-        return;
-      }
-      setPlan(parsed.data);
-    } catch {
-      setError('Could not plan the day.');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function requestWhatNow() {
-    setBusy(true);
-    setError(null);
-    setPlan(null);
-    try {
-      const open = await listLocalOpenTasks(userId);
-      const windows = openWindows(blocks);
-      const available = windows[0] ? windows[0].endMin - windows[0].startMin : 30;
-      const response = await apiFetch('/api/mus/what-now', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          logicalDate: date,
-          availableMinutes: Math.max(15, Math.min(240, available)),
-          location: location.trim() || 'home',
-          energy: energy || null,
-          tasks: await Promise.all(
-            open.slice(0, 40).map(async (task) => {
-              const meta = await getLocalTaskMeta(task.id);
-              return {
-                id: task.id,
-                title: task.title,
-                durationMin: meta?.estimated_duration_min ?? 30,
-                energy: meta?.energy ?? null,
-                location: meta?.location ?? null,
-                blocked: await taskIsBlocked(userId, task.id),
-              };
-            }),
-          ),
-        }),
-      });
-      const body: unknown = await response.json().catch(() => null);
-      if (!response.ok) {
-        setError('Could not rank what to do now.');
-        return;
-      }
-      const parsed = whatNowSchema.safeParse(
-        body && typeof body === 'object' && 'whatNow' in body ? body.whatNow : body,
-      );
-      if (!parsed.success) {
-        setError('Mus returned options we could not read.');
-        return;
-      }
-      setWhatNow(parsed.data);
-    } catch {
-      setError('Could not rank what to do now.');
-    } finally {
-      setBusy(false);
-    }
-  }
-
   const rowProps = {
     today,
     tomorrow,
@@ -613,11 +353,10 @@ export function TodosDesk({ userId }: { userId: string }) {
     onSaveEdit,
     onMove,
     onDelete,
-    onPlace,
   };
 
   return (
-    <section className={styles.panel} aria-labelledby="todos-title">
+    <section className={styles.panel} aria-labelledby="todos-title" data-todos="">
       <header className={styles.header}>
         <div>
           <p className={styles.eyebrow}>Planning</p>
@@ -625,8 +364,8 @@ export function TodosDesk({ userId }: { userId: string }) {
             Todos
           </h1>
           <p className={styles.lede}>
-            Day, week, and agenda. Drag the timetable; confirm still writes. Mus on the right is
-            the same assistant as the Mus tab.
+            Read the list and check things off. Drag placement, capacity math, and energy
+            filters wait until food logging has a month of real use.
           </p>
         </div>
       </header>
@@ -657,14 +396,6 @@ export function TodosDesk({ userId }: { userId: string }) {
             <button type="submit" className={styles.primary} disabled={!draft.trim()}>
               Add
             </button>
-            <button
-              type="button"
-              className={styles.ghost}
-              disabled={!draft.trim() || busy}
-              onClick={() => void onParseDump()}
-            >
-              Parse dump
-            </button>
           </form>
 
           <div className={styles.formRow}>
@@ -688,38 +419,6 @@ export function TodosDesk({ userId }: { userId: string }) {
             <button
               type="button"
               className={styles.ghost}
-              disabled={busy}
-              onClick={() => void requestPlan('standard', null)}
-            >
-              Plan my day
-            </button>
-            <button
-              type="button"
-              className={styles.ghost}
-              disabled={busy}
-              onClick={() => void requestPlan('restructure', 'Replan remaining time from now.')}
-            >
-              Replan
-            </button>
-            <button
-              type="button"
-              className={styles.ghost}
-              disabled={busy}
-              onClick={() =>
-                void requestPlan(
-                  'standard',
-                  'Fill remaining open windows with unscheduled work. Do not move FIXED or locked blocks.',
-                )
-              }
-            >
-              Fill
-            </button>
-            <button type="button" className={styles.ghost} disabled={busy} onClick={() => void requestWhatNow()}>
-              What now
-            </button>
-            <button
-              type="button"
-              className={styles.ghost}
               onClick={() => {
                 void undoLatestMusAction(userId).then((summary) => {
                   setError(summary ? `Undid: ${summary}` : 'Nothing to undo.');
@@ -731,172 +430,20 @@ export function TodosDesk({ userId }: { userId: string }) {
             </button>
           </div>
 
-          <div className={styles.formRow}>
-            <label>
-              Energy
-              <select
-                className={styles.select}
-                value={energy}
-                onChange={(event) =>
-                  setEnergy(event.target.value as 'LOW' | 'MEDIUM' | 'HIGH' | '')
-                }
-              >
-                <option value="">Any</option>
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-              </select>
-            </label>
-            <label>
-              Location
-              <input
-                value={location}
-                onChange={(event) => setLocation(event.target.value)}
-                placeholder="home, campus…"
-              />
-            </label>
-            <label>
-              Weather
-              <input
-                value={weather}
-                onChange={(event) => setWeather(event.target.value)}
-                placeholder="rain, heat… (you type it)"
-              />
-            </label>
-          </div>
-
-          {capture ? (
-            <div className={styles.consultCard}>
-              <p className={styles.statLabel}>Dump proposal</p>
-              <ul className={styles.plainList}>
-                {capture.items.map((item) => (
-                  <li key={`${item.kind}-${item.title}`}>
-                    <strong>{item.title}</strong>
-                    <span className={styles.aliases}>
-                      {' '}
-                      · {item.kind.toLowerCase()}
-                      {item.dueHint ? ` · ${item.dueHint}` : ''}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              {capture.questions.length > 0 ? (
-                <p className={styles.statNote}>{capture.questions.join(' ')}</p>
-              ) : null}
-              <div className={styles.formRow}>
-                <button
-                  type="button"
-                  className={styles.primary}
-                  disabled={busy}
-                  onClick={() => {
-                    void applyCaptureItems({ userId, today: date, capture }).then(async (result) => {
-                      setError(result.message);
-                      if (result.ok) {
-                        setCapture(null);
-                        setDraft('');
-                      }
-                      await load();
-                    });
-                  }}
-                >
-                  Confirm dump
-                </button>
-                <button type="button" className={styles.ghost} onClick={() => setCapture(null)}>
-                  Dismiss
-                </button>
-              </div>
-            </div>
-          ) : null}
-
-          {plan ? (
-            <div className={styles.consultCard}>
-              <p className={styles.statLabel}>
-                {plan.overload ? 'Overloaded proposal' : 'Day proposal'} · {plan.mode}
-              </p>
-              <p className={styles.statNote}>{plan.summary}</p>
-              <ul className={styles.plainList}>
-                {plan.blocks.map((block) => (
-                  <li key={`${block.title}-${block.start ?? 'open'}`}>
-                    <strong>{block.title}</strong>
-                    <span className={styles.aliases}>
-                      {block.start ? ` · ${block.start}–${block.end ?? ''}` : ' · anytime'} ·{' '}
-                      {block.why}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <div className={styles.formRow}>
-                <button
-                  type="button"
-                  className={styles.primary}
-                  disabled={busy}
-                  onClick={() => {
-                    void applyDayPlan({ userId, today: date, plan }).then(async (result) => {
-                      setError(result.message);
-                      setPlan(null);
-                      await load();
-                    });
-                  }}
-                >
-                  Confirm plan
-                </button>
-                <button type="button" className={styles.ghost} onClick={() => setPlan(null)}>
-                  Dismiss
-                </button>
-              </div>
-            </div>
-          ) : null}
-
-          {whatNow ? (
-            <div className={styles.consultCard}>
-              <p className={styles.statLabel}>What now · {whatNow.availableMinutes} min</p>
-              <ul className={styles.plainList}>
-                {whatNow.options.map((option) => (
-                  <li key={option.title}>
-                    <button
-                      type="button"
-                      className={styles.textAction}
-                      onClick={() => {
-                        void applyWhatNowPick({
-                          userId,
-                          today: date,
-                          option,
-                          blocks,
-                        }).then(async (result) => {
-                          setError(result.message);
-                          if (result.ok) setWhatNow(null);
-                          await load();
-                        });
-                      }}
-                    >
-                      {option.title}
-                    </button>
-                    <span className={styles.aliases}>
-                      {' '}
-                      · {option.durationMin} min · {option.why}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <button type="button" className={styles.ghost} onClick={() => setWhatNow(null)}>
-                Dismiss
-              </button>
-            </div>
-          ) : null}
-
           {view === 'day' ? (
             <div className={styles.daySplit}>
               <TodosTimeline
                 blocks={blocks}
                 conflicts={conflicts}
                 selectedId={selectedBlockId}
+                readOnly
                 onSelect={(id) => {
                   setSelectedBlockId(id);
                   const source = blocks.find((row) => row.id === id)?.source_id;
                   if (source) setSelectedId(source);
                 }}
-                onCommit={(id, startMin, endMin) => void onCommitBlock(id, startMin, endMin)}
-                onCreateAt={(startMin) => void onCreateAt(startMin)}
+                onCommit={() => undefined}
+                onCreateAt={() => undefined}
               />
               <TodosInspector
                 userId={userId}
@@ -954,6 +501,19 @@ export function TodosDesk({ userId }: { userId: string }) {
                   <TaskRows tasks={later} {...rowProps} />
                 </>
               ) : null}
+            </>
+          ) : view === 'day' ? (
+            <>
+              {overdue.length > 0 ? (
+                <>
+                  <p className={styles.statLabel}>Overdue</p>
+                  <TaskRows tasks={overdue} {...rowProps} />
+                </>
+              ) : null}
+              <p className={styles.statLabel}>Today · {today}</p>
+              <TaskRows tasks={todayTasks} {...rowProps} />
+              <p className={styles.statLabel}>Inbox</p>
+              <TaskRows tasks={inbox} {...rowProps} />
             </>
           ) : (
             <>

@@ -34,8 +34,6 @@ export function musFaceFor(trigger: MusFaceTrigger): MusFace {
   }
 }
 
-export function musFaceSrc(face: MusFace): string | null {
-  if (face === 'neutral') return '/mus-neutral.png';
-  if (face === 'thinking') return '/mus-thinking.png';
-  return null;
+export function musFaceSrc(face: MusFace): string {
+  return `/mus-${face}.png`;
 }

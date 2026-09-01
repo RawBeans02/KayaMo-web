@@ -9,3 +9,5 @@ export { GymDesk } from './desk/gym-desk';
 export { TodosDesk } from './desk/todos-desk';
 export { MusDesk } from './desk/mus-desk';
 export { MusRail } from './desk/mus-rail';
+export { GymSessionProvider } from './desk/gym-session-provider';
+export { GymRestBar } from './desk/gym-rest';

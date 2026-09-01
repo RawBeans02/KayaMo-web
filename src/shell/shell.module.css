@@ -291,6 +291,14 @@
   background: var(--color-surface-2);
 }
 
+.mainStack {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .main {
   min-width: 0;
   min-height: 0;

@@ -27,6 +27,12 @@ export function TodosInspector({
   projects,
   blocked,
   onChange,
+  onToggle,
+  onPlace,
+  onMoveToday,
+  onMoveTomorrow,
+  onMoveInbox,
+  onDelete,
 }: {
   userId: string;
   task: LocalTask | null;
@@ -35,6 +41,12 @@ export function TodosInspector({
   projects: LocalPlanningProject[];
   blocked: boolean;
   onChange: () => Promise<void>;
+  onToggle?: () => void;
+  onPlace?: () => void;
+  onMoveToday?: () => void;
+  onMoveTomorrow?: () => void;
+  onMoveInbox?: () => void;
+  onDelete?: () => void;
 }) {
   const [title, setTitle] = useState(task?.title ?? block?.title ?? '');
   const [notes, setNotes] = useState(task?.notes ?? block?.notes ?? '');
@@ -179,23 +191,6 @@ export function TodosInspector({
             </select>
           </label>
           <label>
-            Energy
-            <select
-              className={styles.select}
-              value={energy}
-              onChange={(event) => setEnergy(event.target.value)}
-            >
-              <option value="">Any</option>
-              <option value="LOW">Low</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="HIGH">High</option>
-            </select>
-          </label>
-          <label>
-            Location
-            <input value={location} onChange={(event) => setLocation(event.target.value)} />
-          </label>
-          <label>
             Project
             <select
               className={styles.select}
@@ -215,6 +210,40 @@ export function TodosInspector({
       <button type="submit" className={styles.primary} disabled={saving}>
         Save
       </button>
+      {task ? (
+        <div className={styles.taskActions}>
+          {onToggle ? (
+            <button type="button" className={styles.ghost} onClick={onToggle}>
+              {task.completed_at ? 'Undo done' : 'Mark done'}
+            </button>
+          ) : null}
+          {onPlace && !task.completed_at ? (
+            <button type="button" className={styles.ghost} onClick={onPlace}>
+              Place on day
+            </button>
+          ) : null}
+          {onMoveToday ? (
+            <button type="button" className={styles.ghost} onClick={onMoveToday}>
+              Today
+            </button>
+          ) : null}
+          {onMoveTomorrow ? (
+            <button type="button" className={styles.ghost} onClick={onMoveTomorrow}>
+              Tomorrow
+            </button>
+          ) : null}
+          {onMoveInbox ? (
+            <button type="button" className={styles.ghost} onClick={onMoveInbox}>
+              Inbox
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+      {onDelete ? (
+        <button type="button" className={styles.ghost} onClick={onDelete}>
+          {task ? 'Delete task' : 'Remove block'}
+        </button>
+      ) : null}
     </form>
   );
 }
