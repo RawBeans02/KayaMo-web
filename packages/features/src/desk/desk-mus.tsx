@@ -1,35 +1,33 @@
 'use client';
 
 import type { MusEntryModule } from '@kayamo/ai';
-import { MusThread } from '../screens/mus-thread';
-import styles from '../food/desk.module.css';
+import { useEffect } from 'react';
+import { publishMusSelection } from '../mus/mus-selection';
 
+/** Publishes the current screen selection into the shared Mus rail. Not a second assistant. */
 export function DeskMusPane({
-  userId,
-  logicalDate,
   module,
   view,
   selectedIds,
+  selectionLabel,
 }: {
   userId: string;
   logicalDate: string;
   module: MusEntryModule;
   view?: string | null;
   selectedIds?: string[];
+  selectionLabel?: string;
 }) {
-  return (
-    <aside className={styles.dashMus} aria-label="Mus">
-      <MusThread
-        userId={userId}
-        logicalDate={logicalDate}
-        recommended={null}
-        compact
-        entry={{
-          module,
-          view: view ?? null,
-          selectedIds: selectedIds ?? [],
-        }}
-      />
-    </aside>
-  );
+  const ids = selectedIds ?? [];
+  const label = selectionLabel ?? '';
+  useEffect(() => {
+    publishMusSelection({
+      module,
+      view: view ?? null,
+      selectedIds: ids,
+      label,
+    });
+    return () => publishMusSelection(null);
+  }, [ids, label, module, view]);
+  return null;
 }

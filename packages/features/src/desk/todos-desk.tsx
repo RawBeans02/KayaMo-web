@@ -1026,6 +1026,7 @@ export function TodosDesk({ userId }: { userId: string }) {
           module="todos"
           view={view}
           selectedIds={selectedId ? [selectedId] : []}
+          selectionLabel={selectedTask?.title}
         />
       </div>
     </section>

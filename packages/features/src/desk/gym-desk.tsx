@@ -764,6 +764,11 @@ export function GymDesk({ userId }: { userId: string }) {
           module="gym"
           view={active ? 'session' : 'frame'}
           selectedIds={openId ? [openId] : []}
+          selectionLabel={
+            openId
+              ? (items.find((row) => row.id === openId)?.exercise_name ?? undefined)
+              : undefined
+          }
         />
       </div>
     </section>

@@ -520,6 +520,7 @@ export function FoodsTable({ userId }: { userId: string }) {
         module="foods"
         view="catalog"
         selectedIds={activeRow ? [activeRow.id] : []}
+        selectionLabel={activeRow?.name}
       />
     </section>
   );

@@ -619,7 +619,14 @@ export function VerifyTable({ userId }: { userId: string }) {
         </div>
       ) : null}
 
-      <DeskMusPane userId={userId} logicalDate={today} module="verify" view="ph_core" selectedIds={activeRow ? [activeRow.id] : []} />
+      <DeskMusPane
+        userId={userId}
+        logicalDate={today}
+        module="verify"
+        view="ph_core"
+        selectedIds={activeRow ? [activeRow.id] : []}
+        selectionLabel={activeRow ? `${active + 1} · ${activeRow.name}` : undefined}
+      />
     </section>
   );
 }

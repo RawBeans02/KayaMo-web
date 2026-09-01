@@ -8,3 +8,4 @@ export { DeskHome } from './desk/desk-home';
 export { GymDesk } from './desk/gym-desk';
 export { TodosDesk } from './desk/todos-desk';
 export { MusDesk } from './desk/mus-desk';
+export { MusRail } from './desk/mus-rail';

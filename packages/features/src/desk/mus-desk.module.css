@@ -1,0 +1,13 @@
+.desk {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 316px;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.desk > :first-child {
+  min-width: 0;
+  min-height: 0;
+}

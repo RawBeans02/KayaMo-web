@@ -133,12 +133,13 @@ export function DesktopShell({
           </div>
         </aside>
 
-        <div className={styles.main} data-shell="main">
+        <div className={styles.main} data-shell="main" data-mus-page={pathname === '/mus' ? '' : undefined}>
           {children}
         </div>
 
         {hideRail ? null : (
           <MusRailMount
+            userId={userId}
             pathname={pathname}
             collapsed={railCollapsed}
             onToggle={() => setRailCollapsed((value) => !value)}

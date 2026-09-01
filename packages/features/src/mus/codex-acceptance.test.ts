@@ -38,6 +38,20 @@ describe('codex acceptance: desks, vision, gym consult', () => {
     expect(verify).toContain('module="verify"');
   });
 
+  it('uses one five-level MusRail on the Mus screen and the shell', () => {
+    const desk = readFileSync(join(featuresRoot, 'desk/mus-desk.tsx'), 'utf8');
+    const rail = readFileSync(join(featuresRoot, 'desk/mus-rail.tsx'), 'utf8');
+    const levels = readFileSync(join(featuresRoot, 'mus/perm-levels.ts'), 'utf8');
+    expect(desk).toContain('MusRail');
+    expect(desk).toContain('variant="page"');
+    expect(desk).not.toContain('ask first');
+    expect(rail).toContain('chrome="rail"');
+    expect(rail).toContain('MUS_PERM_MODULES');
+    expect(rail).not.toContain('ask first');
+    expect(levels).toContain('edit w/ approval');
+    expect(levels).toContain("'never'");
+  });
+
   it('sends chat through /api/mus/respond and photos through observe-image', () => {
     const thread = readFileSync(join(featuresRoot, 'screens/mus-thread.tsx'), 'utf8');
     expect(thread).toContain("/api/mus/respond");
