@@ -12,7 +12,6 @@ export {
   type CatalogFood,
   type ResolveCatalog,
 } from './catalog';
-export { yamlPhCoreCatalog } from './catalog-yaml';
 export { foodRowToCatalog, supabaseResolveCatalog } from './catalog-supabase';
 export { DATA_LICENSES, OFF_ATTRIBUTION, USDA_SOURCE_NOTE } from './licenses';
 export {
@@ -40,13 +39,6 @@ export {
 } from './ph-core/validate';
 export { diffPhCoreVsDb, type PhCoreFieldDiff } from './ph-core/diff';
 export {
-  findPhCoreYamlPath,
-  loadPhCoreYaml,
-  replacePhCoreFood,
-  serializePhCoreYaml,
-  writePhCoreYaml,
-} from './ph-core/io';
-export {
   ATWATER_TOLERANCE,
   UNVERIFIED_CONFIDENCE_MAX,
   phCoreFoodSchema,
@@ -71,6 +63,7 @@ export {
   type UserFoodDraft,
 } from './label-ocr';
 export {
+  parseAmountToken,
   parseFoodQuery,
   PH_UNITS,
   SIZE_MULTIPLIER,
@@ -78,6 +71,40 @@ export {
   type FoodQuery,
   type ParsedFoodQuery,
 } from './query-parse';
+export {
+  calorieRange,
+  confidenceLevelFromSource,
+  sourceTypeFromResolve,
+  CONFIDENCE_LEVELS,
+  type ConfidenceInput,
+  type ConfidenceLevel,
+} from './confidence';
+export { calculateDailyNutrition, type DailyNutrition, type DailyNutritionEntry } from './daily-nutrition';
+export {
+  estimateEnergyBalance,
+  formatKcalRange,
+  type EnergyBalance,
+  type EnergyBalanceInput,
+} from './energy-balance';
+export {
+  applyAliases,
+  DEFAULT_FOOD_ALIASES,
+  lookupAlias,
+  normalizeAlias,
+} from './user-alias';
+export {
+  extractStatedNutrition,
+  foodParseOperationSchema,
+  foodParseSchema,
+  mealQueryToSlot,
+  parseFoodMessageHeuristic,
+  FOOD_PARSE_OP_TYPES,
+  type FoodParse,
+  type FoodParseContext,
+  type FoodParseLedgerEntry,
+  type FoodParseOpType,
+  type FoodParseOperation,
+} from './food-parse';
 export {
   createResolveQueryCache,
   resolveFood,

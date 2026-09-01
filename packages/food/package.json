@@ -8,6 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./ph-core": "./src/ph-core-browser.ts",
+    "./ph-core-io": "./src/ph-core/io.ts",
     "./label-ocr": "./src/label-ocr.ts",
     "./quick-log": "./src/quick-log.ts",
     "./search-ui": "./src/search-ui.ts"

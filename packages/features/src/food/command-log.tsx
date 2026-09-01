@@ -27,6 +27,7 @@ import {
   catalogForCommandLog,
   cycleMealSlot,
   mealSlotFromDigit,
+  OPEN_LOG_EVENT,
   PREFILL_LOG_EVENT,
   servingIdForLabel,
   toLogInputFromCandidate,
@@ -143,7 +144,14 @@ export function CommandLog({ userId }: { userId: string }) {
       openPalette(query);
     }
     window.addEventListener(PREFILL_LOG_EVENT, onPrefill);
-    return () => window.removeEventListener(PREFILL_LOG_EVENT, onPrefill);
+    function onOpen() {
+      openPalette();
+    }
+    window.addEventListener(OPEN_LOG_EVENT, onOpen);
+    return () => {
+      window.removeEventListener(PREFILL_LOG_EVENT, onPrefill);
+      window.removeEventListener(OPEN_LOG_EVENT, onOpen);
+    };
   }, [openPalette]);
 
   useEffect(() => {

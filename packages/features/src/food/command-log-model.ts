@@ -16,6 +16,7 @@ export function catalogForCommandLog(foods: readonly CatalogFood[]): CatalogFood
 }
 
 export const PREFILL_LOG_EVENT = 'kayamo:prefill-log';
+export const OPEN_LOG_EVENT = 'kayamo:open-log';
 
 export function asLogSource(value: string): LogFoodEntryInput['source'] {
   if (

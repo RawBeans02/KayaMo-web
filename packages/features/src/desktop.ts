@@ -1,4 +1,6 @@
 export { CommandLog } from './food/command-log';
+export { OPEN_LOG_EVENT } from './food/command-log-model';
+export { ConversationalLog } from './food/conversational-log';
 export { TodayTable } from './food/today-table';
 export { FoodsTable } from './food/foods-table';
 export { VerifyTable } from './food/verify-table';

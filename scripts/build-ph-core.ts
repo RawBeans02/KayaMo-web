@@ -1,6 +1,7 @@
 import { loadRootEnv } from '../packages/db/src/load-root-env';
 import { upsertPhCoreFoods } from '@kayamo/db/ph-core';
-import { loadPhCoreYaml, toPhCoreFoodRow } from '@kayamo/food';
+import { loadPhCoreYaml } from '@kayamo/food/ph-core-io';
+import { toPhCoreFoodRow } from '@kayamo/food';
 
 function printIssues(
   label: string,

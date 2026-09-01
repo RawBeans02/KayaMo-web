@@ -1,16 +1,16 @@
 .root {
-  --km-bg: #f4f8ff;
-  --km-surface: #ffffff;
-  --km-surface-2: #eaf2ff;
-  --km-text: #10233f;
-  --km-muted: #5f6f82;
-  --km-action: #1463ff;
-  --km-action-fg: #ffffff;
-  --km-growth: #c4e538;
-  --km-danger: #c83e4d;
-  --km-glass-clear: rgb(255 255 255 / 48%);
-  --km-hairline: rgb(16 35 63 / 11%);
-  --km-shadow: 0 14px 38px rgb(16 35 63 / 10%);
+  --km-bg: var(--color-bg);
+  --km-surface: var(--color-surface);
+  --km-surface-2: var(--color-surface-2);
+  --km-text: var(--color-text);
+  --km-muted: var(--color-muted);
+  --km-action: var(--color-accent);
+  --km-action-fg: var(--color-accent-fg);
+  --km-growth: var(--color-proposal);
+  --km-danger: var(--color-warning);
+  --km-glass-clear: color-mix(in srgb, var(--color-surface) 48%, transparent);
+  --km-hairline: var(--color-line-strong);
+  --km-shadow: var(--shadow-palette);
   display: grid;
   gap: 0.95rem;
   padding: 1.05rem 1rem 1.1rem;
@@ -18,19 +18,6 @@
   background: var(--km-surface);
   color: var(--km-text);
   box-shadow: var(--km-shadow);
-}
-
-:global(html[data-kayamo-theme='night']) .root {
-  --km-surface: #3a2a50;
-  --km-surface-2: #46355e;
-  --km-text: #f7f4ed;
-  --km-muted: #a99abd;
-  --km-action: #c4e538;
-  --km-action-fg: #2a1b3d;
-  --km-danger: #e8734a;
-  --km-glass-clear: rgb(70 53 94 / 52%);
-  --km-hairline: rgb(247 244 237 / 15%);
-  --km-shadow: 0 16px 42px rgb(0 0 0 / 34%);
 }
 
 .banner {
@@ -69,7 +56,7 @@
 .field span {
   color: var(--km-muted);
   font-family: var(--font-plex), ui-monospace, monospace;
-  font-size: 0.64rem;
+  font-size: 10.5px;
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -140,7 +127,7 @@
   gap: 0.7rem;
   color: var(--km-muted);
   font-family: var(--font-plex), ui-monospace, monospace;
-  font-size: 0.62rem;
+  font-size: 10.5px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }

@@ -1,0 +1,130 @@
+.viewport {
+  --km-bg: var(--color-bg);
+  --km-wash: var(--color-surface-2);
+  --km-surface: var(--color-surface);
+  --km-surface-2: var(--color-surface-2);
+  --km-text: var(--color-text);
+  --km-muted: var(--color-muted);
+  --km-action: var(--color-accent);
+  --km-action-fg: var(--color-accent-fg);
+  --km-growth: var(--color-proposal);
+  --km-glass: color-mix(in srgb, var(--color-surface) 72%, transparent);
+  --km-glass-edge: var(--color-line-strong);
+  --km-shadow: var(--shadow-palette);
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  overflow: clip;
+  background: var(--km-bg);
+  color: var(--km-text);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+.atmosphere {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 83% 4%, color-mix(in srgb, var(--color-accent) 18%, transparent), transparent 28rem),
+    radial-gradient(circle at 18% 88%, color-mix(in srgb, var(--color-proposal) 16%, transparent), transparent 22rem),
+    var(--km-bg);
+}
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100dvh;
+  max-width: 390px;
+  margin: 0 auto;
+  padding: calc(1.25rem + env(safe-area-inset-top)) 1rem calc(1.5rem + env(safe-area-inset-bottom));
+}
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 13.6rem;
+  overflow: hidden;
+  border: 1px solid var(--km-glass-edge);
+  border-radius: 2rem;
+  background: var(--km-glass);
+  box-shadow: var(--km-shadow);
+  -webkit-backdrop-filter: blur(24px) saturate(175%);
+  backdrop-filter: blur(24px) saturate(175%);
+}
+
+.heroGlow {
+  position: absolute;
+  z-index: 0;
+  right: -1.4rem;
+  bottom: -2.2rem;
+  width: 13rem;
+  height: 7rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--km-growth) 28%, var(--km-surface));
+  filter: blur(1px);
+}
+
+.heroCopy {
+  position: relative;
+  z-index: 2;
+  max-width: 18ch;
+  padding: 1.2rem 1.15rem 1rem;
+}
+
+.wordmark {
+  margin: 0;
+  color: var(--km-action);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.heroCopy h1 {
+  margin: 0.55rem 0 0;
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+}
+
+.heroCopy p {
+  margin: 0.55rem 0 0;
+  color: var(--km-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.form {
+  margin-top: 1.05rem;
+}
+
+.mus {
+  position: absolute;
+  z-index: 1;
+  right: -0.55rem;
+  bottom: -1.6rem;
+  width: 11.5rem;
+  height: 11.5rem;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 18px color-mix(in srgb, var(--color-text) 16%, transparent));
+  animation: mus-bob 6s ease-in-out infinite;
+}
+
+@keyframes mus-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mus {
+    animation: none;
+  }
+}
