@@ -270,6 +270,10 @@ Missing by design: `mus-happy.png`, `mus-sad.png` — drawn as labeled slots.
 
 ## Files in this bundle
 
+These HTML files are committed here so a fresh clone can open them. If you still have a
+local drop at repo-root `design_handoff_kayamo_desktop/`, that path is gitignored — copy
+replacements into this folder.
+
 | File | What it is |
 |---|---|
 | `KayaMo Desktop.dc.html` | the shell and all six screens + command palette |

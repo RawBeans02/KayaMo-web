@@ -71,7 +71,7 @@ export function DesktopShell({
         </p>
       </div>
       <div className={styles.shell} data-desk-shell="" data-rail={railState}>
-        <aside className={styles.sidebar}>
+        <aside className={styles.sidebar} data-shell="sidebar">
           <div className={styles.brandRow}>
             <div className={styles.brandAvatar}>
               <Image src="/mus-neutral.png" alt="" width={38} height={38} />
@@ -110,7 +110,7 @@ export function DesktopShell({
             </ul>
           </div>
 
-          <div className={styles.footer}>
+          <div className={styles.footer} data-shell="sidebar-footer">
             <button type="button" className={styles.logFood} onClick={openFoodLog}>
               <span>Log food</span>
               <span className={styles.keys} aria-hidden="true">
@@ -132,7 +132,9 @@ export function DesktopShell({
           </div>
         </aside>
 
-        <div className={styles.main}>{children}</div>
+        <div className={styles.main} data-shell="main">
+          {children}
+        </div>
 
         {hideRail ? null : (
           <MusRailMount

@@ -6,7 +6,7 @@ import { LoginForm } from './login-form';
 import { LoginTheme } from './login-theme';
 import styles from './login.module.css';
 
-export function LoginView() {
+export function LoginView({ localDev }: { localDev: boolean }) {
   const params = useSearchParams();
   const sent = params.get('sent') === '1';
   const setup = params.get('setup') === '1';
@@ -34,7 +34,7 @@ export function LoginView() {
           />
         </section>
         <div className={styles.form}>
-          <LoginForm sent={sent} setup={setup} error={error} />
+          <LoginForm sent={sent} setup={setup} error={error} localDev={localDev} />
         </div>
       </div>
     </main>

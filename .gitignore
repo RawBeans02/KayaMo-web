@@ -18,6 +18,9 @@ KayaMo mobile app design *
 kayamo-android-assets.zip
 apps/pwa/.capacitor-parked/
 
+# Local HTML drop folder. Canonical copies live in docs/design/desktop-handoff/.
+design_handoff_kayamo_desktop/
+
 # Capacitor native projects — generated, but commit them once you ship
 apps/mobile/ios/App/Pods/
 apps/mobile/android/.gradle/

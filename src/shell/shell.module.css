@@ -8,6 +8,7 @@
   grid-template-columns: 216px minmax(0, 1fr) 316px;
   height: 100dvh;
   min-height: 0;
+  overflow: hidden;
   background: var(--color-bg);
   color: var(--color-text);
 }
@@ -23,7 +24,9 @@
 .sidebar {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
+  height: 100%;
   min-height: 0;
+  overflow: hidden;
   border-right: 1px solid var(--color-line);
   background: var(--color-surface);
 }

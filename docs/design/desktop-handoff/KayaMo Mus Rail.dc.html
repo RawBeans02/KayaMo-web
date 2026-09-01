@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @keyframes km-rail-pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+</style>
+</helmet>
+
+<sc-if value="{{ isOpen }}" hint-placeholder-val="{{ true }}">
+<aside aria-label="Mus, the shared assistant" style="display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto auto auto; height: 100%; min-height: 0; border-left: 1px solid var(--line, #1f4d3a1f); background: var(--surface, #fffbf4); color: var(--text, #17211b); font-family: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;">
+
+  <header style="display: grid; grid-template-columns: 32px minmax(0, 1fr) 26px; align-items: center; gap: 10px; padding: 13px 14px 11px; border-bottom: 1px solid var(--line, #1f4d3a1f);">
+    <img src="assets/mus-neutral.png" alt="" style="width: 32px; height: 32px; border-radius: 999px; object-fit: cover; object-position: 50% 22%; background: var(--sunken, #efe8d8);" />
+    <div style="min-width: 0;">
+      <p style="margin: 0; font-size: 14.5px; font-weight: 600; line-height: 1.2;">Mus</p>
+      <p style="margin: 1px 0 0; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted2, #6e5f4c);">{{ stateLabel }}</p>
+    </div>
+    <button type="button" onClick="{{ onCollapse }}" aria-label="Collapse Mus" style="width: 26px; height: 26px; border: 0; border-radius: 6px; background: transparent; color: var(--muted2, #6e5f4c); font-size: 15px; line-height: 1; cursor: pointer;">›</button>
+  </header>
+
+  <!-- CONTEXT: what Mus can see right now -->
+  <div style="padding: 11px 14px 12px; border-bottom: 1px solid var(--line, #1f4d3a1f); background: var(--sunken, #efe8d8);">
+    <p style="margin: 0 0 7px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted2, #6e5f4c);">Context · follows this screen</p>
+    <div style="display: grid; gap: 5px;">
+      <div style="display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 9px; align-items: baseline;">
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted2, #6e5f4c);">screen</span>
+        <span style="font-size: 13.5px; font-weight: 600;">{{ screenLabel }}</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 9px; align-items: baseline;">
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted2, #6e5f4c);">this</span>
+        <span style="font-size: 13.5px; color: {{ selectionColor }};">{{ selectionText }}</span>
+      </div>
+    </div>
+
+    <button type="button" onClick="{{ togglePerms }}" style="display: flex; align-items: center; gap: 6px; margin-top: 10px; padding: 0; border: 0; background: transparent; color: var(--muted, #5a4433); font: inherit; font-size: 12px; cursor: pointer;">
+      <span>{{ permsChevron }}</span><span>{{ permsSummary }}</span>
+    </button>
+    <sc-if value="{{ permsOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="display: grid; gap: 1px; margin-top: 8px;">
+        <sc-for list="{{ perms }}" as="p" hint-placeholder-count="5">
+          <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 5px 0; border-top: 1px solid var(--line, #1f4d3a1f);">
+            <span style="font-size: 12.5px;">{{ p.label }}</span>
+            <button type="button" onClick="{{ p.onCycle }}" style="padding: 2px 7px; border: 1px solid {{ p.border }}; border-radius: 4px; background: transparent; color: {{ p.color }}; font-family: 'IBM Plex Mono', monospace; font-size: 8.5px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;">{{ p.level }}</button>
+          </div>
+        </sc-for>
+      </div>
+      <p style="margin: 9px 0 0; font-size: 11.5px; line-height: 1.45; color: var(--muted, #5a4433);">Mus reads only what is on. Nothing at <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px;">suggest</span> or below is ever written without you.</p>
+    </sc-if>
+  </div>
+
+  <!-- THREAD -->
+  <div aria-live="polite" style="overflow-y: auto; min-height: 0; padding: 14px 14px 10px; display: grid; gap: 13px; align-content: start;">
+    <sc-for list="{{ thread }}" as="m" hint-placeholder-count="3">
+      <div style="display: grid; gap: 4px; justify-items: {{ m.justify }};">
+        <span style="max-width: {{ m.maxW }}; padding: {{ m.pad }}; border-radius: 10px; background: {{ m.bg }}; font-size: 13.5px; line-height: 1.5; color: {{ m.color }};">{{ m.text }}</span>
+      </div>
+    </sc-for>
+
+    <sc-if value="{{ thinking }}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span style="width: 5px; height: 5px; border-radius: 999px; background: var(--muted2, #6e5f4c); animation: km-rail-pulse 1s ease-in-out infinite;"></span>
+        <span style="width: 5px; height: 5px; border-radius: 999px; background: var(--muted2, #6e5f4c); animation: km-rail-pulse 1s ease-in-out 0.15s infinite;"></span>
+        <span style="width: 5px; height: 5px; border-radius: 999px; background: var(--muted2, #6e5f4c); animation: km-rail-pulse 1s ease-in-out 0.3s infinite;"></span>
+        <span style="margin-left: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; letter-spacing: 0.06em; color: var(--muted2, #6e5f4c);">reading {{ screenLabel }}</span>
+      </div>
+    </sc-if>
+  </div>
+
+  <!-- PROPOSAL -->
+  <sc-if value="{{ hasProposal }}" hint-placeholder-val="{{ true }}">
+  <div style="margin: 0 14px 12px; border: 1px solid {{ prop.border }}; border-radius: 9px; background: {{ prop.bg }}; overflow: hidden;">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 11px 7px; border-bottom: 1px solid {{ prop.border }};">
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 8.5px; font-weight: 500; letter-spacing: 0.11em; text-transform: uppercase; color: {{ prop.riskColor }};">{{ prop.riskLabel }}</span>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 8.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted2, #6e5f4c);">{{ prop.action }}</span>
+    </div>
+
+    <div style="padding: 10px 11px 11px;">
+      <p style="margin: 0; font-size: 14px; font-weight: 600; line-height: 1.35;">{{ prop.title }}</p>
+      <p style="margin: 6px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--muted, #5a4433);">{{ prop.why }}</p>
+
+      <sc-if value="{{ prop.hasDiff }}" hint-placeholder-val="{{ true }}">
+        <div style="display: grid; gap: 1px; margin-top: 10px; border: 1px solid var(--line, #1f4d3a1f); border-radius: 6px; overflow: hidden;">
+          <div style="display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 8px; padding: 6px 9px; background: var(--surface, #fffbf4);">
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 8.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted2, #6e5f4c);">now</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted, #5a4433);">{{ prop.before }}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 8px; padding: 6px 9px; background: var(--sunken, #efe8d8);">
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 8.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted2, #6e5f4c);">after</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500;">{{ prop.after }}</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ prop.hasBlocks }}" hint-placeholder-val="{{ false }}">
+        <div style="display: grid; gap: 1px; margin-top: 10px; border: 1px solid var(--line, #1f4d3a1f); border-radius: 6px; overflow: hidden;">
+          <sc-for list="{{ prop.blocks }}" as="b" hint-placeholder-count="4">
+            <div style="display: grid; grid-template-columns: 46px minmax(0, 1fr); gap: 8px; align-items: baseline; padding: 6px 9px; background: {{ b.bg }};">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted, #5a4433);">{{ b.time }}</span>
+              <span style="min-width: 0;">
+                <span style="display: block; font-size: 12.5px; font-weight: 500;">{{ b.title }}</span>
+                <span style="display: block; font-size: 11px; line-height: 1.4; color: var(--muted2, #6e5f4c);">{{ b.why }}</span>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 10px;">
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 8.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted2, #6e5f4c);">touches</span>
+        <sc-for list="{{ prop.touches }}" as="t" hint-placeholder-count="2">
+          <span style="display: inline-block; padding: 1px 6px; border: 1px solid var(--lineStrong, #1f4d3a33); border-radius: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.06em; color: var(--muted, #5a4433);">{{ t }}</span>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ prop.isHigh }}" hint-placeholder-val="{{ false }}">
+        <label style="display: grid; gap: 5px; margin-top: 11px;">
+          <span style="font-size: 11.5px; line-height: 1.45; color: var(--text, #17211b);">This one changes a target, so it needs the word — type <span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600;">apply</span>.</span>
+          <input value="{{ confirmWord }}" onChange="{{ onConfirmWord }}" placeholder="apply" style="height: 32px; padding: 0 9px; border: 1px solid var(--lineStrong, #1f4d3a33); border-radius: 6px; background: var(--surface, #fffbf4); color: inherit; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px;" />
+        </label>
+      </sc-if>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px;">
+        <button type="button" onClick="{{ onApply }}" disabled="{{ prop.applyDisabled }}" style="height: 32px; padding: 0 13px; border: 0; border-radius: 6px; background: {{ prop.applyBg }}; color: {{ prop.applyColor }}; font: inherit; font-size: 13px; font-weight: 600; cursor: {{ prop.applyCursor }}; opacity: {{ prop.applyOpacity }};">{{ prop.applyLabel }}</button>
+        <button type="button" onClick="{{ onEdit }}" style="height: 32px; padding: 0 11px; border: 1px solid var(--lineStrong, #1f4d3a33); border-radius: 6px; background: transparent; color: inherit; font: inherit; font-size: 13px; cursor: pointer;">Edit</button>
+        <button type="button" onClick="{{ onDismiss }}" style="height: 32px; padding: 0 11px; border: 1px solid var(--lineStrong, #1f4d3a33); border-radius: 6px; background: transparent; color: var(--muted, #5a4433); font: inherit; font-size: 13px; cursor: pointer;">Dismiss</button>
+      </div>
+      <p style="margin: 8px 0 0; font-size: 11px; line-height: 1.45; color: var(--muted2, #6e5f4c);">{{ prop.foot }}</p>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- UNDO + ACTIVITY -->
+  <div style="border-top: 1px solid var(--line, #1f4d3a1f);">
+    <sc-if value="{{ hasUndo }}" hint-placeholder-val="{{ false }}">
+      <div style="display: grid; grid-template-columns: 15px minmax(0, 1fr) auto; align-items: center; gap: 9px; padding: 9px 14px; background: var(--sunken, #efe8d8);">
+        <span aria-hidden="true" style="display: inline-grid; place-items: center; width: 15px; height: 15px; border-radius: 999px; background: var(--action, #1f4d3a); color: var(--actionFg, #fffbf4); font-size: 9px; font-weight: 700;">✓</span>
+        <span style="font-size: 12.5px; line-height: 1.4;">{{ undoText }}</span>
+        <button type="button" onClick="{{ onUndo }}" style="border: 0; background: transparent; color: var(--action, #1f4d3a); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;">Undo</button>
+      </div>
+    </sc-if>
+
+    <button type="button" onClick="{{ toggleLog }}" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: 9px 14px; border: 0; background: transparent; color: var(--muted, #5a4433); font: inherit; font-size: 12px; text-align: left; cursor: pointer;">
+      <span style="display: flex; align-items: center; gap: 6px;"><span>{{ logChevron }}</span><span>What Mus did today</span></span>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted2, #6e5f4c);">{{ logCount }}</span>
+    </button>
+    <sc-if value="{{ logOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="display: grid; gap: 1px; padding: 0 14px 11px;">
+        <sc-for list="{{ log }}" as="l" hint-placeholder-count="3">
+          <div style="display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 9px; align-items: baseline; padding: 5px 0; border-top: 1px solid var(--line, #1f4d3a1f);">
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--muted2, #6e5f4c);">{{ l.time }}</span>
+            <span style="font-size: 12px; line-height: 1.45;">{{ l.text }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+
+  <!-- QUICK ACTIONS + COMPOSER -->
+  <div style="border-top: 1px solid var(--line, #1f4d3a1f); padding: 10px 12px 12px;">
+    <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+      <sc-for list="{{ quick }}" as="q" hint-placeholder-count="4">
+        <button type="button" onClick="{{ q.onClick }}" style="height: 27px; padding: 0 10px; border: 1px solid var(--lineStrong, #1f4d3a33); border-radius: 999px; background: transparent; color: var(--muted, #5a4433); font: inherit; font-size: 12px; cursor: pointer; white-space: nowrap;">{{ q.label }}</button>
+      </sc-for>
+    </div>
+    <form onSubmit="{{ onSend }}" style="display: grid; grid-template-columns: minmax(0, 1fr) 34px; gap: 7px; align-items: end; margin-top: 9px;">
+      <textarea rows="2" value="{{ composer }}" onChange="{{ onComposer }}" onKeyDown="{{ onComposerKey }}" placeholder="{{ placeholder }}" aria-label="Message Mus" style="width: 100%; min-height: 54px; max-height: 96px; padding: 8px 10px; border: 1px solid var(--lineStrong, #1f4d3a33); border-radius: 8px; background: var(--bg, #f7f2e7); color: inherit; font: inherit; font-size: 13.5px; line-height: 1.45; resize: none;"></textarea>
+      <button type="submit" aria-label="Send" style="width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 8px; background: var(--action, #1f4d3a); color: var(--actionFg, #fffbf4); cursor: pointer;">
+        <svg width="17" height="17" viewBox="0 0 21 21" aria-hidden="true"><path d="M3 10.5L18 4L11.5 18L10 12L3 10.5Z" fill="currentColor" /></svg>
+      </button>
+    </form>
+    <p style="margin: 7px 0 0; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.04em; color: var(--muted2, #6e5f4c);">Same assistant as the Mus tab · proposes, never writes</p>
+  </div>
+</aside>
+</sc-if>
+
+<sc-if value="{{ isCollapsed }}" hint-placeholder-val="{{ false }}">
+<aside aria-label="Mus, collapsed" style="display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; justify-items: center; gap: 12px; height: 100%; padding: 13px 0 14px; border-left: 1px solid var(--line, #1f4d3a1f); background: var(--surface, #fffbf4);">
+  <button type="button" onClick="{{ onExpand }}" aria-label="Open Mus" style="position: relative; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 999px; background: transparent; cursor: pointer;">
+    <img src="assets/mus-neutral.png" alt="" style="width: 34px; height: 34px; border-radius: 999px; object-fit: cover; object-position: 50% 22%; background: var(--sunken, #efe8d8);" />
+    <sc-if value="{{ hasProposal }}" hint-placeholder-val="{{ true }}">
+      <span aria-hidden="true" style="position: absolute; right: -2px; top: -2px; width: 11px; height: 11px; border-radius: 999px; background: var(--mustard, #d4a72c); border: 2px solid var(--surface, #fffbf4);"></span>
+    </sc-if>
+  </button>
+  <span style="font-family: 'IBM Plex Mono', monospace; font-size: 8.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted2, #6e5f4c); writing-mode: vertical-rl;">Mus</span>
+  <span></span>
+  <button type="button" onClick="{{ onExpand }}" aria-label="Open Mus" style="width: 26px; height: 26px; border: 0; border-radius: 6px; background: transparent; color: var(--muted2, #6e5f4c); font-size: 15px; line-height: 1; cursor: pointer;">‹</button>
+</aside>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 340, &quot;height&quot;: 860}, &quot;module&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;today&quot;, &quot;foods&quot;, &quot;verify&quot;, &quot;gym&quot;, &quot;todos&quot;], &quot;default&quot;: &quot;today&quot;, &quot;tsType&quot;: &quot;'today' | 'foods' | 'verify' | 'gym' | 'todos'&quot;}, &quot;selectionLabel&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;collapsed&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;}}">
+const SCREENS = {
+  today: 'Today · 1 Sep',
+  foods: 'Foods · catalog',
+  verify: 'Verify · PH core',
+  gym: 'Gym · Push A',
+  todos: 'Todos · day view',
+};
+
+const PERM_LEVELS = ['read', 'suggest', 'edit w/ approval', 'edit', 'never'];
+
+const CONTENT = {
+  today: {
+    thread: [
+      { me: true, text: 'Bakit mataas yung average ko this week?' },
+      { me: false, text: 'It is 2,318 against a 2,450 target, so it is under, not over. Tuesday and Thursday were the light days — both under 2,300 with no dinner logged after the gym.' },
+      { me: false, text: 'Your weight trend has moved down 1.2 kg across eight weeks. That is faster than the 0.5 kg/month you set, so the target is probably low now.' },
+    ],
+    quick: ['Explain this week', 'What did I miss logging?', 'Add a dinner block'],
+    proposal: {
+      risk: 'high', action: 'set nutrition target',
+      title: 'Raise the daily target 2,450 → 2,520 kcal',
+      why: 'Eight-week trend is −1.2 kg, faster than the 0.5 kg/month you asked for. This is a suggestion from your own numbers, not a medical recommendation.',
+      before: 'target 2,450 kcal/day · set 12 Jul',
+      after: 'target 2,520 kcal/day · from tomorrow',
+      touches: ['Today', 'Goals'],
+      foot: 'Past days keep the target they were logged against. Nothing is rewritten.',
+    },
+  },
+  foods: {
+    thread: [
+      { me: true, text: 'May duplicate ba sa catalog?' },
+      { me: false, text: 'Two. “Sinaing” is an alias on Kanin but also a separate row you made in July, and “kape” points at both Nescafé 3-in-1 and a row called Coffee.' },
+    ],
+    quick: ['Find duplicates', 'What is unverified?', 'Explain a source note'],
+    proposal: {
+      risk: 'low', action: 'merge aliases',
+      title: 'Fold “sinaing” into Kanin as an alias',
+      why: 'The standalone row has no entries logged against it, so nothing in your history changes.',
+      before: '2 rows · sinaing, Kanin (white rice, cooked)',
+      after: '1 row · Kanin — alias: sinaing',
+      touches: ['Foods'],
+      foot: 'Low risk, so this applies straight away with an undo for the rest of the day.',
+    },
+  },
+  verify: {
+    thread: [
+      { me: true, text: 'Anong mali sa row na ito?' },
+      { me: false, text: 'The 4/4/9 check is off by 8.4%. 8.0 P + 3.5 C + 6.5 F reconciles to 104.5 kcal against the 104 you have, which is fine — the drift is in the fat, because the broth-heavy assumption in your source note implies less rendered pork fat than 6.5 g.' },
+      { me: false, text: 'I can only suggest here. The number is yours to set.' },
+    ],
+    quick: ['Which rows drift?', 'Explain this source note', 'Sort by how often I log it'],
+    proposal: {
+      risk: 'medium', action: 'edit ph_core row',
+      title: 'Sinigang na baboy — fat 6.5 → 5.8 g',
+      why: 'Brings 4/4/9 inside 1% and matches the 30 g cooked pork in your own source note. Confidence stays 0.50 until you verify it yourself.',
+      before: 'P 8.0 / C 3.5 / F 6.5 → 104.5 kcal · off 8.4%',
+      after: 'P 8.0 / C 3.5 / F 5.8 → 98.2 kcal · off 0.9%',
+      touches: ['Verify', 'Foods'],
+      foot: 'Verifying is still your action. This only fixes the arithmetic you flagged.',
+    },
+  },
+  gym: {
+    thread: [
+      { me: true, text: 'Cable station is busy and I only have 30 minutes left.' },
+      { me: false, text: 'You have three lifts unfinished: Cable Fly, Machine Shoulder Press, Rope Pushdown. At your usual pace that is about 34 minutes with the rest you have configured.' },
+      { me: false, text: 'Bench and Incline DB are done and locked, so I will not touch them.' },
+    ],
+    quick: ['Fill the gaps', 'I have 30 minutes', 'What did I lift last time?', 'Cable is busy'],
+    proposal: {
+      risk: 'medium', action: 'substitute + trim',
+      title: 'Swap Cable Fly for Pec Deck Fly, drop one pushdown set',
+      why: 'Same movement pattern and primary muscle, and the pec deck is free. Trimming one set brings the remaining work to 28 minutes.',
+      before: 'Cable Fly 3×12 · Rope Pushdown 3×15 · 34 min left',
+      after: 'Pec Deck Fly 3×12 · Rope Pushdown 2×15 · 28 min left',
+      touches: ['Gym'],
+      foot: 'Only unfinished work moves. Completed sets on Bench and Incline DB stay exactly as logged.',
+    },
+  },
+  todos: {
+    thread: [
+      { me: true, text: 'Replan the rest of today. Gym at 6, and I still owe ten verify rows.' },
+      { me: false, text: 'Class is fixed and already past. Lunch is done. That leaves 15:30 onward with dinner at 19:30 as the wall.' },
+      { me: false, text: 'The paper is due tomorrow and has no block today — I put it first, before you are tired.' },
+    ],
+    quick: ['Plan my day', 'Replan from now', 'What can I do now?', 'Brain dump'],
+    proposal: {
+      risk: 'medium', action: 'replan from now',
+      title: 'Four blocks for the rest of today',
+      why: 'Nothing before 15:30 moves. Gym stays where you fixed it, and the verify rows land after it so the paper gets your fresh hours.',
+      touches: ['Todos', 'Gym'],
+      blocks: [
+        { time: '15:30', title: 'Paper — second block', why: 'due tomorrow, no block yet today' },
+        { time: '17:15', title: 'Travel to gym', why: '20 min, from your usual' },
+        { time: '18:00', title: 'Gym · Push A', why: 'you fixed this — not moved' },
+        { time: '19:30', title: 'Dinner', why: 'wall you set' },
+      ],
+      foot: 'Verify rows stay unscheduled — 25 free minutes are left after dinner and ten rows is about 18.',
+    },
+  },
+};
+
+const APPLIED = {
+  today: 'Target raised to 2,520 kcal from tomorrow.',
+  foods: 'Folded “sinaing” into Kanin as an alias.',
+  verify: 'Sinigang na baboy fat set to 5.8 g.',
+  gym: 'Swapped in Pec Deck Fly and trimmed a pushdown set.',
+  todos: 'Replanned four blocks from 15:30.',
+};
+
+const LOG = [
+  { time: '14:12', text: 'Folded “kape” alias into Nescafé 3-in-1' },
+  { time: '13:04', text: 'Added todo — Verify 10 PH core rows' },
+  { time: '11:38', text: 'Moved Gym 17:00 → 18:00 (you confirmed)' },
+];
+
+class Component extends DCLogic {
+  state = {
+    collapsed: null, composer: '', thinking: false,
+    dismissed: false, applied: false, confirmWord: '',
+    permsOpen: false, logOpen: false, extra: [], undoShown: false,
+    permLevels: null,
+  };
+
+  componentWillUnmount() { if (this.t) clearTimeout(this.t); }
+
+  send(text) {
+    const body = text.trim();
+    if (!body) return;
+    this.setState((s) => ({ extra: [...s.extra, { me: true, text: body }], composer: '', thinking: true }));
+    if (this.t) clearTimeout(this.t);
+    this.t = setTimeout(() => {
+      this.setState((s) => ({
+        thinking: false,
+        extra: [...s.extra, { me: false, text: 'Reading ' + (SCREENS[this.mod()] || 'this screen') + ' now. I will put anything that changes your data in a proposal below — nothing saves until you confirm it.' }],
+        dismissed: false,
+      }));
+    }, 900);
+  }
+
+  mod() {
+    const m = this.props.module;
+    return CONTENT[m] ? m : 'today';
+  }
+
+  renderVals() {
+    const s = this.state;
+    const mod = this.mod();
+    const c = CONTENT[mod];
+    const collapsed = s.collapsed === null ? Boolean(this.props.collapsed) : s.collapsed;
+
+    const levels = s.permLevels || {
+      today: 'edit w/ approval', foods: 'edit w/ approval', verify: 'suggest',
+      gym: 'edit w/ approval', todos: 'edit',
+    };
+    const permDefs = [
+      ['today', 'Food log · today'],
+      ['foods', 'Food catalog'],
+      ['verify', 'PH core rows'],
+      ['gym', 'Gym sessions'],
+      ['todos', 'Todos + timetable'],
+    ];
+    const onCount = permDefs.filter(([k]) => levels[k] !== 'never').length;
+
+    const p = c.proposal;
+    const isHigh = p.risk === 'high';
+    const riskMap = {
+      low: { riskLabel: 'low risk · applies with undo', riskColor: 'var(--muted, #5a4433)', border: 'var(--line, #1f4d3a1f)', bg: 'var(--surface, #fffbf4)', applyLabel: 'Apply' },
+      medium: { riskLabel: 'medium risk · preview first', riskColor: 'var(--action, #1f4d3a)', border: 'var(--lineStrong, #1f4d3a33)', bg: 'color-mix(in srgb, var(--action, #1f4d3a) 5%, var(--surface, #fffbf4))', applyLabel: 'Confirm' },
+      high: { riskLabel: 'high risk · needs the word', riskColor: 'var(--attn, #b5652f)', border: 'color-mix(in srgb, var(--attn, #b5652f) 45%, transparent)', bg: 'color-mix(in srgb, var(--attn, #b5652f) 7%, var(--surface, #fffbf4))', applyLabel: 'Apply target' },
+    }[p.risk];
+
+    const applyDisabled = isHigh && s.confirmWord.trim().toLowerCase() !== 'apply';
+    const sel = this.props.selectionLabel;
+
+    const thread = [...c.thread, ...s.extra].map((m) => ({
+      text: m.text,
+      justify: m.me ? 'end' : 'start',
+      maxW: m.me ? '90%' : '100%',
+      pad: m.me ? '9px 11px' : '0',
+      bg: m.me ? 'var(--sunken, #efe8d8)' : 'transparent',
+      color: 'var(--text, #17211b)',
+    }));
+
+    return {
+      isOpen: !collapsed,
+      isCollapsed: collapsed,
+      onCollapse: () => this.setState({ collapsed: true }),
+      onExpand: () => this.setState({ collapsed: false }),
+
+      stateLabel: s.thinking ? 'state · thinking' : 'state · neutral',
+      screenLabel: SCREENS[mod],
+      selectionText: sel ? sel : 'nothing selected — say “this” after picking a row',
+      selectionColor: sel ? 'var(--text, #17211b)' : 'var(--muted2, #6e5f4c)',
+
+      permsOpen: s.permsOpen,
+      togglePerms: () => this.setState((st) => ({ permsOpen: !st.permsOpen })),
+      permsChevron: s.permsOpen ? '▾' : '▸',
+      permsSummary: onCount + ' of 5 modules readable',
+      perms: permDefs.map(([key, label]) => {
+        const level = levels[key];
+        const never = level === 'never';
+        const canEdit = level === 'edit';
+        return {
+          label, level,
+          border: never ? 'var(--line, #1f4d3a1f)' : canEdit ? 'var(--action, #1f4d3a)' : 'var(--lineStrong, #1f4d3a33)',
+          color: never ? 'var(--muted2, #6e5f4c)' : canEdit ? 'var(--action, #1f4d3a)' : 'var(--muted, #5a4433)',
+          onCycle: () => this.setState((st) => {
+            const base = st.permLevels || levels;
+            const i = PERM_LEVELS.indexOf(base[key]);
+            return { permLevels: { ...base, [key]: PERM_LEVELS[(i + 1) % PERM_LEVELS.length] } };
+          }),
+        };
+      }),
+
+      thread,
+      thinking: s.thinking,
+
+      hasProposal: !s.dismissed && !s.applied,
+      prop: {
+        ...riskMap,
+        action: p.action,
+        title: p.title,
+        why: p.why,
+        hasDiff: Boolean(p.before),
+        before: p.before || '',
+        after: p.after || '',
+        hasBlocks: Boolean(p.blocks),
+        blocks: (p.blocks || []).map((b, i) => ({ ...b, bg: i % 2 === 0 ? 'var(--surface, #fffbf4)' : 'var(--sunken, #efe8d8)' })),
+        touches: p.touches,
+        foot: p.foot,
+        isHigh,
+        applyDisabled,
+        applyBg: applyDisabled ? 'var(--sunken, #efe8d8)' : 'var(--action, #1f4d3a)',
+        applyColor: applyDisabled ? 'var(--muted2, #6e5f4c)' : 'var(--actionFg, #fffbf4)',
+        applyCursor: applyDisabled ? 'not-allowed' : 'pointer',
+        applyOpacity: applyDisabled ? '0.75' : '1',
+      },
+      confirmWord: s.confirmWord,
+      onConfirmWord: (e) => this.setState({ confirmWord: e.target.value }),
+      onApply: () => { if (!applyDisabled) this.setState({ applied: true, undoShown: true, confirmWord: '' }); },
+      onEdit: () => this.setState((st) => ({ extra: [...st.extra, { me: false, text: 'Open it and change what you want — I will re-check the parts that depend on it.' }] })),
+      onDismiss: () => this.setState({ dismissed: true }),
+
+      hasUndo: s.undoShown,
+      undoText: APPLIED[mod],
+      onUndo: () => this.setState({ undoShown: false, applied: false, dismissed: false }),
+
+      logOpen: s.logOpen,
+      toggleLog: () => this.setState((st) => ({ logOpen: !st.logOpen })),
+      logChevron: s.logOpen ? '▾' : '▸',
+      logCount: LOG.length + ' actions',
+      log: LOG,
+
+      quick: c.quick.map((label) => ({ label, onClick: () => this.send(label) })),
+      composer: s.composer,
+      placeholder: 'Ask, or tell Mus what changed…',
+      onComposer: (e) => this.setState({ composer: e.target.value }),
+      onComposerKey: (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(this.state.composer); } },
+      onSend: (e) => { e.preventDefault(); this.send(this.state.composer); },
+    };
+  }
+}
+</script>
+</body>
+</html>

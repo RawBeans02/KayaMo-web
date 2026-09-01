@@ -26,7 +26,7 @@ export function MusRailMount({
 
   if (collapsed) {
     return (
-      <aside className={styles.railCollapsed} aria-label="Mus, collapsed">
+      <aside className={styles.railCollapsed} aria-label="Mus, collapsed" data-shell="rail">
         <button type="button" className={styles.railExpand} onClick={onToggle} aria-label="Expand Mus">
           <Image src="/mus-neutral.png" alt="" width={28} height={28} />
         </button>
@@ -35,7 +35,7 @@ export function MusRailMount({
   }
 
   return (
-    <aside className={styles.rail} aria-label="Mus, the shared assistant">
+    <aside className={styles.rail} aria-label="Mus, the shared assistant" data-shell="rail">
       <header className={styles.railHeader}>
         <Image src="/mus-neutral.png" alt="" width={32} height={32} className={styles.railAvatar} />
         <div className={styles.railTitle}>
@@ -66,7 +66,9 @@ export function MusRailMount({
       <div className={styles.railThread}>
         <p className={styles.railEmpty}>Mus waits here. Proposals land in a later pass.</p>
       </div>
-      <p className={styles.railFoot}>Same assistant as the Mus tab · proposes, never writes</p>
+      <p className={styles.railFoot} data-shell="rail-foot">
+        Same assistant as the Mus tab · proposes, never writes
+      </p>
     </aside>
   );
 }
