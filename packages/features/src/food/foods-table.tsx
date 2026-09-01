@@ -7,6 +7,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { DeskMusPane } from '../desk/desk-mus';
 import { useDeskClock } from '../desk/use-desk-clock';
 import { ProvenanceKcal, ProvenanceMark } from './provenance';
+import { applyOverlayToFood } from './verify-model';
+import { readVerifyOverlay } from './verify-overlay';
 import styles from './desk.module.css';
 
 export function FoodsTable({ userId }: { userId: string }) {
@@ -26,8 +28,9 @@ export function FoodsTable({ userId }: { userId: string }) {
           client,
           rows.map((row) => row.id),
         );
+        const overlay = readVerifyOverlay();
         for (const food of rows) {
-          await cacheFoodWithServings(food, servings.get(food.id) ?? []);
+          await cacheFoodWithServings(applyOverlayToFood(food, overlay[food.id]), servings.get(food.id) ?? []);
         }
         if (cancelled) return;
         const labels = new Map<string, string>();
@@ -35,7 +38,7 @@ export function FoodsTable({ userId }: { userId: string }) {
           const picked = list.find((row) => row.is_default) ?? list[0];
           if (picked) labels.set(id, `${picked.label} · ${picked.grams_equivalent} g`);
         }
-        setFoods(rows);
+        setFoods(rows.map((food) => applyOverlayToFood(food, overlay[food.id])));
         setServingLabel(labels);
       } catch {
         if (!cancelled) setError('Could not load the catalog.');

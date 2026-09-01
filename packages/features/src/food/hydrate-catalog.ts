@@ -7,17 +7,21 @@ import {
   listVisibleFoods,
 } from '@kayamo/db';
 import { cacheFoodWithServings, listCachedFoodsWithServings } from '@kayamo/offline';
+import { applyOverlayToFood } from './verify-model';
+import { readVerifyOverlay } from './verify-overlay';
 
 export async function catalogFromCache(): Promise<CatalogFood[]> {
+  const overlay = readVerifyOverlay();
   const cached = await listCachedFoodsWithServings();
   return cached.map(({ food, servings }) =>
-    foodRowToCatalog(food, servings, food.name_tl ?? []),
+    foodRowToCatalog(applyOverlayToFood(food, overlay[food.id]), servings, food.name_tl ?? []),
   );
 }
 
 /** Pulls visible foods into Dexie so Cmd+K / catalog screens share one cache. */
 export async function hydrateVisibleCatalog(): Promise<CatalogFood[]> {
   const client = createBrowserSupabase();
+  const overlay = readVerifyOverlay();
   const rows = await listVisibleFoods(client);
   const ids = rows.map((row) => row.id);
   const [servingsById, aliases] = await Promise.all([
@@ -25,11 +29,12 @@ export async function hydrateVisibleCatalog(): Promise<CatalogFood[]> {
     listFoodAliases(client, ids),
   ]);
   for (const food of rows) {
-    await cacheFoodWithServings(food, servingsById.get(food.id) ?? []);
+    const patched = applyOverlayToFood(food, overlay[food.id]);
+    await cacheFoodWithServings(patched, servingsById.get(food.id) ?? []);
   }
   return rows.map((food) =>
     foodRowToCatalog(
-      food,
+      applyOverlayToFood(food, overlay[food.id]),
       servingsById.get(food.id) ?? [],
       aliases.get(food.id) ?? [],
     ),
