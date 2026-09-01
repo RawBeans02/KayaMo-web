@@ -5,6 +5,7 @@ import {
   listLocalOpenTasks,
   listLocalTasksForDate,
   listLocalWorkoutHistory,
+  recoverClosedOfflineDb,
   useLiveFoodEntries,
   useLiveFoodHistory,
   type LocalTask,
@@ -36,19 +37,25 @@ export function DeskHome({ userId }: { userId: string }) {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const [dayTasks, inbox, sessions] = await Promise.all([
-        listLocalTasksForDate(userId, today),
-        listLocalOpenTasks(userId),
-        listLocalWorkoutHistory(userId),
-      ]);
-      if (cancelled) return;
-      const monday = mondayOfLogicalWeek(today);
-      setTasks(dayTasks);
-      setOpenTasks(inbox);
-      setWorkouts(sessions.filter((row) => row.logical_date === today));
-      setWeekWorkouts(
-        sessions.filter((row) => row.logical_date >= monday && row.logical_date <= today),
-      );
+      try {
+        await recoverClosedOfflineDb(async () => {
+          const [dayTasks, inbox, sessions] = await Promise.all([
+            listLocalTasksForDate(userId, today),
+            listLocalOpenTasks(userId),
+            listLocalWorkoutHistory(userId),
+          ]);
+          if (cancelled) return;
+          const monday = mondayOfLogicalWeek(today);
+          setTasks(dayTasks);
+          setOpenTasks(inbox);
+          setWorkouts(sessions.filter((row) => row.logical_date === today));
+          setWeekWorkouts(
+            sessions.filter((row) => row.logical_date >= monday && row.logical_date <= today),
+          );
+        });
+      } catch {
+        // IndexedDB can close during auth/scope switch; the next tick retries.
+      }
     }
     void load();
     const onVis = () => void load();
@@ -112,18 +119,18 @@ export function DeskHome({ userId }: { userId: string }) {
         : `${(headline.remainingKcal ?? 0).toLocaleString('en-PH')} left · from this week's target`;
 
   return (
-    <section className={styles.panel} aria-labelledby="dash-title">
+    <section className={`${styles.panel} ${styles.dashboard}`} aria-labelledby="dash-title">
       <header className={styles.header}>
         <div>
           <p className={styles.eyebrow}>Dashboard</p>
           <h1 id="dash-title" className={styles.title}>
             Today
           </h1>
-          <p className={styles.lede}>
-            {today}. ⌘K logs food. Mus on the right can propose a todo or a goal — nothing
-            writes until you confirm.
-          </p>
         </div>
+        <p className={styles.headerAside}>
+          {today}. ⌘K logs food. Mus on the right can propose a todo or a goal — nothing
+          writes until you confirm.
+        </p>
       </header>
 
       <div className={styles.dashSplit}>

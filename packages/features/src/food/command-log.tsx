@@ -1,6 +1,6 @@
 'use client';
 
-import { mealSlotAtHour, mealSlotLabel, type MealSlot } from '@kayamo/food/quick-log';
+import { isMealSlot, mealSlotAtHour, mealSlotLabel, type MealSlot } from '@kayamo/food/quick-log';
 import {
   isEstimateResult,
   logCountsFromHistory,
@@ -220,11 +220,11 @@ export function CommandLog({
     setPlate([]);
   }, []);
 
-  const openPalette = useCallback((prefill?: string) => {
+  const openPalette = useCallback((prefill?: string, mealSlotOverride?: MealSlot) => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     const hour = localHourFromInstant(new Date().toISOString(), clock.timeZone);
-    setMealSlot(mealSlotAtHour(hour));
+    setMealSlot(mealSlotOverride ?? mealSlotAtHour(hour));
     resetSession();
     setQuery(prefill ?? '');
     setStatus(null);
@@ -257,8 +257,9 @@ export function CommandLog({
       openPalette(query);
     }
     window.addEventListener(PREFILL_LOG_EVENT, onPrefill);
-    function onOpen() {
-      openPalette();
+    function onOpen(event: Event) {
+      const slot = (event as CustomEvent<{ mealSlot?: string }>).detail?.mealSlot;
+      openPalette(undefined, slot && isMealSlot(slot) ? slot : undefined);
     }
     window.addEventListener(OPEN_LOG_EVENT, onOpen);
     return () => {

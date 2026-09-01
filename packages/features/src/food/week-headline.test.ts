@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  isoWeekFromLogicalDate,
   mondayOfLogicalWeek,
   pickHeadlineTarget,
   weekHeadline,
@@ -20,6 +21,13 @@ function target(partial: Partial<TargetRow> & Pick<TargetRow, 'day_type' | 'kcal
     ...partial,
   };
 }
+
+describe('isoWeekFromLogicalDate', () => {
+  it('matches the ISO week the diary eyebrow uses', () => {
+    expect(isoWeekFromLogicalDate('2026-09-01')).toBe(36);
+    expect(isoWeekFromLogicalDate('2026-08-22')).toBe(34);
+  });
+});
 
 describe('mondayOfLogicalWeek', () => {
   it('returns the same day when today is Monday', () => {

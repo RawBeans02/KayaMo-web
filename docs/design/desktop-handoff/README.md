@@ -17,8 +17,9 @@ look and behavior, not production code to lift. The task is to **recreate them i
 using its established patterns:
 
 - The design's **Today** screen is the meal-slot food log. In this repo that table is
-  `/calories` (`TodayTable`). `/today` is the dashboard (`DeskHome`). Tranche 4 should
-  put the designed Today on `/today` rather than restyling the dashboard and calling it done.
+  `/calories` (`TodayTable`). `/today` is a dashboard the design bundle does not cover.
+  Tranche 4 restyles `/calories` and gives `/today` a token pass so it does not clash.
+  Do not fold the routes — nav, counts, and the rail context label stay put.
 - Routes already exist: `src/app/(shell)/{today,verify,foods,mus,gym,todos}/page.tsx`
 - Shell chrome: `src/app/(shell)/layout.tsx`, `packages/features/src/app-shell/`
 - Desktop screens: `packages/features/src/desk/` (`desk-home.tsx`, `gym-desk.tsx`,
@@ -127,7 +128,7 @@ Mus screen, which has its own three-column layout.
 
 ## Screens
 
-### 1 · Today (design table → `/calories` until tranche 4; `/today` is the dashboard)
+### 1 · Today (this table ships on `/calories`; `/today` stays the dashboard)
 Reading the week, not the day. Header `Diary · week 36` + *Tuesday, 1 September*, with a
 day-boundary note (00:00 Asia/Manila — totals follow the user's boundary, not midnight).
 

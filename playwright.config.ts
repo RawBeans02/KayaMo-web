@@ -8,8 +8,10 @@ const baseURL = hostedBaseURL || 'http://localhost:3002';
 
 export default defineConfig({
   testDir: './e2e',
-  // Local skip-login mints one magic link for a shared email. Parallel workers
-  // invalidate each other's OTP. Hosted runs skip those specs.
+  // Genuine constraint, not a speed workaround: local skip-login mints one
+  // magic link for LOCAL_DEV_EMAIL. Parallel workers invalidate each other's
+  // OTP and fail as "Could not complete local sign-in." Hosted runs skip
+  // those specs, so they may use Playwright's default worker count.
   workers: hostedBaseURL ? undefined : 1,
   use: {
     baseURL,

@@ -41,6 +41,16 @@ export function mondayOfLogicalWeek(today: string): string {
   return shiftLogicalDate(today, -daysFromMonday);
 }
 
+/** ISO week number for a YYYY-MM-DD logical date (UTC calendar, no clock). */
+export function isoWeekFromLogicalDate(logicalDate: string): number {
+  const [year, month, day] = logicalDate.split('-').map(Number);
+  const date = new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, day ?? 1));
+  const weekday = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - weekday);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil(((date.getTime() - yearStart.getTime()) / 86_400_000 + 1) / 7);
+}
+
 export function dailyKcalTotals(entries: readonly HeadlineEntry[]): Map<string, number> {
   const totals = new Map<string, number>();
   for (const row of entries) {
