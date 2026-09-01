@@ -9,6 +9,7 @@ import type {
 import type { DbClient } from './client';
 import { DbQueryError, throwIfError } from './errors';
 import { clampUpdatedAtIso, omitServerCursor } from './lww';
+import { parseRoutineTitle, parseScheduleDays, parseTaskTitle } from '../write-schemas';
 
 export type TaskWrite = Omit<TaskInsert, 'created_at' | 'id'> & {
   id: string;
@@ -35,7 +36,7 @@ export type PlanningUpsertResult<T> =
 function toTaskInsert(row: TaskWrite): TaskInsert {
   return {
     ...omitServerCursor(row),
-    title: row.title.trim(),
+    title: parseTaskTitle(row.title),
     updated_at: clampUpdatedAtIso(row.updated_at),
   };
 }
@@ -43,8 +44,8 @@ function toTaskInsert(row: TaskWrite): TaskInsert {
 function toRoutineInsert(row: RoutineWrite): RoutineInsert {
   return {
     ...omitServerCursor(row),
-    title: row.title.trim(),
-    schedule_days: [...new Set(row.schedule_days)].sort((a, b) => a - b),
+    title: parseRoutineTitle(row.title),
+    schedule_days: parseScheduleDays(row.schedule_days),
     updated_at: clampUpdatedAtIso(row.updated_at),
   };
 }

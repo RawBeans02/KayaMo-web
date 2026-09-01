@@ -118,7 +118,11 @@ Match location and energy when those fields are present. No nutrition numbers. N
 const CAPTURE_SYSTEM = `Parse a brain dump into capture items. Philippine English and Taglish are normal.
 
 Kinds: TASK, EVENT, ROUTINE, HABIT, INBOX, PROJECT.
-If timing is vague, use INBOX. If a time is named, use EVENT.
+Do not invent dates or clock times. If the user did not name a calendar date, leave scheduledFor and horizon null.
+If timing is vague or missing, set timing to vague or unknown. Uncertain items belong in INBOX, or as a TASK with no scheduledFor.
+If a clock time is named, set preferredTime as 24h HH:MM and timing exact.
+If a weekday routine is named (every Sunday), set kind ROUTINE and scheduleDays using 0=Sunday through 6=Saturday. Never assume Monday–Friday.
+If routine days are unclear, use INBOX instead of inventing weekdays.
 confidence is 0-1. Ask at most five clarifying questions. No nutrition numbers.`;
 
 const OBSERVE_SYSTEM = `Observe the attached image for KayaMo.

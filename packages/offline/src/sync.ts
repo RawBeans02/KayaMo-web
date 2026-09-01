@@ -72,7 +72,8 @@ import { pullRemoteChanges, type PullPageFetcher, type PullStats } from './pull'
 import {
   dueQueueItems,
   markQueueFailure,
-  pendingCount,
+  reviveDeadLetterItems,
+  syncQueueCounts,
   removeQueueItemIfUnchanged,
 } from './queue';
 import { notifySyncStatus, subscribeSyncStatus } from './status';
@@ -106,7 +107,9 @@ export type SyncStatus =
   | { kind: 'pending'; count: number }
   | { kind: 'synced' }
   | { kind: 'degraded'; failedTables: number }
-  | { kind: 'paused' };
+  | { kind: 'paused' }
+  | { kind: 'local_db_error' }
+  | { kind: 'needs_attention'; count: number };
 
 const state = {
   paused: false,
@@ -114,7 +117,9 @@ const state = {
   syncing: false,
   online: typeof navigator === 'undefined' ? true : navigator.onLine,
   pending: 0,
+  needsAttention: 0,
   failedTables: 0,
+  localDbError: false,
   timer: 0 as ReturnType<typeof setTimeout> | 0,
   deps: null as SyncDeps | null,
 };
@@ -132,12 +137,20 @@ function setOnlineFlag(online: boolean): void {
 }
 
 function refreshSnapshot(): void {
+  if (state.localDbError) {
+    snapshot = { kind: 'local_db_error' };
+    return;
+  }
   if (!state.online) {
     snapshot = { kind: 'offline' };
     return;
   }
   if (state.paused) {
     snapshot = { kind: 'paused' };
+    return;
+  }
+  if (state.needsAttention > 0) {
+    snapshot = { kind: 'needs_attention', count: state.needsAttention };
     return;
   }
   if (state.pending > 0) {
@@ -153,9 +166,14 @@ function refreshSnapshot(): void {
 
 async function refreshPending(userId?: string): Promise<void> {
   try {
-    state.pending = await pendingCount(userId);
+    const counts = await syncQueueCounts(userId);
+    state.pending = counts.pending;
+    state.needsAttention = counts.needsAttention;
+    state.localDbError = false;
   } catch {
     state.pending = 0;
+    state.needsAttention = 0;
+    state.localDbError = true;
   }
   refreshSnapshot();
   notifySyncStatus();
@@ -212,6 +230,12 @@ export async function drainQueue(): Promise<void> {
     state.draining = false;
     await refreshPending();
   }
+}
+
+export async function retryFailedSyncWrites(userId: string): Promise<number> {
+  const revived = await reviveDeadLetterItems(userId);
+  if (revived > 0) void drainQueue();
+  return revived;
 }
 
 async function pushOutbound(

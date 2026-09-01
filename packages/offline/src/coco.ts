@@ -83,6 +83,35 @@ export async function appendLocalCocoMessage(input: {
     row.id,
     omitServerCursor(row) satisfies CocoMessageWrite,
   );
+  const touched = { ...conversation, updated_at: at };
+  await db.coco_conversations.put(touched);
+  await enqueueUpsert(
+    'coco_conversations',
+    touched.id,
+    omitServerCursor(touched) satisfies CocoConversationWrite,
+  );
+  void drainQueue();
+  return row;
+}
+
+export async function renameLocalCocoConversation(input: {
+  id: string;
+  userId: string;
+  title: string;
+}): Promise<LocalCocoConversation | null> {
+  const db = getOfflineDb();
+  const existing = await db.coco_conversations.get(input.id);
+  if (!existing || existing.user_id !== input.userId || existing.deleted_at) return null;
+  const title = input.title.trim().slice(0, 120);
+  if (!title) return existing;
+  const at = nowIso();
+  const row: LocalCocoConversation = { ...existing, title, updated_at: at };
+  await db.coco_conversations.put(row);
+  await enqueueUpsert(
+    'coco_conversations',
+    row.id,
+    omitServerCursor(row) satisfies CocoConversationWrite,
+  );
   void drainQueue();
   return row;
 }

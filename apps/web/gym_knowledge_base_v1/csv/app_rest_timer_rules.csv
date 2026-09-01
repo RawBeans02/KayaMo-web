@@ -1,7 +1,0 @@
-﻿rule_id,trigger,behavior,priority
-TIMER_001,performed_set.completed=true,Start rest timer using the completed set's rest_seconds value.,HARD
-TIMER_002,rest_seconds is null,"Use user's saved default; if none, ask or leave timer off rather than silently inventing a value.",HARD
-TIMER_003,timer expires,Send in-app notification/ping and mark timer expired; do not auto-complete the next set.,HARD
-TIMER_004,user starts another set while timer active,Keep timer visible unless user dismisses/cancels it.,SOFT
-TIMER_005,user edits rest time,Apply to current timer only or future sets depending on explicit user choice.,HARD
-TIMER_006,exercise tracking mode is duration/cardio/flexibility and no rest is configured,Do not force a resistance-style rest timer.,HARD

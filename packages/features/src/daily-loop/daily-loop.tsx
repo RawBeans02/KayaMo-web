@@ -11,6 +11,7 @@ import {
   listLocalFocusSessions,
   listLocalScripture,
   logicalDateFromInstant,
+  recoverClosedOfflineDb,
   saveLocalDailyLoopPreferences,
   saveLocalDailyPlan,
   saveLocalJournalEntry,
@@ -71,27 +72,33 @@ export function DailyLoop({ userId, native }: { userId: string; native: NativePo
   const faithEnabled = preferences?.faith_enabled ?? false;
 
   const hydrate = useCallback(async (date: string, faith: boolean) => {
-    const [nextPlan, nextSessions, passages] = await Promise.all([
-      getLocalDailyPlan(userId, date),
-      listLocalFocusSessions(userId, date),
-      listLocalScripture({ faithEnabled: faith }),
-    ]);
-    setPlan(nextPlan);
-    setSessions(nextSessions);
-    setScripture(passages);
+    await recoverClosedOfflineDb(async () => {
+      const [nextPlan, nextSessions, passages] = await Promise.all([
+        getLocalDailyPlan(userId, date),
+        listLocalFocusSessions(userId, date),
+        listLocalScripture({ faithEnabled: faith }),
+      ]);
+      setPlan(nextPlan);
+      setSessions(nextSessions);
+      setScripture(passages);
+    });
   }, [userId]);
 
   useEffect(() => {
     let cancelled = false;
     localStorage.setItem('kayamo:last-user-id', userId);
     async function loadLocalFirst() {
-      const prefs = await getLocalDailyLoopPreferences(userId);
-      if (cancelled) return;
-      setPreferences(prefs);
-      await hydrate(
-        logicalDateFromInstant(new Date().toISOString(), 'Asia/Manila', '00:00:00'),
-        prefs?.faith_enabled ?? false,
-      );
+      try {
+        const prefs = await recoverClosedOfflineDb(() => getLocalDailyLoopPreferences(userId));
+        if (cancelled) return;
+        setPreferences(prefs);
+        await hydrate(
+          logicalDateFromInstant(new Date().toISOString(), 'Asia/Manila', '00:00:00'),
+          prefs?.faith_enabled ?? false,
+        );
+      } catch {
+        // IndexedDB can close during auth/scope switch.
+      }
     }
     async function refreshProfile() {
       try {

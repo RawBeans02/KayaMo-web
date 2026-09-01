@@ -1,9 +1,20 @@
 export { PACKAGE } from './package-name';
+export { SyncStatusBar } from './sync/sync-status-bar';
+export { DiagnosticsPanel } from './diagnostics/diagnostics-panel';
+export { useLocalAppSnapshot } from './app-shell/use-local-app-snapshot';
+export { useMinuteClock, useSecondClock } from './clock/use-clock';
 export {
   apiFetch,
   apiUrl,
   configureApiClient,
+  ApiFetchError,
+  KAYAMO_PRODUCTION_API_ORIGIN,
+  KAYAMO_PRODUCTION_API_ORIGINS,
+  KAYAMO_WEB_ORIGIN,
+  validateApiOrigin,
   type ApiClientConfig,
+  type ApiFetchInit,
+  type ApiOriginMode,
 } from './api/api-origin';
 export { musReplyFromApi } from './mus/mus-reply';
 export {
@@ -43,7 +54,6 @@ export {
   type SheetServing,
 } from './food/quantity-form';
 export { TodayLog } from './food/today-log';
-export { SyncStatusBar } from './sync/sync-status-bar';
 export {
   greeting,
   progressionEvent,

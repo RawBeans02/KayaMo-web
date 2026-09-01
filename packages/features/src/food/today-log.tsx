@@ -21,6 +21,7 @@ import {
   cacheFoodWithServings,
   getCachedServings,
   getOfflineDb,
+  recoverClosedOfflineDb,
   localHourFromInstant,
   logicalDateFromInstant,
   logFoodEntries,
@@ -201,15 +202,21 @@ export function TodayLog({
             // Offline: Dexie cache is enough.
           }
 
-      const foods = (await getOfflineDb().foods.toArray()).filter((item) => !item.deleted_at);
-      const map = new Map<string, Serving[]>();
-      for (const food of foods) {
-        map.set(food.id, await getCachedServings(food.id));
-      }
-      if (cancelled) return;
-      setCachedFoods(foods);
-      setServingsById(map);
-    }
+          try {
+            const foods = (
+              await recoverClosedOfflineDb(async () => getOfflineDb().foods.toArray())
+            ).filter((item) => !item.deleted_at);
+            const map = new Map<string, Serving[]>();
+            for (const food of foods) {
+              map.set(food.id, await getCachedServings(food.id));
+            }
+            if (cancelled) return;
+            setCachedFoods(foods);
+            setServingsById(map);
+          } catch {
+            // Auth/scope switch can close IndexedDB; live queries retry.
+          }
+        }
 
     void hydrate();
     const tick = setInterval(() => setNowMs(Date.now()), 60_000);

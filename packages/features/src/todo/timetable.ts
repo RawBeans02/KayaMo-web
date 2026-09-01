@@ -13,6 +13,23 @@ export function snapMinutes(value: number, step = SNAP_MIN): number {
   return Math.round(clampMinutes(value) / step) * step;
 }
 
+export function shiftTimeRange(
+  startMin: number,
+  endMin: number,
+  deltaMin: number,
+  mode: 'move' | 'resize',
+  dayStart = DAY_START_MIN,
+  dayEnd = DAY_END_MIN,
+): { startMin: number; endMin: number } {
+  const duration = Math.max(SNAP_MIN, endMin - startMin);
+  if (mode === 'move') {
+    const start = snapMinutes(Math.max(dayStart, Math.min(dayEnd - duration, startMin + deltaMin)));
+    return { startMin: start, endMin: start + duration };
+  }
+  const end = snapMinutes(Math.max(startMin + SNAP_MIN, Math.min(dayEnd, endMin + deltaMin)));
+  return { startMin, endMin: end };
+}
+
 export function minutesToLabel(minutes: number): string {
   const safe = clampMinutes(minutes);
   const hour = Math.floor(safe / 60);
@@ -82,6 +99,21 @@ export function openWindows(
   }
   if (dayEnd - cursor >= SNAP_MIN) windows.push({ startMin: cursor, endMin: dayEnd });
   return windows;
+}
+
+export function openWindowsAfter(
+  blocks: LocalTimeBlock[],
+  nowMin: number,
+  dayStart = DAY_START_MIN,
+  dayEnd = DAY_END_MIN,
+): TimeWindow[] {
+  const cursor = Math.max(dayStart, nowMin);
+  return openWindows(blocks, dayStart, dayEnd)
+    .map((window) => ({
+      startMin: Math.max(window.startMin, cursor),
+      endMin: window.endMin,
+    }))
+    .filter((window) => window.endMin - window.startMin >= SNAP_MIN);
 }
 
 export function firstFit(

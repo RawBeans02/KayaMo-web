@@ -8,6 +8,9 @@ import {
 } from './db';
 import { notifySyncStatus } from './status';
 
+export const DEAD_LETTER_ATTEMPTS = 12;
+export const DEAD_LETTER_HOLD_MS = 10 * 365 * 24 * 60 * 60 * 1000;
+
 export async function enqueueUpsert(
   table: SyncableTable,
   entityId: string,
@@ -37,9 +40,24 @@ export async function pendingCount(
   userId?: string,
   db: KayaMoDB = getOfflineDb(),
 ): Promise<number> {
-  return userId
-    ? db.sync_queue.where('userId').equals(userId).count()
-    : db.sync_queue.count();
+  const counts = await syncQueueCounts(userId, db);
+  return counts.pending;
+}
+
+export async function syncQueueCounts(
+  userId?: string,
+  db: KayaMoDB = getOfflineDb(),
+): Promise<{ pending: number; needsAttention: number }> {
+  const rows = userId
+    ? await db.sync_queue.where('userId').equals(userId).toArray()
+    : await db.sync_queue.toArray();
+  let pending = 0;
+  let needsAttention = 0;
+  for (const item of rows) {
+    if (item.attempt >= DEAD_LETTER_ATTEMPTS) needsAttention += 1;
+    else pending += 1;
+  }
+  return { pending, needsAttention };
 }
 
 export async function dueQueueItems(
@@ -47,11 +65,13 @@ export async function dueQueueItems(
   userId?: string,
   db: KayaMoDB = getOfflineDb(),
 ): Promise<SyncQueueItem[]> {
-  const due = await db.sync_queue
-    .where('nextAttemptAt')
-    .belowOrEqual(now)
-    .sortBy('nextAttemptAt');
-  return userId ? due.filter((item) => item.userId === userId) : due;
+  if (userId) {
+    return db.sync_queue
+      .where('[userId+nextAttemptAt]')
+      .between([userId, 0], [userId, now], true, true)
+      .sortBy('nextAttemptAt');
+  }
+  return db.sync_queue.where('nextAttemptAt').belowOrEqual(now).sortBy('nextAttemptAt');
 }
 
 export async function markQueueFailure(
@@ -63,16 +83,37 @@ export async function markQueueFailure(
   const updated = await db.transaction('rw', db.sync_queue, async () => {
     const current = await db.sync_queue.get(item.id);
     if (!current || current.revision !== item.revision) return false;
+    const attempt = current.attempt + 1;
+    const dead = attempt >= DEAD_LETTER_ATTEMPTS;
     await db.sync_queue.put({
       ...current,
-      attempt: current.attempt + 1,
-      nextAttemptAt,
-      lastError,
+      attempt,
+      nextAttemptAt: dead ? Date.now() + DEAD_LETTER_HOLD_MS : nextAttemptAt,
+      lastError: dead ? `needs_attention: ${lastError}` : lastError,
     });
     return true;
   });
   notifySyncStatus();
   return updated;
+}
+
+export async function reviveDeadLetterItems(
+  userId: string,
+  db: KayaMoDB = getOfflineDb(),
+): Promise<number> {
+  const rows = await db.sync_queue.where('userId').equals(userId).toArray();
+  const dead = rows.filter((item) => item.attempt >= DEAD_LETTER_ATTEMPTS);
+  const now = Date.now();
+  for (const item of dead) {
+    await db.sync_queue.put({
+      ...item,
+      attempt: 0,
+      nextAttemptAt: now,
+      lastError: item.lastError,
+    });
+  }
+  if (dead.length > 0) notifySyncStatus();
+  return dead.length;
 }
 
 export async function removeQueueItemIfUnchanged(

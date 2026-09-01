@@ -68,6 +68,7 @@ export const dayPlanProposalSchema = z
     overload: z.boolean(),
     usableOpenMinutes: z.number().int().min(0).max(24 * 60),
     summary: z.string().trim().min(1).max(500),
+    proposalId: z.string().min(8).max(80).optional(),
     blocks: z.array(proposedBlockSchema).max(48),
     deferrals: z.array(deferralSchema).max(24),
     questions: z.array(z.string().trim().min(1).max(200)).max(5),
@@ -105,6 +106,12 @@ export const captureItemSchema = z
     category: z.string().trim().max(40).nullable(),
     constraint: z.string().trim().max(160).nullable(),
     confidence: z.number().min(0).max(1),
+    scheduledFor: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+    dueAt: z.string().max(64).nullable().optional(),
+    timing: z.enum(['exact', 'vague', 'unknown']).nullable().optional(),
+    preferredTime: hhmm.optional(),
+    scheduleDays: z.array(z.number().int().min(0).max(6)).min(1).max(7).nullable().optional(),
+    horizon: horizonIdSchema.nullable().optional(),
   })
   .strict();
 

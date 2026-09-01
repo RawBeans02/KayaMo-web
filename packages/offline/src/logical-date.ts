@@ -28,10 +28,19 @@ export function localHourFromInstant(instantIso: string, timeZone = 'Asia/Manila
 }
 
 export function addLogicalCalendarDays(logicalDate: string, days: number): string {
-  const [year, month, day] = logicalDate.split('-').map(Number);
-  if (!year || !month || !day) throw new Error(`Invalid logical date: ${logicalDate}`);
+  const [year, month, day] = parseLogicalDate(logicalDate);
   const next = new Date(Date.UTC(year, month - 1, day + days));
-  return `${next.getUTCFullYear()}-${pad(next.getUTCMonth() + 1)}-${pad(next.getUTCDate())}`;
+  return formatLogicalDate(next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate());
+}
+
+/** Calendar months with end-of-month clamp (31 Jan + 1 month → 28/29 Feb). */
+export function addLogicalCalendarMonths(logicalDate: string, months: number): string {
+  const [year, month, day] = parseLogicalDate(logicalDate);
+  const targetMonthIndex = month - 1 + months;
+  const targetYear = year + Math.floor(targetMonthIndex / 12);
+  const normalizedMonth = ((targetMonthIndex % 12) + 12) % 12;
+  const lastDay = new Date(Date.UTC(targetYear, normalizedMonth + 1, 0)).getUTCDate();
+  return formatLogicalDate(targetYear, normalizedMonth + 1, Math.min(day, lastDay));
 }
 
 /**
@@ -61,6 +70,16 @@ export function instantOnLogicalDate(
 function parseDayStartsAt(value: string): [number, number, number] {
   const [h = '0', m = '0', s = '0'] = value.split(':');
   return [Number(h), Number(m), Number(s)];
+}
+
+function parseLogicalDate(logicalDate: string): [number, number, number] {
+  const [year, month, day] = logicalDate.split('-').map(Number);
+  if (!year || !month || !day) throw new Error(`Invalid logical date: ${logicalDate}`);
+  return [year, month, day];
+}
+
+function formatLogicalDate(year: number, month: number, day: number): string {
+  return `${year}-${pad(month)}-${pad(day)}`;
 }
 
 function pad(n: number): string {

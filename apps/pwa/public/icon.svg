@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Coco seed">
-  <rect width="512" height="512" rx="112" fill="#f5f8ff"/>
-  <path d="M256 412c-70-68-118-130-118-212 0-66 50-112 118-112s118 46 118 112c0 82-48 144-118 212Z" fill="#2f67d8"/>
-  <path d="M256 92c-6-34 19-60 60-62-2 40-24 63-60 62Z" fill="#64a46a"/>
-  <circle cx="220" cy="222" r="13" fill="#fff"/>
-  <circle cx="292" cy="222" r="13" fill="#fff"/>
-  <path d="M220 278c24 22 48 22 72 0" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round"/>
-</svg>

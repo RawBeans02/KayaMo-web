@@ -1,55 +1,44 @@
-# AGENTS.md — KayaMo
+# AGENTS.md — kayamo-web
 
-Personal Growth OS. PWA → Android → iOS.
-Solo developer. Bundle ID `ph.kayamo.app`. AI companion: Mus.
-Canonical product: `Mus_Build_Source_of_Truth.md`. ADR: `docs/adr/001-mus-source-of-truth.md`.
-Build chapters (the only `chNN` numbers): `docs/build/README.md`.
+KayaMo's standalone desktop surface. The Next.js app lives at this repository
+root, following the KitaMo layout. Shared packages are copied into `packages/`.
 
 ## Commands
+
 ```bash
 pnpm install
-pnpm dev:pwa          # user app
-pnpm dev:web          # desktop review shell
-pnpm dev:admin        # internal tools
+pnpm dev
 pnpm build
-pnpm test
 pnpm typecheck
-pnpm db:migrate
-npx supabase start    # local Postgres + Auth (Docker)
-npx supabase status   # URL, anon key, service role
-pnpm ph-core:build    # validate + upsert data/ph-core/foods.yaml
-pnpm gym:kb:build     # compile data/gym CSV → packages/features gym KB
-pnpm todo:kb:build    # compile data/todo CSV → packages/features todo KB
-pnpm mobile:sync      # copy PWA build into the Capacitor shell
+pnpm lint
+pnpm test
+pnpm test:e2e
 ```
 
-## Where code goes
-| Path | Holds | Never holds |
-|---|---|---|
-| `apps/pwa` | mobile-first routes, nav chrome, glue | domain logic, formulas |
-| `apps/web` | desktop shell, sidebar, Cmd+K | domain logic, formulas |
-| `apps/admin` | internal dashboards | anything user-facing |
-| `apps/mobile` | native plugin wiring | UI, business logic |
-| `packages/features` | screen logic, data hooks, layout-neutral UI | routing, nav chrome |
-| `packages/db` | schema, migrations, RLS, queries | domain formulas |
-| `packages/core` | TDEE, targets, trend, progression, identity | I/O, network, React |
-| `packages/food` | resolver cascade, source adapters | UI |
-| `packages/ai` | router, tools, agent, safety, memory | nutrition math |
-| `packages/offline` | Dexie, sync queue | domain logic |
-| `packages/ui` | tokens, primitives | app-specific screens |
-| `docs/build` | KayaMo build-guide chapters 0–36 | Mus SoT phase numbers as `chNN` |
+## Boundaries
 
-Packages never import from apps.
+- Root `src/` holds desktop routes, navigation, and composition only.
+- `packages/` holds reusable product, domain, data, AI, offline, and UI code.
+- Packages never import from the root app.
+- This repository treats `packages/`, `supabase/`, and `data/` as synced copies.
+  Edit their source of truth in `../kayamo-mobile`, then run
+  `../sync-packages.sh` from the KayaMo container.
+- Never add service-role credentials to the desktop bundle.
+- Follow `.cursor/rules/000-project.mdc` and `.cursor/rules/010-mus-sot.mdc`.
+- Zod-validate every LLM output; LLMs never produce nutrition numbers; keep
+  health data out of logs; never weaken a test to make it pass.
 
-Five tabs: Home, Goals, Life, Grove, Mus. Food and gym live under Life → Physical Self.
+## Next.js
 
-## Hard constraints
-See `.cursor/rules/000-project.mdc` and `.cursor/rules/010-mus-sot.mdc`. Zod on every LLM
-output, `source` + `confidence` on every nutrition write, LLM never produces
-nutrition numbers, calorie floors enforced in code, offline-first writes,
-no health data in logs, never weaken a test to make it pass.
+This version has breaking changes. Before changing framework behavior, read the
+relevant guide under `node_modules/next/dist/docs/` and heed deprecations.
 
-## Adding a fourth surface
-New surfaces go in `apps/` and consume `packages/`. A Messenger bot, a watch
-app, or a second product reusing the food resolver should require zero changes
-to `packages/`. If it does require changes, the boundary was drawn wrong.
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

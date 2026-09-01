@@ -6,6 +6,9 @@ import {
   firstFit,
   minutesToLabel,
   openWindows,
+  openWindowsAfter,
+  shiftTimeRange,
+  DAY_START_MIN,
   snapMinutes,
   startOfIsoWeek,
   weekDates,
@@ -48,6 +51,26 @@ describe('timetable math', () => {
     expect([...conflictIds([classBlock, gym])].sort()).toEqual(['class', 'gym']);
     const gaps = openWindows([classBlock], 8 * 60, 14 * 60);
     expect(firstFit(gaps, 60)).toEqual({ startMin: 8 * 60, endMin: 9 * 60 });
+    expect(openWindowsAfter([classBlock], 15 * 60, 8 * 60, 18 * 60)).toEqual([
+      { startMin: 15 * 60, endMin: 18 * 60 },
+    ]);
+    expect(firstFit(openWindowsAfter([classBlock], 12 * 60, 8 * 60, 14 * 60), 60)).toEqual({
+      startMin: 12 * 60,
+      endMin: 13 * 60,
+    });
+    expect(firstFit(openWindowsAfter([classBlock], 13 * 60 + 30, 8 * 60, 14 * 60), 60)).toBeNull();
+  });
+
+  it('moves and resizes ranges on a 15-minute grid', () => {
+    expect(shiftTimeRange(9 * 60, 10 * 60, -15, 'move')).toEqual({
+      startMin: 8 * 60 + 45,
+      endMin: 9 * 60 + 45,
+    });
+    expect(shiftTimeRange(9 * 60, 10 * 60, 15, 'resize')).toEqual({
+      startMin: 9 * 60,
+      endMin: 10 * 60 + 15,
+    });
+    expect(shiftTimeRange(DAY_START_MIN, DAY_START_MIN + 30, -60, 'move').startMin).toBe(DAY_START_MIN);
   });
 
   it('starts the week on Monday', () => {

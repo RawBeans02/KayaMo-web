@@ -1,7 +1,3 @@
-import { defineConfig } from 'vitest/config';
+import config from '@kayamo/config/vitest/node';
 
-export default defineConfig({
-  test: {
-    projects: ['packages/*/vitest.config.ts', 'apps/*/vitest.config.ts'],
-  },
-});
+export default config;

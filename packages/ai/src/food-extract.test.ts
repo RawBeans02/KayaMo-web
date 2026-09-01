@@ -28,7 +28,7 @@ describe('LLM food-logging schemas', () => {
     expect(nutritionKeysInZod(nutritionLabelOcrSchema)).toEqual(
       expect.arrayContaining(['kcal', 'protein_g', 'carbs_g', 'fat_g']),
     );
-    expect(LLM_FOOD_LOGGING_SCHEMAS).toHaveLength(1);
+    expect(LLM_FOOD_LOGGING_SCHEMAS).toHaveLength(2);
     expect(LLM_FOOD_LOGGING_SCHEMAS[0]).toBe(foodExtractSchema);
   });
 });

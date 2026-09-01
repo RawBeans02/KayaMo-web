@@ -993,7 +993,7 @@ export function JourneyScreen({ mode, goals, tasks, routines, routineCompletions
               <div className={styles.ladderRow} key={stage.key}>
                 {index === 0 ? (
                   <span className={styles.ladderArt}>
-                    <img src="/coco-seed.png" alt="" width={38} height={38} />
+                    <img src="/coco-seed.webp" alt="" width={38} height={38} />
                   </span>
                 ) : (
                   <span className={styles.ladderGhost}>art</span>

@@ -4,6 +4,7 @@ export {
   completeObject,
   AiBudgetError,
   AiConfigError,
+  AiTimeoutError,
   type AiTier,
   type CompleteObjectDeps,
   type GenerateObjectFn,
@@ -39,6 +40,7 @@ export {
   LLM_FOOD_LOGGING_SCHEMAS,
 } from './food-extract';
 export type { FoodExtract, FoodExtractAmbiguity, FoodExtractItem } from './food-extract';
+export { FOOD_PARSE_SYSTEM, parseFoodMessage } from './food-parse';
 export { MemoryPhraseCache, normalizeFoodPhrase } from './phrase-cache';
 export type { PhraseCache } from './phrase-cache';
 export { formatPhSupportFooter, PH_SUPPORT_RESOURCES } from './ph-support';
@@ -78,6 +80,7 @@ export type {
   CocoToolResult,
 } from './contracts';
 export { createCocoRouter } from './coco-router';
+export { allowedMusActions } from './allowed-actions';
 export type {
   CocoProvider,
   CocoProviderRequest,

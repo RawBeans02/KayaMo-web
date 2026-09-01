@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { enqueueUpsert, pendingCount } from './queue';
+import { enqueueUpsert, pendingCount, markQueueFailure, DEAD_LETTER_ATTEMPTS, dueQueueItems, syncQueueCounts, reviveDeadLetterItems } from './queue';
 import { getOfflineDb, queueItemId, resetOfflineDb } from './db';
 import { logFoodEntry, saveMealTemplate } from './writes';
 
@@ -96,5 +96,33 @@ describe('sync queue idempotency', () => {
     const stored = await getOfflineDb().meal_templates.get(template.id);
     expect(stored?.name).toBe('Baon');
     expect(await pendingCount()).toBe(1);
+  });
+
+  it('stops retrying after the dead-letter threshold', async () => {
+    const payload = {
+      id: 'entry-dead',
+      user_id: 'user-1',
+      kcal: '100',
+      updated_at: '2026-08-16T04:00:00.000Z',
+    };
+    await enqueueUpsert('food_entries', 'entry-dead', payload);
+    const item = await getOfflineDb().sync_queue.get(
+      queueItemId('food_entries', 'entry-dead', 'user-1'),
+    );
+    expect(item).toBeTruthy();
+    await getOfflineDb().sync_queue.put({
+      ...item!,
+      attempt: DEAD_LETTER_ATTEMPTS - 1,
+    });
+    const current = await getOfflineDb().sync_queue.get(item!.id);
+    expect(current).toBeTruthy();
+    await markQueueFailure(current!, Date.now() + 2_000, 'upsert_failed');
+    const dead = await getOfflineDb().sync_queue.get(item!.id);
+    expect(dead?.attempt).toBe(DEAD_LETTER_ATTEMPTS);
+    expect(dead?.lastError).toMatch(/^needs_attention:/);
+    expect(await dueQueueItems(Date.now() + 60_000)).toEqual([]);
+    expect(await syncQueueCounts()).toEqual({ pending: 0, needsAttention: 1 });
+    expect(await reviveDeadLetterItems('user-1')).toBe(1);
+    expect(await syncQueueCounts()).toEqual({ pending: 1, needsAttention: 0 });
   });
 });

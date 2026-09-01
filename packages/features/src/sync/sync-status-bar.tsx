@@ -12,6 +12,10 @@ function label(status: ReturnType<typeof useSyncStatus>): string {
       return 'Sync paused';
     case 'degraded':
       return `Sync retrying ${status.failedTables}`;
+    case 'needs_attention':
+      return `Needs attention ${status.count}`;
+    case 'local_db_error':
+      return 'Local data error';
     case 'synced':
       return 'Synced';
   }

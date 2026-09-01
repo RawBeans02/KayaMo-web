@@ -1,5 +1,5 @@
 import type { RoutineCompletionWrite, RoutineWrite, TaskWrite } from '@kayamo/db';
-import { incomingWins, omitServerCursor } from '@kayamo/db';
+import { incomingWins, omitServerCursor, parseRoutineTitle, parseScheduleDays, parseTaskTitle } from '@kayamo/db';
 import {
   getOfflineDb,
   type LocalRoutine,
@@ -45,7 +45,7 @@ export async function createLocalTask(input: {
   const row: LocalTask = {
     id: input.id ?? newId(),
     user_id: input.userId,
-    title: input.title.trim(),
+    title: parseTaskTitle(input.title),
     notes: input.notes ?? null,
     scheduled_for: input.scheduledFor ?? null,
     due_at: input.dueAt ?? null,
@@ -106,8 +106,7 @@ export async function updateLocalTask(params: {
   const existing = await db.tasks.get(params.id);
   if (!existing || existing.user_id !== params.userId || existing.deleted_at) return null;
   const title =
-    params.title === undefined ? existing.title : params.title.trim();
-  if (title.length < 1 || title.length > 160) return existing;
+    params.title === undefined ? existing.title : parseTaskTitle(params.title);
   const at = nowIso();
   const row: LocalTask = {
     ...existing,
@@ -125,6 +124,7 @@ export async function setLocalTaskScheduledFor(params: {
   id: string;
   userId: string;
   scheduledFor: string | null;
+  drain?: boolean;
 }): Promise<LocalTask | null> {
   const db = getOfflineDb();
   const existing = await db.tasks.get(params.id);
@@ -137,7 +137,7 @@ export async function setLocalTaskScheduledFor(params: {
   };
   await db.tasks.put(row);
   await enqueueUpsert('tasks', row.id, taskPayload(row));
-  void drainQueue();
+  if (params.drain !== false) void drainQueue();
   return row;
 }
 
@@ -173,9 +173,12 @@ export async function listLocalTasksForDate(
   userId: string,
   logicalDate: string,
 ): Promise<LocalTask[]> {
-  const rows = await getOfflineDb().tasks.where('user_id').equals(userId).toArray();
+  const rows = await getOfflineDb()
+    .tasks.where('[user_id+scheduled_for]')
+    .equals([userId, logicalDate])
+    .toArray();
   return rows
-    .filter((row) => !row.deleted_at && row.scheduled_for === logicalDate)
+    .filter((row) => !row.deleted_at)
     .sort(
       (a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at),
     );
@@ -222,11 +225,9 @@ export async function createLocalRoutine(input: {
   const row: LocalRoutine = {
     id: input.id ?? newId(),
     user_id: input.userId,
-    title: input.title.trim(),
+    title: parseRoutineTitle(input.title),
     notes: input.notes ?? null,
-    schedule_days: [...new Set(input.scheduleDays ?? [0, 1, 2, 3, 4, 5, 6])].sort(
-      (a, b) => a - b,
-    ),
+    schedule_days: parseScheduleDays(input.scheduleDays ?? [0, 1, 2, 3, 4, 5, 6]),
     preferred_time: input.preferredTime ?? null,
     active: true,
     sort_order: input.sortOrder ?? 0,

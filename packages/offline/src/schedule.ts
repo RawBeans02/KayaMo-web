@@ -1,4 +1,4 @@
-import { addLogicalCalendarDays } from './logical-date';
+import { addLogicalCalendarDays, addLogicalCalendarMonths } from './logical-date';
 import {
   getOfflineDb,
   type AiAccess,
@@ -13,6 +13,20 @@ import {
   type ScheduleKind,
 } from './db';
 import { createLocalTask, listLocalTasks, setLocalTaskCompleted, setLocalTaskScheduledFor } from './planning';
+
+const TIME_BLOCK_MIN = 0;
+const TIME_BLOCK_MAX = 24 * 60;
+const TIME_BLOCK_MIN_SPAN = 5;
+
+export function normalizeTimeBlockRange(startMin: number, endMin: number): { startMin: number; endMin: number } {
+  const start = Math.max(TIME_BLOCK_MIN, Math.min(startMin, TIME_BLOCK_MAX - TIME_BLOCK_MIN_SPAN));
+  const end = Math.max(start + TIME_BLOCK_MIN_SPAN, Math.min(endMin, TIME_BLOCK_MAX));
+  return { startMin: start, endMin: end };
+}
+
+export function recurrenceOccurrenceKey(rootId: string, occurrenceDate: string): string {
+  return `${rootId}:${occurrenceDate}`;
+}
 
 const newId = () => crypto.randomUUID();
 const nowIso = () => new Date().toISOString();
@@ -29,6 +43,7 @@ export const DEFAULT_TASK_META: Omit<LocalTaskMeta, 'task_id' | 'user_id' | 'upd
   focus: null,
   location: null,
   instance_of: null,
+  occurrence_key: null,
 };
 
 export async function createLocalProject(input: {
@@ -72,6 +87,50 @@ export async function getLocalTaskMeta(taskId: string): Promise<LocalTaskMeta | 
   return (await getOfflineDb().task_meta.get(taskId)) ?? null;
 }
 
+export async function listLocalTaskMetas(userId: string): Promise<LocalTaskMeta[]> {
+  return getOfflineDb().task_meta.where('user_id').equals(userId).toArray();
+}
+
+async function dependencyWouldCycle(
+  userId: string,
+  taskId: string,
+  blocksTaskId: string,
+): Promise<boolean> {
+  const deps = await getOfflineDb().task_dependencies.where('user_id').equals(userId).toArray();
+  const blockedBy = new Map<string, string[]>();
+  for (const row of deps) {
+    if (row.deleted_at) continue;
+    const next = blockedBy.get(row.task_id) ?? [];
+    next.push(row.blocks_task_id);
+    blockedBy.set(row.task_id, next);
+  }
+  const stack = [blocksTaskId];
+  const seen = new Set<string>();
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (!node || seen.has(node)) continue;
+    if (node === taskId) return true;
+    seen.add(node);
+    for (const next of blockedBy.get(node) ?? []) stack.push(next);
+  }
+  return false;
+}
+
+export async function listBlockedTaskIds(userId: string, openIds: Set<string>): Promise<Set<string>> {
+  const [deps, tasks] = await Promise.all([
+    getOfflineDb().task_dependencies.where('user_id').equals(userId).toArray(),
+    listLocalTasks(userId),
+  ]);
+  const byId = new Map(tasks.map((row) => [row.id, row]));
+  const blocked = new Set<string>();
+  for (const row of deps) {
+    if (row.deleted_at || !openIds.has(row.blocks_task_id)) continue;
+    const prereq = byId.get(row.task_id);
+    if (prereq && !prereq.completed_at && !prereq.deleted_at) blocked.add(row.blocks_task_id);
+  }
+  return blocked;
+}
+
 export async function upsertLocalTaskMeta(
   input: Partial<LocalTaskMeta> & { taskId: string; userId: string },
 ): Promise<LocalTaskMeta> {
@@ -96,6 +155,8 @@ export async function upsertLocalTaskMeta(
     focus: input.focus === undefined ? (existing?.focus ?? null) : input.focus,
     location: input.location === undefined ? (existing?.location ?? null) : input.location,
     instance_of: input.instance_of === undefined ? (existing?.instance_of ?? null) : input.instance_of,
+    occurrence_key:
+      input.occurrence_key === undefined ? (existing?.occurrence_key ?? null) : input.occurrence_key,
     updated_at: nowIso(),
   };
   await getOfflineDb().task_meta.put(row);
@@ -107,6 +168,12 @@ export async function addLocalDependency(input: {
   taskId: string;
   blocksTaskId: string;
 }): Promise<LocalTaskDependency> {
+  if (input.taskId === input.blocksTaskId) {
+    throw new Error('A task cannot depend on itself.');
+  }
+  if (await dependencyWouldCycle(input.userId, input.taskId, input.blocksTaskId)) {
+    throw new Error('That dependency would create a cycle.');
+  }
   const at = nowIso();
   const row: LocalTaskDependency = {
     id: newId(),
@@ -144,8 +211,7 @@ export async function createLocalTimeBlock(input: {
   notes?: string | null;
   id?: string;
 }): Promise<LocalTimeBlock> {
-  const start = Math.max(0, Math.min(input.startMin, 24 * 60 - 5));
-  const end = Math.max(start + 5, Math.min(input.endMin, 24 * 60));
+  const range = normalizeTimeBlockRange(input.startMin, input.endMin);
   const at = nowIso();
   const row: LocalTimeBlock = {
     id: input.id ?? newId(),
@@ -153,8 +219,8 @@ export async function createLocalTimeBlock(input: {
     logical_date: input.logicalDate,
     title: input.title.trim().slice(0, 160),
     kind: input.kind ?? 'TASK',
-    start_min: start,
-    end_min: end,
+    start_min: range.startMin,
+    end_min: range.endMin,
     flexibility: input.flexibility ?? 'FLEXIBLE',
     locked: input.locked ?? false,
     source_table: input.sourceTable ?? 'none',
@@ -212,13 +278,15 @@ export async function updateLocalTimeBlock(
       // Manual edits still allowed; AI auto-move is blocked in the action router.
     }
   }
-  const start = input.start_min ?? existing.start_min;
-  const end = input.end_min ?? existing.end_min;
+  const range = normalizeTimeBlockRange(
+    input.start_min ?? existing.start_min,
+    input.end_min ?? existing.end_min,
+  );
   const row: LocalTimeBlock = {
     ...existing,
     title: input.title?.trim() || existing.title,
-    start_min: start,
-    end_min: Math.max(start + 5, end),
+    start_min: range.startMin,
+    end_min: range.endMin,
     flexibility: input.flexibility ?? existing.flexibility,
     locked: input.locked ?? existing.locked,
     notes: input.notes === undefined ? existing.notes : input.notes,
@@ -238,6 +306,23 @@ export async function tombstoneLocalTimeBlock(params: {
   if (!existing || existing.user_id !== params.userId || existing.deleted_at) return;
   const at = nowIso();
   await db.time_blocks.put({ ...existing, deleted_at: at, updated_at: at });
+}
+
+export async function findUndoneMusActionByProposalId(
+  userId: string,
+  proposalId: string,
+): Promise<LocalMusActionLog | null> {
+  const rows = await getOfflineDb().mus_action_log.where('user_id').equals(userId).toArray();
+  return (
+    rows.find(
+      (row) =>
+        !row.undone_at &&
+        row.inverse &&
+        typeof row.inverse === 'object' &&
+        'proposalId' in row.inverse &&
+        row.inverse.proposalId === proposalId,
+    ) ?? null
+  );
 }
 
 export async function recordMusAction(input: {
@@ -328,7 +413,7 @@ export function nextRecurrenceDate(from: string, recurrence: RecurrenceKind, int
     return addLogicalCalendarDays(from, Math.max(1, interval));
   }
   if (recurrence === 'weekly') return addLogicalCalendarDays(from, 7 * Math.max(1, interval));
-  if (recurrence === 'monthly') return addLogicalCalendarDays(from, 30 * Math.max(1, interval));
+  if (recurrence === 'monthly') return addLogicalCalendarMonths(from, Math.max(1, interval));
   if (recurrence === 'weekdays') {
     let next = addLogicalCalendarDays(from, 1);
     while (weekdayUtc(next) === 0 || weekdayUtc(next) === 6) {
@@ -351,6 +436,19 @@ export async function spawnRecurrenceIfNeeded(params: {
     meta.recurrence,
     meta.recurrence_interval_days,
   );
+  const rootId = meta.instance_of ?? params.task.id;
+  const occurrenceKey = recurrenceOccurrenceKey(rootId, nextDate);
+  const existingMetas = await getOfflineDb()
+    .task_meta.where('occurrence_key')
+    .equals(occurrenceKey)
+    .toArray();
+  for (const row of existingMetas) {
+    if (row.user_id !== params.userId) continue;
+    const existingTask = await getOfflineDb().tasks.get(row.task_id);
+    if (existingTask && existingTask.user_id === params.userId && !existingTask.deleted_at) {
+      return existingTask;
+    }
+  }
   const clone = await createLocalTask({
     userId: params.userId,
     title: params.task.title,
@@ -367,7 +465,9 @@ export async function spawnRecurrenceIfNeeded(params: {
     locked: meta.locked,
     project_id: meta.project_id,
     recurrence: meta.recurrence,
-    instance_of: meta.instance_of ?? params.task.id,
+    recurrence_interval_days: meta.recurrence_interval_days,
+    instance_of: rootId,
+    occurrence_key: occurrenceKey,
     energy: meta.energy,
     focus: meta.focus,
     location: meta.location,

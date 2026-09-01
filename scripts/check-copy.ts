@@ -11,8 +11,7 @@ import { findBannedCopy } from '../packages/ai/src/banned-copy';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const SCAN_ROOTS = [
-  'apps/pwa/src',
-  'apps/admin/src',
+  'src',
   'packages/ai/src',
   'packages/ui/src',
   'packages/core/src',

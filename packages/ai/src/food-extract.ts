@@ -1,3 +1,4 @@
+import { foodParseSchema } from '@kayamo/food';
 import { z } from 'zod';
 
 /**
@@ -5,6 +6,7 @@ import { z } from 'zod';
  * Register every LLM food-logging schema here so CI fails if kcal/macros sneak in
  * before the pipeline is wired.
  */
+
 export const foodExtractItemSchema = z.object({
   raw_text: z.string().min(1),
   food_name_guess: z.string().min(1),
@@ -31,4 +33,4 @@ export type FoodExtractAmbiguity = z.infer<typeof foodExtractAmbiguitySchema>;
 export type FoodExtract = z.infer<typeof foodExtractSchema>;
 
 /** Schemas the model may emit for NL food logging. Nutrition numbers are forbidden. */
-export const LLM_FOOD_LOGGING_SCHEMAS = [foodExtractSchema] as const;
+export const LLM_FOOD_LOGGING_SCHEMAS = [foodExtractSchema, foodParseSchema] as const;

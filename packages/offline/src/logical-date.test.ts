@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { instantOnLogicalDate, localHourFromInstant, logicalDateFromInstant, addLogicalCalendarDays } from './logical-date';
+import { instantOnLogicalDate, localHourFromInstant, logicalDateFromInstant, addLogicalCalendarMonths } from './logical-date';
 
 describe('logicalDateFromInstant', () => {
   it('uses the Manila calendar date at midnight start', () => {
@@ -24,10 +24,12 @@ describe('localHourFromInstant', () => {
   });
 });
 
-describe('addLogicalCalendarDays', () => {
-  it('steps calendar dates without using local timezone', () => {
-    expect(addLogicalCalendarDays('2026-09-01', 1)).toBe('2026-09-02');
-    expect(addLogicalCalendarDays('2026-08-31', 1)).toBe('2026-09-01');
+describe('addLogicalCalendarMonths', () => {
+  it('clamps end-of-month instead of adding 30 days', () => {
+    expect(addLogicalCalendarMonths('2026-01-31', 1)).toBe('2026-02-28');
+    expect(addLogicalCalendarMonths('2028-01-31', 1)).toBe('2028-02-29');
+    expect(addLogicalCalendarMonths('2026-01-31', 2)).toBe('2026-03-31');
+    expect(addLogicalCalendarMonths('2026-03-31', 1)).toBe('2026-04-30');
   });
 });
 

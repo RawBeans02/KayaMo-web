@@ -108,4 +108,13 @@ describe('completeObject', () => {
     expect(result).toEqual({ name: 'kanin' });
     expect(generateObject).toHaveBeenCalledOnce();
   });
+
+  it('times out a hanging provider call', async () => {
+    await expect(
+      completeObject(args(), {
+        timeoutMs: 20,
+        generateObject: () => new Promise(() => undefined),
+      }),
+    ).rejects.toMatchObject({ name: 'AiTimeoutError' });
+  });
 });

@@ -1,9 +1,0 @@
-﻿state,meaning
-QUEUED,Exercise/set is waiting in the to-do queue.
-IN_PROGRESS,User is currently performing/logging this item.
-RESTING,A set was completed and its rest timer is active.
-COMPLETED,All intended work for this item is complete.
-PARTIAL,Some planned sets were completed.
-SKIPPED,User intentionally skipped this item.
-SUBSTITUTED,Planned exercise was replaced; replacement is linked.
-ADDED_LIVE,Exercise was added during the active session.

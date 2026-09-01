@@ -5,7 +5,10 @@ import {
   createLocalRoutine,
   createLocalTask,
   createLocalTimeBlock,
+  drainQueue,
+  findUndoneMusActionByProposalId,
   getLocalTask,
+  getOfflineDb,
   recordMusAction,
   setLocalTaskScheduledFor,
   upsertLocalTaskMeta,
@@ -13,7 +16,7 @@ import {
   type LocalTimeBlock,
   type ScheduleKind,
 } from '@kayamo/offline';
-import { firstFit, labelToMinutes, openWindows } from './timetable';
+import { firstFit, labelToMinutes, openWindowsAfter } from './timetable';
 import type {
   CaptureProposal,
   DayPlanProposal,
@@ -47,12 +50,21 @@ export function planKind(kind: DayPlanProposal['blocks'][number]['kind']): Sched
   return 'TASK';
 }
 
-function windowStart(window: NonNullable<CaptureProposal['items'][number]['preferredWindow']>): number {
-  if (window === 'MORNING') return 9 * 60;
-  if (window === 'AFTERNOON') return 13 * 60;
-  if (window === 'EVENING') return 18 * 60;
-  if (window === 'NIGHT') return 20 * 60;
-  return 12 * 60;
+export function dayPlanProposalId(plan: DayPlanProposal): string {
+  if (plan.proposalId) return plan.proposalId;
+  const fingerprint = [
+    plan.logicalDate,
+    plan.mode,
+    plan.summary,
+    plan.blocks.map((block) => `${block.start}|${block.end}|${block.title}|${block.sourceId ?? ''}`).join(';'),
+    plan.deferrals.map((row) => `${row.sourceId ?? ''}|${row.toHorizon}`).join(';'),
+  ].join('::');
+  let hash = 2166136261;
+  for (let index = 0; index < fingerprint.length; index += 1) {
+    hash ^= fingerprint.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `plan-${(hash >>> 0).toString(16)}`;
 }
 
 export async function applyDayPlan(params: {
@@ -60,56 +72,66 @@ export async function applyDayPlan(params: {
   today: string;
   plan: DayPlanProposal;
 }): Promise<{ ok: boolean; message: string }> {
+  const proposalId = dayPlanProposalId(params.plan);
+  const already = await findUndoneMusActionByProposalId(params.userId, proposalId);
+  if (already) return { ok: true, message: already.summary };
+
   const createdIds: string[] = [];
   const previousSchedules: { taskId: string; scheduled_for: string | null }[] = [];
-  for (const block of params.plan.blocks) {
-    if (block.flexibility === 'ANYTIME' || block.start === null) continue;
-    const start = labelToMinutes(block.start);
-    const end = block.end ? labelToMinutes(block.end) : start !== null ? start + block.durationMin : null;
-    if (start === null || end === null) continue;
-    const sourceId = block.sourceTable === 'tasks' ? block.sourceId : null;
-    if (sourceId) {
-      const task = await getLocalTask(sourceId, params.userId);
-      if (task) {
-        previousSchedules.push({ taskId: task.id, scheduled_for: task.scheduled_for });
-        await setLocalTaskScheduledFor({
-          id: task.id,
-          userId: params.userId,
-          scheduledFor: params.plan.logicalDate,
-        });
+  const db = getOfflineDb();
+  await db.transaction('rw', db.time_blocks, db.tasks, db.mus_action_log, db.sync_queue, async () => {
+    for (const block of params.plan.blocks) {
+      if (block.flexibility === 'ANYTIME' || block.start === null) continue;
+      const start = labelToMinutes(block.start);
+      const end = block.end ? labelToMinutes(block.end) : start !== null ? start + block.durationMin : null;
+      if (start === null || end === null) continue;
+      const sourceId = block.sourceTable === 'tasks' ? block.sourceId : null;
+      if (sourceId) {
+        const task = await getLocalTask(sourceId, params.userId);
+        if (task) {
+          previousSchedules.push({ taskId: task.id, scheduled_for: task.scheduled_for });
+          await setLocalTaskScheduledFor({
+            id: task.id,
+            userId: params.userId,
+            scheduledFor: params.plan.logicalDate,
+            drain: false,
+          });
+        }
       }
+      const row = await createLocalTimeBlock({
+        userId: params.userId,
+        logicalDate: params.plan.logicalDate,
+        title: block.title,
+        kind: planKind(block.kind),
+        startMin: start,
+        endMin: end,
+        flexibility: block.flexibility,
+        sourceTable: planSourceTable(block.sourceTable),
+        sourceId,
+        notes: block.why,
+      });
+      createdIds.push(row.id);
     }
-    const row = await createLocalTimeBlock({
+    for (const deferral of params.plan.deferrals) {
+      if (!deferral.sourceId) continue;
+      const task = await getLocalTask(deferral.sourceId, params.userId);
+      if (!task) continue;
+      previousSchedules.push({ taskId: task.id, scheduled_for: task.scheduled_for });
+      await setLocalTaskScheduledFor({
+        id: task.id,
+        userId: params.userId,
+        scheduledFor: horizonToScheduledFor(params.today, deferral.toHorizon),
+        drain: false,
+      });
+    }
+    await recordMusAction({
       userId: params.userId,
-      logicalDate: params.plan.logicalDate,
-      title: block.title,
-      kind: planKind(block.kind),
-      startMin: start,
-      endMin: end,
-      flexibility: block.flexibility,
-      sourceTable: planSourceTable(block.sourceTable),
-      sourceId,
-      notes: block.why,
+      action: 'plan_my_day',
+      summary: params.plan.summary.slice(0, 180),
+      inverse: { kind: 'undo_plan', proposalId, blockIds: createdIds, tasks: previousSchedules },
     });
-    createdIds.push(row.id);
-  }
-  for (const deferral of params.plan.deferrals) {
-    if (!deferral.sourceId) continue;
-    const task = await getLocalTask(deferral.sourceId, params.userId);
-    if (!task) continue;
-    previousSchedules.push({ taskId: task.id, scheduled_for: task.scheduled_for });
-    await setLocalTaskScheduledFor({
-      id: task.id,
-      userId: params.userId,
-      scheduledFor: horizonToScheduledFor(params.today, deferral.toHorizon),
-    });
-  }
-  await recordMusAction({
-    userId: params.userId,
-    action: 'plan_my_day',
-    summary: params.plan.summary.slice(0, 180),
-    inverse: { kind: 'undo_plan', blockIds: createdIds, tasks: previousSchedules },
   });
+  void drainQueue();
   return { ok: true, message: params.plan.summary };
 }
 
@@ -118,8 +140,9 @@ export async function applyWhatNowPick(params: {
   today: string;
   option: WhatNow['options'][number];
   blocks: LocalTimeBlock[];
+  nowMin: number;
 }): Promise<{ ok: boolean; message: string }> {
-  const slot = firstFit(openWindows(params.blocks), params.option.durationMin);
+  const slot = firstFit(openWindowsAfter(params.blocks, params.nowMin), params.option.durationMin);
   if (!slot) return { ok: false, message: 'No open window that long is left today.' };
   if (params.option.sourceId) {
     const task = await getLocalTask(params.option.sourceId, params.userId);
@@ -144,6 +167,61 @@ export async function applyWhatNowPick(params: {
   return { ok: true, message: `Placed “${params.option.title}” in the next open window.` };
 }
 
+function captureScheduledFor(
+  today: string,
+  item: CaptureProposal['items'][number],
+): string | null {
+  if (item.scheduledFor) return item.scheduledFor;
+  if (item.horizon) return horizonToScheduledFor(today, item.horizon);
+  return null;
+}
+
+function captureIsUncertain(item: CaptureProposal['items'][number]): boolean {
+  return item.timing === 'vague' || item.timing === 'unknown';
+}
+
+export type CaptureDisposition =
+  | { write: 'project' }
+  | { write: 'habit' }
+  | { write: 'routine'; scheduleDays: number[]; preferredTime: string | null }
+  | { write: 'event'; startMin: number; durationMin: number; logicalDate: string }
+  | { write: 'task'; scheduledFor: string | null };
+
+export function captureDisposition(
+  item: CaptureProposal['items'][number],
+  today: string,
+): CaptureDisposition {
+  if (item.kind === 'PROJECT') return { write: 'project' };
+  if (item.kind === 'HABIT') return { write: 'habit' };
+  if (item.kind === 'ROUTINE') {
+    if (!item.scheduleDays || item.scheduleDays.length === 0) {
+      return { write: 'task', scheduledFor: null };
+    }
+    return {
+      write: 'routine',
+      scheduleDays: item.scheduleDays,
+      preferredTime: item.preferredTime ?? null,
+    };
+  }
+  if (item.kind === 'EVENT') {
+    const start = item.preferredTime ? labelToMinutes(item.preferredTime) : null;
+    if (start === null || captureIsUncertain(item)) {
+      return { write: 'task', scheduledFor: null };
+    }
+    return {
+      write: 'event',
+      startMin: start,
+      durationMin: item.durationMin && item.durationMin > 0 ? item.durationMin : 60,
+      logicalDate: item.scheduledFor ?? today,
+    };
+  }
+  const scheduledFor =
+    item.kind === 'INBOX' || captureIsUncertain(item)
+      ? null
+      : captureScheduledFor(today, item);
+  return { write: 'task', scheduledFor };
+}
+
 export async function applyCaptureItems(params: {
   userId: string;
   today: string;
@@ -151,60 +229,57 @@ export async function applyCaptureItems(params: {
 }): Promise<{ ok: boolean; message: string }> {
   let count = 0;
   for (const item of params.capture.items) {
-    if (item.kind === 'TASK' || item.kind === 'INBOX') {
-      const task: LocalTask = await createLocalTask({
-        userId: params.userId,
-        title: item.title,
-        scheduledFor: item.kind === 'INBOX' ? null : params.today,
-        origin: 'coco_confirmed',
-      });
-      await upsertLocalTaskMeta({
-        taskId: task.id,
-        userId: params.userId,
-        estimated_duration_min: item.durationMin ?? 30,
-        location: item.location,
-      });
-      count += 1;
-      continue;
-    }
-    if (item.kind === 'PROJECT') {
+    const disposition = captureDisposition(item, params.today);
+    if (disposition.write === 'project') {
       await createLocalProject({ userId: params.userId, title: item.title });
-      count += 1;
-      continue;
-    }
-    if (item.kind === 'ROUTINE') {
+    } else if (disposition.write === 'habit') {
+      await createLocalHabit({ userId: params.userId, title: item.title });
+    } else if (disposition.write === 'routine') {
       await createLocalRoutine({
         userId: params.userId,
         title: item.title,
         notes: item.constraint,
-        scheduleDays: [1, 2, 3, 4, 5],
-        preferredTime: null,
+        scheduleDays: disposition.scheduleDays,
+        preferredTime: disposition.preferredTime,
       });
-      count += 1;
-      continue;
-    }
-    if (item.kind === 'HABIT') {
-      await createLocalHabit({ userId: params.userId, title: item.title });
-      count += 1;
-      continue;
-    }
-    if (item.kind === 'EVENT') {
-      const start = item.preferredWindow ? windowStart(item.preferredWindow) : 12 * 60;
-      const duration = item.durationMin && item.durationMin > 0 ? item.durationMin : 60;
+    } else if (disposition.write === 'event') {
       await createLocalTimeBlock({
         userId: params.userId,
-        logicalDate: params.today,
+        logicalDate: disposition.logicalDate,
         title: item.title,
         kind: 'EVENT',
-        startMin: start,
-        endMin: start + duration,
+        startMin: disposition.startMin,
+        endMin: disposition.startMin + disposition.durationMin,
         flexibility: 'FIXED',
       });
-      count += 1;
+    } else {
+      await createInboxItem(params.userId, item, disposition.scheduledFor);
     }
+    count += 1;
   }
   return {
     ok: true,
     message: count === 1 ? 'Saved that capture.' : `Saved ${count} captured items.`,
   };
+}
+
+async function createInboxItem(
+  userId: string,
+  item: CaptureProposal['items'][number],
+  scheduledFor: string | null = null,
+): Promise<LocalTask> {
+  const task = await createLocalTask({
+    userId,
+    title: item.title,
+    scheduledFor,
+    dueAt: item.dueAt ?? null,
+    origin: 'coco_confirmed',
+  });
+  await upsertLocalTaskMeta({
+    taskId: task.id,
+    userId,
+    estimated_duration_min: item.durationMin ?? 30,
+    location: item.location,
+  });
+  return task;
 }

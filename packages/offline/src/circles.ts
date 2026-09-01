@@ -3,7 +3,6 @@ import {
   isCircleKind,
   sanitizeFacets,
   type CircleKind,
-  type ShareFacet,
 } from '@kayamo/core';
 import { getOfflineDb, type LocalCircle, type LocalSocialPrefs } from './db';
 

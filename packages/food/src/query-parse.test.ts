@@ -26,4 +26,22 @@ describe('parseFoodQuery', () => {
       name: '',
     });
   });
+
+  it('parses fractions, slices, and units stuck to the number', () => {
+    expect(parseFoodQuery({ text: '2 slices marbys wheat' })).toMatchObject({
+      amount: 2,
+      unit: 'slices',
+      name: 'marbys wheat',
+    });
+    expect(parseFoodQuery({ text: '1/2 tbsp nutella' })).toMatchObject({
+      amount: 0.5,
+      unit: 'tbsp',
+      name: 'nutella',
+    });
+    expect(parseFoodQuery({ text: '150g rice' })).toMatchObject({
+      amount: 150,
+      unit: 'g',
+      name: 'rice',
+    });
+  });
 });

@@ -4,8 +4,12 @@ export { backoffMs } from './backoff';
 export {
   getOfflineDatabaseName,
   getOfflineDb,
+  getOfflineDbVersion,
   getOfflineScope,
+  isDatabaseClosedError,
+  recoverClosedOfflineDb,
   resetOfflineDb,
+  reviveClosedOfflineDb,
   setOfflineUserScope,
   StaleOfflineScopeError,
   type KayaMoDB,
@@ -120,6 +124,7 @@ export {
   listLocalAgentMemories,
   listLocalCocoConversations,
   listLocalCocoMessages,
+  renameLocalCocoConversation,
   listLocalJournalEntries,
   mergeRemoteAgentMemories,
   mergeRemoteCocoConversations,
@@ -145,11 +150,16 @@ export {
   getLocalTaskMeta,
   getLocalTimeBlock,
   listBlockersForTask,
+  listBlockedTaskIds,
   listLocalProjects,
+  listLocalTaskMetas,
   listLocalTimeBlocks,
   listLocalTimeBlocksRange,
   listMusActionLog,
+  findUndoneMusActionByProposalId,
+  normalizeTimeBlockRange,
   recordMusAction,
+  recurrenceOccurrenceKey,
   spawnRecurrenceIfNeeded,
   taskIsBlocked,
   tombstoneLocalProject,
@@ -247,18 +257,26 @@ export {
   useLiveFoodEntries,
   useLiveFoodHistory,
   useLiveMealTemplates,
+  useLivePlanningSnapshot,
   useSyncStatus,
 } from './hooks';
+export {
+  getPlanningSnapshot,
+  type PlanningSnapshot,
+} from './planning-snapshot';
 export {
   instantOnLogicalDate,
   localHourFromInstant,
   logicalDateFromInstant,
   addLogicalCalendarDays,
+  addLogicalCalendarMonths,
 } from './logical-date';
-export { enqueueUpsert, pendingCount } from './queue';
+export { enqueueUpsert, pendingCount, DEAD_LETTER_ATTEMPTS } from './queue';
 export {
   getSyncStatusSnapshot,
   applySyncQueueItem,
+  drainQueue,
+  retryFailedSyncWrites,
   startSync,
   syncUserOnce,
   syncNow,

@@ -21,6 +21,13 @@ export class AiBudgetError extends Error {
   }
 }
 
+export class AiTimeoutError extends Error {
+  constructor(message = 'Mus took too long to reply. Try again.') {
+    super(message);
+    this.name = 'AiTimeoutError';
+  }
+}
+
 export type AiTextPart = { type: 'text'; text: string };
 export type AiImagePart = {
   type: 'image';
@@ -41,6 +48,7 @@ export type GenerateObjectArgs<S extends z.ZodType> = {
   system: string;
   messages: AiMessage[];
   userId: string;
+  abortSignal?: AbortSignal;
 };
 
 export type GenerateObjectFn = <S extends z.ZodType>(
@@ -58,6 +66,8 @@ export type CompleteObjectDeps = {
   allowNutritionKeys?: boolean;
   /** Override the env model for this call (still billed through the budget gate). */
   modelId?: string;
+  /** Abort the provider call after this many ms. Default 15s, 30s for vision. */
+  timeoutMs?: number;
 };
 
 function firstEnv(...names: string[]): string | undefined {
@@ -94,6 +104,7 @@ async function liveGenerateObject<S extends z.ZodType>(
     schema: S;
     system: string;
     messages: AiMessage[];
+    abortSignal?: AbortSignal;
     providerOptions?: { openai?: { reasoningEffort?: 'none' | 'low' | 'medium' } };
   }) => Promise<{ object: unknown }>;
   return generate({
@@ -101,6 +112,7 @@ async function liveGenerateObject<S extends z.ZodType>(
     schema: args.schema,
     system: args.system,
     messages: args.messages,
+    abortSignal: args.abortSignal,
     ...(args.tier === 'vision' || Boolean(modelIdOverride)
       ? { providerOptions: { openai: { reasoningEffort: 'low' } } }
       : {}),
@@ -152,25 +164,59 @@ export async function completeObject<S extends z.ZodType>(
 
   const generate =
     deps.generateObject ?? ((inner) => liveGenerateObject(inner, deps.modelId));
+  const timeoutMs = deps.timeoutMs ?? (args.tier === 'vision' ? 30_000 : 15_000);
+  const controller = new AbortController();
+  const onParentAbort = () => controller.abort(args.abortSignal?.reason);
+  if (args.abortSignal) {
+    if (args.abortSignal.aborted) controller.abort(args.abortSignal.reason);
+    else args.abortSignal.addEventListener('abort', onParentAbort, { once: true });
+  }
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   const started = Date.now();
-  const result = await generate(args);
-  const parsed = args.schema.parse(result.object);
-  const latencyMs = Date.now() - started;
-
-  if (deps.budget) {
-    await deps.budget.recordUsage({
-      costUsd: deps.budget.estimatedRequestCostUsd,
-      latencyMs,
-    });
-  }
-
-  if (deps.phraseCache) {
-    await deps.phraseCache.cache.store(
-      args.userId,
-      normalizeFoodPhrase(deps.phraseCache.phrase),
-      parsed,
+  try {
+    const result = await withTimeout(
+      generate({ ...args, abortSignal: controller.signal }),
+      timeoutMs,
     );
-  }
+    const parsed = args.schema.parse(result.object);
+    const latencyMs = Date.now() - started;
 
-  return parsed;
+    if (deps.budget) {
+      await deps.budget.recordUsage({
+        costUsd: deps.budget.estimatedRequestCostUsd,
+        latencyMs,
+      });
+    }
+
+    if (deps.phraseCache) {
+      await deps.phraseCache.cache.store(
+        args.userId,
+        normalizeFoodPhrase(deps.phraseCache.phrase),
+        parsed,
+      );
+    }
+
+    return parsed;
+  } catch (error) {
+    if (controller.signal.aborted && !args.abortSignal?.aborted) {
+      throw new AiTimeoutError();
+    }
+    if (error instanceof AiTimeoutError) throw error;
+    throw error;
+  } finally {
+    clearTimeout(timer);
+    args.abortSignal?.removeEventListener('abort', onParentAbort);
+  }
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new AiTimeoutError()), timeoutMs);
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }

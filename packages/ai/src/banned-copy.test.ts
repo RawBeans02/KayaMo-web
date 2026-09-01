@@ -8,8 +8,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, '../../..');
 
 const SCAN_ROOTS = [
-  'apps/pwa/src',
-  'apps/admin/src',
+  'src',
   'packages/ai/src',
   'packages/ui/src',
   'packages/core/src',

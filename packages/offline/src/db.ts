@@ -140,6 +140,7 @@ export type LocalTaskMeta = {
   focus: string | null;
   location: string | null;
   instance_of: string | null;
+  occurrence_key: string | null;
   updated_at: string;
 };
 
@@ -587,10 +588,20 @@ export class KayaMoDB extends Dexie {
       gym_prefs: 'user_id, updated_at',
       gym_busy_equipment: 'id, user_id, logical_date',
     });
+    this.version(19).stores({
+      tasks:
+        'id, user_id, scheduled_for, due_at, completed_at, updated_at, deleted_at, [user_id+scheduled_for]',
+      task_meta: 'task_id, user_id, project_id, occurrence_key, updated_at',
+      task_dependencies:
+        'id, user_id, task_id, blocks_task_id, [user_id+blocks_task_id], updated_at, deleted_at',
+      sync_queue: 'id, userId, nextAttemptAt, table, entityId, [userId+nextAttemptAt]',
+    });
   }
 }
 
 let instance: KayaMoDB | undefined;
+let instanceWasClosed = false;
+let hasOpenedOnce = false;
 let activeDatabaseName = 'kayamo:signed-out';
 let activeUserId: string | null = null;
 let activeEpoch = 0;
@@ -671,20 +682,90 @@ export function createMutationRevision(): string {
   return `${Date.now().toString(36)}-${revisionSequence.toString(36)}`;
 }
 
+export function isDatabaseClosedError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const name = 'name' in error ? String(error.name) : '';
+  const message = 'message' in error ? String(error.message) : '';
+  return name === 'DatabaseClosedError' || message.includes('Database has been closed');
+}
+
+function connectionNeedsRevive(): boolean {
+  return !instance || instanceWasClosed || (hasOpenedOnce && !instance.isOpen());
+}
+
+export async function recoverClosedOfflineDb<T>(run: () => Promise<T>): Promise<T> {
+  try {
+    return await run();
+  } catch (error) {
+    if (!isDatabaseClosedError(error)) throw error;
+    reviveClosedOfflineDb();
+    return await run();
+  }
+}
+
+function bindActiveScope(db: KayaMoDB): void {
+  activeScope = {
+    userId: activeUserId,
+    databaseName: activeDatabaseName,
+    db,
+    epoch: activeEpoch,
+  };
+}
+
+function createOfflineDb(name: string, trackClose = false): KayaMoDB {
+  const db = new KayaMoDB(name);
+  if (trackClose) {
+    db.on('ready', () => {
+      hasOpenedOnce = true;
+    });
+    db.on('versionchange', () => {
+      instanceWasClosed = true;
+      db.close();
+    });
+  }
+  return db;
+}
+
+export function reviveClosedOfflineDb(): KayaMoDB {
+  if (instance && !instanceWasClosed && instance.isOpen()) return instance;
+  instance?.close();
+  instanceWasClosed = false;
+  hasOpenedOnce = false;
+  instance = createOfflineDb(activeDatabaseName, true);
+  bindActiveScope(instance);
+  return instance;
+}
+
 export function getOfflineDb(): KayaMoDB {
   if (typeof indexedDB === 'undefined') {
     throw new Error('IndexedDB is not available');
   }
-  if (!instance) {
-    instance = new KayaMoDB(activeDatabaseName);
-    activeScope = {
-      userId: activeUserId,
-      databaseName: activeDatabaseName,
-      db: instance,
-      epoch: activeEpoch,
-    };
+  const db = instance;
+  if (!db || instanceWasClosed || (hasOpenedOnce && !db.isOpen())) {
+    return reviveClosedOfflineDb();
   }
-  return instance;
+  return db;
+}
+
+export function getOfflineDbVersion(): number | null {
+  try {
+    return getOfflineDb().verno;
+  } catch {
+    return null;
+  }
+}
+
+async function openNamedConnection(
+  name: string,
+): Promise<{ db: KayaMoDB; borrowed: boolean }> {
+  if (instance?.name === name) {
+    const db = getOfflineDb();
+    if (!db.isOpen()) await db.open();
+    return { db, borrowed: true };
+  }
+  const db = createOfflineDb(name);
+  await db.open();
+  return { db, borrowed: false };
 }
 
 export async function setOfflineUserScope(
@@ -694,7 +775,7 @@ export async function setOfflineUserScope(
   const nextName = userId
     ? accountDatabaseName(userId, options.namespace)
     : 'kayamo:signed-out';
-  if (nextName === activeDatabaseName && activeUserId === userId && instance) {
+  if (nextName === activeDatabaseName && activeUserId === userId && !connectionNeedsRevive()) {
     const scope = getOfflineScope();
     await activeInitialization;
     if (!userId) await evacuateSignedOutRows(scope.db);
@@ -704,10 +785,12 @@ export async function setOfflineUserScope(
 
   const previousName = activeDatabaseName;
   instance?.close();
+  instanceWasClosed = false;
+  hasOpenedOnce = false;
   activeEpoch += 1;
   activeDatabaseName = nextName;
   activeUserId = userId;
-  const db = new KayaMoDB(nextName);
+  const db = createOfflineDb(nextName, true);
   instance = db;
   const scope: OfflineScope = {
     userId,
@@ -776,7 +859,7 @@ async function evacuateSignedOutRows(signedOut: KayaMoDB): Promise<void> {
   }
 
   for (const owner of owners) {
-    const destination = new KayaMoDB(accountDatabaseName(owner));
+    const destination = createOfflineDb(accountDatabaseName(owner));
     await destination.open();
     try {
       await copyAccountRows('kayamo:signed-out', destination, owner, true);
@@ -826,8 +909,7 @@ async function copyAccountRows(
   afterTable?: (table: string) => void | Promise<void>,
 ): Promise<void> {
   if (!(await Dexie.exists(sourceName)) || sourceName === destination.name) return;
-  const source = new KayaMoDB(sourceName);
-  await source.open();
+  const { db: source, borrowed } = await openNamedConnection(sourceName);
   try {
     for (const tableName of USER_SCOPED_TABLES) {
       const sourceTable = source.table<Record<string, unknown>, string>(tableName);
@@ -869,7 +951,7 @@ async function copyAccountRows(
       }
     }
   } finally {
-    source.close();
+    if (!borrowed) source.close();
   }
 }
 
@@ -903,8 +985,7 @@ async function copySharedCacheRows(
   destination: KayaMoDB,
   userId: string,
 ): Promise<void> {
-  const source = new KayaMoDB(sourceName);
-  await source.open();
+  const { db: source, borrowed } = await openNamedConnection(sourceName);
   try {
     const foods = await source.foods.toArray();
     const allowedFoods = foods.filter(
@@ -930,7 +1011,7 @@ async function copySharedCacheRows(
       }
     }
   } finally {
-    source.close();
+    if (!borrowed) source.close();
   }
 }
 
@@ -938,6 +1019,8 @@ export async function resetOfflineDb(): Promise<void> {
   await scopeTransition;
   instance?.close();
   instance = undefined;
+  instanceWasClosed = false;
+  hasOpenedOnce = false;
   activeScope = undefined;
   activeEpoch += 1;
   if (typeof indexedDB !== 'undefined') {

@@ -13,6 +13,7 @@ import {
   updateLocalTimeBlock,
   recordMusAction,
   upsertLocalTaskMeta,
+  getLocalTaskMeta,
 } from './schedule';
 
 vi.mock('./sync', async () => {
@@ -69,6 +70,7 @@ describe('local schedule', () => {
   });
 
   it('computes weekday recurrence past the weekend', () => {
+    expect(nextRecurrenceDate('2026-01-31', 'monthly', 1)).toBe('2026-02-28');
     expect(nextRecurrenceDate('2026-09-04', 'weekdays', 1)).toBe('2026-09-07');
   });
 
@@ -82,13 +84,24 @@ describe('local schedule', () => {
       taskId: live.id,
       userId: 'user-a',
       recurrence: 'daily',
+      recurrence_interval_days: 3,
     });
     const next = await spawnRecurrenceIfNeeded({
       userId: 'user-a',
       task: live,
       today: '2026-09-01',
     });
-    expect(next?.scheduled_for).toBe('2026-09-02');
+    expect(next?.scheduled_for).toBe('2026-09-04');
+    const again = await spawnRecurrenceIfNeeded({
+      userId: 'user-a',
+      task: live,
+      today: '2026-09-01',
+    });
+    expect(again?.id).toBe(next?.id);
+    expect(await getLocalTaskMeta(next!.id)).toMatchObject({
+      recurrence_interval_days: 3,
+      instance_of: live.id,
+    });
     expect(await createLocalProject({ userId: 'user-a', title: 'Teacher training' })).toMatchObject({
       title: 'Teacher training',
     });

@@ -1,39 +1,40 @@
-# KayaMo
+# kayamo-web
 
-*Kaya mo.* A Filipino-first calorie and gym tracker with an AI companion
-that speaks Taglish. Sibling to KitaMo.
+Standalone KayaMo desktop app. Like KitaMo, the Next.js app lives at the
+repository root. It provides sidebar navigation, Command-K logging, and desktop
+review workflows. It contains no Capacitor shell and no browser-visible
+service-role credentials.
 
-```
-kayamo/
-├── apps/
-│   ├── pwa/          → mobile web (Next.js, installable PWA; Capacitor wraps this)
-│   ├── web/          → desktop review (sidebar, food history)
-│   ├── admin/        → internal tools, auth-gated
-│   └── mobile/       → Capacitor shell for Android + iOS
-├── packages/
-│   ├── features/     → screen logic and layout-neutral UI
-│   ├── db/           → schema, migrations, RLS
-│   ├── core/         → TDEE, targets, trend, progression  (pure logic)
-│   ├── food/         → resolver cascade + source adapters
-│   ├── ai/           → Coco: router, tools, agent, safety
-│   ├── offline/      → Dexie + sync queue
-│   ├── ui/           → design tokens + primitives
-│   └── config/       → shared eslint/ts/tailwind presets
-├── data/ph-core/     → the Philippine food dataset (your moat)
-├── supabase/         → migrations + edge functions
-├── docs/             → build guide (`docs/build`), compliance, inventories
-└── .cursor/rules/    → the constitution Cursor reads
+```bash
+pnpm install
+pnpm dev       # http://localhost:3002
+pnpm build
+pnpm test
 ```
 
-## Getting started
-1. `pnpm create next-app@latest apps/pwa --ts --tailwind --app --src-dir --use-pnpm`
-2. Rename it to `@kayamo/pwa` in its package.json
-3. `cp .env.example .env.local` and fill it in
-4. `pnpm install`
-5. Open Cursor, set Grok 4.6 to **xhigh**, and start at Chapter 1 of [`docs/build/README.md`](docs/build/README.md)
+Deploy this repository from its root. Set `NEXT_PUBLIC_SUPABASE_URL`,
+`NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `NEXT_PUBLIC_SITE_URL=https://www.kayamo.fit`
+in the Vercel environment. Apex `https://kayamo.fit` already 308s to `www`
+and keeps `/auth/callback` query params.
 
-## Why this shape
-The PWA is the product. Admin exists so internal tooling and service-role
-access can never ship to users. Mobile is a shell, not a rewrite — Capacitor
-embeds the PWA build verbatim. Everything reusable lives in `packages/`, so
-a future surface (or a future app) consumes it without a refactor.
+In the Supabase project, set Authentication → URL Configuration:
+
+- Site URL: `https://www.kayamo.fit`
+- Redirect URLs:
+  - `https://www.kayamo.fit/auth/callback**`
+  - `https://www.kayamo.fit/**`
+  - `https://kayamo.fit/auth/callback**`
+  - `https://kayamo.fit/**`
+
+If Site URL stays `http://localhost:3000`, magic links open there with `?code=`
+instead of completing sign-in on kayamo.fit.
+
+Hosted smoke (no local server):
+
+```bash
+pnpm test:e2e:hosted
+```
+
+`packages/`, `supabase/`, and `data/` are synchronized copies owned by the
+sibling `kayamo-mobile` repository. Run `../sync-packages.sh` from the parent
+KayaMo folder after changing shared code there.

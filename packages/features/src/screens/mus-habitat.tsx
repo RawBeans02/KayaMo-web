@@ -10,7 +10,7 @@ export function MusHabitat({ progress, onGrove }: { progress: { totalPoints: num
   return (
     <section className={styles.habitat} aria-label={`Mus is at the ${stageLabel(progress.stageKey)} stage with ${progress.totalPoints} growth points`}>
       <div className={styles.atmosphere} aria-hidden="true" />
-      <img className={styles.cocoImage} src="/coco-seed.png" alt="Mus, a hopeful seed companion with a gentle expression" width={196} height={196} />
+      <img className={styles.cocoImage} src="/coco-seed.webp" alt="Mus, a hopeful seed companion with a gentle expression" width={196} height={196} />
       <button className={styles.stageProgress} type="button" onClick={onGrove}>
         <Tree size={16} weight="fill" />
         <span>{stageLabel(progress.stageKey)}</span>

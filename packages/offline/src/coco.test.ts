@@ -4,8 +4,10 @@ import {
   createLocalCocoConversation,
   deleteLocalJournalEntry,
   listLocalAgentMemories,
+  listLocalCocoConversations,
   listLocalCocoMessages,
   listLocalJournalEntries,
+  renameLocalCocoConversation,
   mergeRemoteAgentMemories,
   rememberJournalEntry,
   saveLocalJournalEntry,
@@ -98,7 +100,15 @@ describe('Coco offline privacy boundary', () => {
     });
 
     expect(await listLocalCocoMessages('user-a', conversation.id)).toHaveLength(1);
+    expect((await listLocalCocoConversations('user-a'))[0]?.updated_at).toBeTruthy();
     expect(await pendingCount()).toBe(2);
+
+    const renamed = await renameLocalCocoConversation({
+      id: conversation.id,
+      userId: 'user-a',
+      title: 'Planning help',
+    });
+    expect(renamed?.title).toBe('Planning help');
   });
 
   it('rejects an empty assistant reply instead of throwing on trim', async () => {
