@@ -37,7 +37,10 @@ describe('Dexie food cache LRU', () => {
   beforeEach(resetOfflineDb);
   afterEach(resetOfflineDb);
 
-  it('evicts the least-recent remote catalog rows past the cap and keeps user foods', async () => {
+  // 400 sequential Dexie puts plus a full-table LRU pass. Isolated this is ~3.4s
+  // (68% of Vitest's 5s default) and times out under `pnpm -r`. That is the test
+  // budget, not a logic failure — do not treat a retry as a fix.
+  it('evicts the least-recent remote catalog rows past the cap and keeps user foods', { timeout: 15_000 }, async () => {
     for (let i = 0; i < FOOD_CACHE_MAX + 5; i += 1) {
       await cacheFood(stubFood(`off-${i}`, 'off'));
     }

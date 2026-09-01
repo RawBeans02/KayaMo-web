@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { waitForUserIndexedDb } from './helpers/idb';
 
 const VIEWPORT = { width: 1440, height: 800 };
 
@@ -17,6 +18,11 @@ test.describe('desktop shell overflow', () => {
     await skip.click();
     await page.waitForURL('**/today');
     await expect(page.locator('[data-desk-shell]')).toBeVisible();
+    await expect(page.getByTestId('sync-status')).not.toHaveAttribute(
+      'data-sync-kind',
+      'local_db_error',
+      { timeout: 15_000 },
+    );
 
     await seedTodayEntries(page);
     await page.reload();
@@ -51,16 +57,9 @@ test.describe('desktop shell overflow', () => {
 });
 
 async function seedTodayEntries(page: Page): Promise<void> {
-  await page.waitForFunction(async () => {
-    const dbs = await indexedDB.databases();
-    return dbs.some((db) => db.name?.includes(':user:'));
-  });
-
-  const seeded = await page.evaluate(async () => {
-    const dbs = await indexedDB.databases();
-    const name = dbs.find((db) => db.name?.includes(':user:'))?.name;
-    if (!name) return 0;
-    const userId = decodeURIComponent(name.split(':user:')[1] ?? '');
+  const name = await waitForUserIndexedDb(page);
+  const seeded = await page.evaluate(async (dbName) => {
+    const userId = decodeURIComponent(dbName.split(':user:')[1] ?? '');
     const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila' }).format(new Date());
     const foods = [
       'Kanin',
@@ -76,7 +75,7 @@ async function seedTodayEntries(page: Page): Promise<void> {
     ];
 
     await new Promise<void>((resolve, reject) => {
-      const open = indexedDB.open(name);
+      const open = indexedDB.open(dbName);
       open.onerror = () => reject(open.error ?? new Error('indexedDB.open failed'));
       open.onsuccess = () => {
         const db = open.result;
@@ -131,7 +130,7 @@ async function seedTodayEntries(page: Page): Promise<void> {
       };
     });
     return 28;
-  });
+  }, name);
   expect(seeded).toBe(28);
 }
 

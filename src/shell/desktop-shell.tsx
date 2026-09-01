@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { CommandLog, OPEN_LOG_EVENT } from '@kayamo/features/desktop';
 import { SyncStatusBar } from '@kayamo/features';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
 import { MusRailMount } from './mus-rail-mount';
 import { SignOutButton } from './sign-out-button';
@@ -45,6 +45,7 @@ export function DesktopShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const hideRail = pathname === '/mus';
   const [railCollapsed, setRailCollapsed] = useState(false);
 
@@ -144,7 +145,7 @@ export function DesktopShell({
           />
         )}
 
-        <CommandLog userId={userId} />
+        <CommandLog userId={userId} onLeave={(href) => router.push(href)} />
       </div>
     </>
   );

@@ -16,6 +16,9 @@ look and behavior, not production code to lift. The task is to **recreate them i
 `kayamo-web` codebase** (Next.js App Router + pnpm workspace + Tailwind v4 semantic tokens),
 using its established patterns:
 
+- The design's **Today** screen is the meal-slot food log. In this repo that table is
+  `/calories` (`TodayTable`). `/today` is the dashboard (`DeskHome`). Tranche 4 should
+  put the designed Today on `/today` rather than restyling the dashboard and calling it done.
 - Routes already exist: `src/app/(shell)/{today,verify,foods,mus,gym,todos}/page.tsx`
 - Shell chrome: `src/app/(shell)/layout.tsx`, `packages/features/src/app-shell/`
 - Desktop screens: `packages/features/src/desk/` (`desk-home.tsx`, `gym-desk.tsx`,
@@ -124,7 +127,7 @@ Mus screen, which has its own three-column layout.
 
 ## Screens
 
-### 1 · Today (`/today`, `desk-home.tsx`)
+### 1 · Today (design table → `/calories` until tranche 4; `/today` is the dashboard)
 Reading the week, not the day. Header `Diary · week 36` + *Tuesday, 1 September*, with a
 day-boundary note (00:00 Asia/Manila — totals follow the user's boundary, not midnight).
 
@@ -209,6 +212,11 @@ not an error: create it in PH core, search brands and USDA, or ask Mus — with 
 brands stay out of the palette stated in copy. A **plate tray** keeps the palette open
 across several items and totals them; `↑↓ / Enter / Tab / ⌥1–4 / Esc` are shown at all times.
 
+Logging here is the user's own write. It goes through the existing offline path and a
+Toast with undo. It does **not** render a proposal card. That card is for Mus-proposed
+mutations (target changes, alias merges, batch verify). A Confirm on every plate of rice
+would miss the two-second target.
+
 ### Mus rail (shared, `316px`)
 One assistant, context follows the screen.
 
@@ -229,9 +237,10 @@ One assistant, context follows the screen.
 
 ## Interactions & behavior
 
-- **Nothing writes without confirmation.** High-risk writes (changing a target) require
-  typing `apply`; medium require an explicit Confirm; low apply immediately with a day-long
-  undo. Applying never rewrites history — past days keep the target they were logged against.
+- **Nothing writes without confirmation** when Mus proposes the write. High-risk proposals
+require typing `apply`; medium require Confirm; low apply immediately with a day-long undo.
+The user's own ⌘K log is not a proposal — Toast plus undo, no card. Applying a proposal
+never rewrites history — past days keep the target they were logged against.
 - **Provenance marks**: `✓` filled accent = verified · `~` outline = estimate ·
   `~` orange = photo/LLM range. Badges: PH, Brand, USDA, Yours, Photo.
 - Palette search debounces 260ms into the skeleton state; logging keeps the palette open.

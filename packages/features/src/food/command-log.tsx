@@ -5,7 +5,6 @@ import {
   isEstimateResult,
   logCountsFromHistory,
   resolveFromCatalogFoods,
-  SEARCH_DEBOUNCE_MS,
   servingKcal,
   showsVerifiedCheck,
   type CatalogFood,
@@ -23,14 +22,31 @@ import { createBrowserSupabase } from '@kayamo/db';
 import { Toast } from '@kayamo/ui';
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import {
-  clampSelectedIndex,
+  PALETTE_DEBOUNCE_MS,
+  PALETTE_KEYS,
+  PALETTE_LEAVE_ACTIONS,
+  PALETTE_SKELETONS,
+  aliasLine,
+  candidateFromCatalogFood,
   catalogForCommandLog,
+  clampSelectedIndex,
   cycleMealSlot,
+  frequencyLabel,
+  idlePaletteStatus,
+  leaveHrefFromPaletteKey,
+  loggedStatus,
   mealSlotFromDigit,
   OPEN_LOG_EVENT,
+  paletteStateLabel,
+  paletteView,
+  plateTotalKcal,
   PREFILL_LOG_EVENT,
+  previewQtyKcal,
+  readyCatalogFoods,
+  servingCaption,
   servingIdForLabel,
   toLogInputFromCandidate,
+  type PlateItem,
 } from './command-log-model';
 import { catalogFromCache, hydrateVisibleCatalog } from './hydrate-catalog';
 import { hydrateFoodHistory } from './hydrate-food-history';
@@ -81,7 +97,74 @@ function toHistory(entry: {
   };
 }
 
-export function CommandLog({ userId }: { userId: string }) {
+function HitRow({
+  hit,
+  aliases,
+  kind,
+  active,
+  optionId,
+  freq,
+  onHover,
+  onLog,
+}: {
+  hit: FoodCandidate;
+  aliases: string;
+  kind: 'ready' | 'results';
+  active: boolean;
+  optionId: string;
+  freq: string;
+  onHover: () => void;
+  onLog: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      id={optionId}
+      role="option"
+      aria-selected={active}
+      data-active={active ? 'true' : 'false'}
+      data-kind={kind}
+      className={styles.row}
+      onMouseEnter={onHover}
+      onClick={onLog}
+    >
+      <span>
+        <span className={styles.name}>{hit.name}</span>
+        {kind === 'results' && aliases ? (
+          <span className={styles.aliases}>{aliases}</span>
+        ) : (
+          <span className={styles.meta}>{servingCaption(hit.portion)}</span>
+        )}
+      </span>
+      {kind === 'ready' ? (
+        <span className={styles.freq}>{freq}</span>
+      ) : (
+        <span className={styles.serving}>{servingCaption(hit.portion)}</span>
+      )}
+      <span className={styles.kcal}>
+        <ProvenanceKcal
+          kcal={servingKcal(hit)}
+          source={hit.source}
+          verified={showsVerifiedCheck(hit)}
+          estimate={isEstimateResult(hit)}
+          servingLabel={hit.portion.servingLabel}
+        />
+      </span>
+    </button>
+  );
+}
+
+/**
+ * Direct user logging through `logFoodEntry` + Toast undo.
+ * Do not route this through ProposalCard — that card is for Mus-proposed writes.
+ */
+export function CommandLog({
+  userId,
+  onLeave,
+}: {
+  userId: string;
+  onLeave?: (href: string) => void;
+}) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const qtyRef = useRef<HTMLInputElement>(null);
@@ -99,6 +182,7 @@ export function CommandLog({ userId }: { userId: string }) {
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [undo, setUndo] = useState<{ ids: string[]; message: string } | null>(null);
+  const [plate, setPlate] = useState<PlateItem[]>([]);
   const [clock, setClock] = useState({ timeZone: 'Asia/Manila', dayStartsAt: '00:00:00' });
   const [catalog, setCatalog] = useState<CatalogFood[]>([]);
 
@@ -108,21 +192,50 @@ export function CommandLog({ userId }: { userId: string }) {
     return logCountsFromHistory(history);
   }, [historyRows]);
 
-  const highlighted = results[selected] ?? null;
+  const catalogById = useMemo(() => {
+    const map = new Map<string, CatalogFood>();
+    for (const food of catalog) map.set(food.id, food);
+    return map;
+  }, [catalog]);
+
+  const view = paletteView(query, searching, results.length);
+  const readyHits = useMemo(
+    () =>
+      readyCatalogFoods(catalog, logCounts).map((food) =>
+        candidateFromCatalogFood(food, logCounts.get(food.id) ?? 0),
+      ),
+    [catalog, logCounts],
+  );
+  const hits = view === 'ready' ? readyHits : view === 'results' ? results : [];
+  const highlighted = hits[clampSelectedIndex(selected, hits.length)] ?? null;
+
+  const resetSession = useCallback(() => {
+    setQuery('');
+    setResults([]);
+    setSelected(0);
+    setQtyMode(false);
+    setQty('1');
+    setSearching(false);
+    setError(null);
+    setPlate([]);
+  }, []);
 
   const openPalette = useCallback((prefill?: string) => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     const hour = localHourFromInstant(new Date().toISOString(), clock.timeZone);
     setMealSlot(mealSlotAtHour(hour));
+    resetSession();
     setQuery(prefill ?? '');
-    setResults([]);
-    setSelected(0);
-    setQtyMode(false);
-    setError(null);
+    setStatus(null);
     if (!dialog.open) dialog.showModal();
     window.setTimeout(() => inputRef.current?.focus(), 0);
-  }, [clock.timeZone]);
+  }, [clock.timeZone, resetSession]);
+
+  const leavePalette = useCallback((href: string) => {
+    dialogRef.current?.close();
+    onLeave?.(href);
+  }, [onLeave]);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -167,8 +280,9 @@ export function CommandLog({ userId }: { userId: string }) {
       try {
         const cached = await catalogFromCache();
         if (!cancelled && cached.length > 0) setCatalog(catalogForCommandLog(cached));
-        const remote = await hydrateVisibleCatalog();
-        if (!cancelled) setCatalog(catalogForCommandLog(remote));
+        await hydrateVisibleCatalog();
+        const after = await catalogFromCache();
+        if (!cancelled && after.length > 0) setCatalog(catalogForCommandLog(after));
       } catch {
         // Dexie cache is enough while offline.
       }
@@ -187,6 +301,7 @@ export function CommandLog({ userId }: { userId: string }) {
     }
     let cancelled = false;
     setSearching(true);
+    setResults([]);
     const timer = window.setTimeout(() => {
       void resolveFromCatalogFoods(text, userId, catalog, logCounts).then((hits) => {
         if (cancelled) return;
@@ -194,7 +309,7 @@ export function CommandLog({ userId }: { userId: string }) {
         setSelected(0);
         setSearching(false);
       });
-    }, SEARCH_DEBOUNCE_MS);
+    }, PALETTE_DEBOUNCE_MS);
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
@@ -239,8 +354,12 @@ export function CommandLog({ userId }: { userId: string }) {
     try {
       const row = await logFoodEntry(input);
       const label = mealSlotLabel(mealSlot, 'taglish');
-      setStatus(`Logged ${candidate.name} · ${label}`);
+      setStatus(loggedStatus(label));
       showUndo([row.id], `Logged ${candidate.name}`);
+      setPlate((items) => [
+        ...items,
+        { id: row.id, label: candidate.name, kcal: Math.round(Number(input.kcal)) },
+      ]);
       setQuery('');
       setResults([]);
       setSelected(0);
@@ -258,10 +377,28 @@ export function CommandLog({ userId }: { userId: string }) {
     setUndo(null);
     if (undoTimer.current) clearTimeout(undoTimer.current);
     await tombstoneLocalFoodEntries({ ids, userId });
+    setPlate((items) => items.filter((item) => !ids.includes(item.id)));
     setStatus('Undid last log');
   }
 
+  async function removePlateItem(id: string) {
+    await tombstoneLocalFoodEntries({ ids: [id], userId });
+    setPlate((items) => items.filter((item) => item.id !== id));
+    if (undo?.ids.includes(id)) {
+      setUndo(null);
+      if (undoTimer.current) clearTimeout(undoTimer.current);
+    }
+  }
+
   function onDialogKey(event: ReactKeyboardEvent<HTMLDialogElement>) {
+    if (view === 'none') {
+      const href = leaveHrefFromPaletteKey(event);
+      if (href) {
+        event.preventDefault();
+        leavePalette(href);
+        return;
+      }
+    }
     if (event.key === 'Escape') {
       if (qtyMode) {
         event.preventDefault();
@@ -283,12 +420,12 @@ export function CommandLog({ userId }: { userId: string }) {
     }
     if (event.key === 'ArrowDown') {
       event.preventDefault();
-      setSelected((index) => clampSelectedIndex(index + 1, results.length));
+      setSelected((index) => clampSelectedIndex(index + 1, hits.length));
       return;
     }
     if (event.key === 'ArrowUp') {
       event.preventDefault();
-      setSelected((index) => clampSelectedIndex(index - 1, results.length));
+      setSelected((index) => clampSelectedIndex(index - 1, hits.length));
       return;
     }
     if (event.key === 'Tab' && highlighted && !qtyMode) {
@@ -313,6 +450,9 @@ export function CommandLog({ userId }: { userId: string }) {
   }
 
   const activeId = highlighted ? `${listId}-${highlighted.foodId}` : undefined;
+  const plateKcal = plateTotalKcal(plate);
+  const statusText = error ?? status ?? idlePaletteStatus(plate.length);
+  const statusOk = !error && Boolean(status?.startsWith('Logged'));
 
   return (
     <>
@@ -320,18 +460,18 @@ export function CommandLog({ userId }: { userId: string }) {
         ref={dialogRef}
         className={styles.dialog}
         aria-labelledby={titleId}
+        data-palette="log"
+        data-palette-view={view}
         onKeyDown={onDialogKey}
         onClose={() => {
-          setQtyMode(false);
-          setQuery('');
-          setResults([]);
+          resetSession();
         }}
       >
         <div className={styles.body}>
           <div className={styles.chrome}>
-            <h2 id={titleId} className={styles.title}>
-              Log food
-            </h2>
+            <p id={titleId} className={styles.eyebrow}>
+              Log food · PH core
+            </p>
             <div className={styles.slots} role="group" aria-label="Meal slot">
               {SLOTS.map((slot, index) => (
                 <button
@@ -342,63 +482,125 @@ export function CommandLog({ userId }: { userId: string }) {
                   aria-pressed={mealSlot === slot}
                   onClick={() => setMealSlot(slot)}
                 >
-                  {index + 1} {mealSlotLabel(slot, 'taglish')}
+                  <span className={styles.digit}>{index + 1}</span>
+                  <span>{mealSlotLabel(slot, 'taglish')}</span>
                 </button>
               ))}
             </div>
           </div>
           <div className={styles.query}>
+            <span className={styles.searchIcon} aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="7" cy="7" r="5.2" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M11 11L14.5 14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </span>
             <input
               ref={inputRef}
               value={query}
               onChange={(event) => setQuery(event.target.value.slice(0, 200))}
-              placeholder="kanin, adobo, sinaing…"
+              placeholder="kanin, adobong manok, sinigang na baboy…"
               autoComplete="off"
               autoCorrect="off"
               spellCheck={false}
               aria-autocomplete="list"
               aria-controls={listId}
               aria-activedescendant={activeId}
-              aria-expanded={results.length > 0}
+              aria-expanded={hits.length > 0}
+              aria-busy={searching}
               role="combobox"
             />
+            <span className={styles.stateLabel}>{paletteStateLabel(view, results.length)}</span>
           </div>
-          <ul id={listId} className={styles.list} role="listbox">
-            {results.map((hit, index) => (
-              <li key={hit.foodId} role="presentation">
-                <button
-                  type="button"
-                  id={`${listId}-${hit.foodId}`}
-                  role="option"
-                  aria-selected={index === selected}
-                  data-active={index === selected ? 'true' : 'false'}
-                  className={styles.row}
-                  onMouseEnter={() => setSelected(index)}
-                  onClick={() => {
-                    setSelected(index);
-                    void logCandidate(hit);
-                  }}
-                >
-                  <div>
-                    <p className={styles.name}>{hit.name}</p>
-                    <p className={styles.meta}>{hit.portion.servingLabel}</p>
+          <div id={listId} className={styles.list}>
+            {view === 'ready' ? (
+              <>
+                <p className={styles.readyLabel}>You usually eat around now</p>
+                <ul role="listbox">
+                  {readyHits.map((hit, index) => (
+                    <li key={hit.foodId} role="presentation">
+                      <HitRow
+                        hit={hit}
+                        aliases=""
+                        kind="ready"
+                        active={index === clampSelectedIndex(selected, readyHits.length)}
+                        optionId={`${listId}-${hit.foodId}`}
+                        freq={frequencyLabel(hit.timesLogged)}
+                        onHover={() => setSelected(index)}
+                        onLog={() => {
+                          setSelected(index);
+                          void logCandidate(hit);
+                        }}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
+            {view === 'searching' ? (
+              <div>
+                <p className={styles.searchLabel}>Searching PH core · aliases · your history</p>
+                {PALETTE_SKELETONS.map((sk) => (
+                  <div key={sk.w1} className={styles.skeleton} aria-hidden="true">
+                    <span className={styles.bones}>
+                      <span className={styles.bone} style={{ width: sk.w1 }} />
+                      <span className={`${styles.bone} ${styles.boneThin}`} style={{ width: sk.w2 }} />
+                    </span>
+                    <span className={`${styles.bone} ${styles.boneKcal}`} />
                   </div>
-                  <div className={styles.kcal}>
-                    <ProvenanceKcal
-                      kcal={servingKcal(hit)}
-                      source={hit.source}
-                      verified={showsVerifiedCheck(hit)}
-                      estimate={isEstimateResult(hit)}
-                      servingLabel={hit.portion.servingLabel}
-                    />
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-          {query.trim() && !searching && results.length === 0 ? (
-            <p className={styles.empty}>No catalog match. USDA and brands stay out of this palette.</p>
-          ) : null}
+                ))}
+              </div>
+            ) : null}
+            {view === 'results' ? (
+              <ul role="listbox">
+                {results.map((hit, index) => {
+                  const food = catalogById.get(hit.foodId);
+                  return (
+                    <li key={hit.foodId} role="presentation">
+                      <HitRow
+                        hit={hit}
+                        aliases={food ? aliasLine(food) : ''}
+                        kind="results"
+                        active={index === clampSelectedIndex(selected, results.length)}
+                        optionId={`${listId}-${hit.foodId}`}
+                        freq=""
+                        onHover={() => setSelected(index)}
+                        onLog={() => {
+                          setSelected(index);
+                          void logCandidate(hit);
+                        }}
+                      />
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
+            {view === 'none' ? (
+              <div className={styles.none}>
+                <p className={styles.noneTitle}>Nothing in PH core matches “{query.trim()}”.</p>
+                <p className={styles.noneBody}>
+                  Brands and USDA stay out of this palette on purpose — they would bury the
+                  dishes you actually eat. Three ways forward:
+                </p>
+                <div className={styles.noneActions}>
+                  {PALETTE_LEAVE_ACTIONS.map((action) => (
+                    <button
+                      key={action.href}
+                      type="button"
+                      className={styles.noneAction}
+                      onClick={() => leavePalette(action.href)}
+                    >
+                      <span>
+                        <strong>{action.title}</strong>
+                        <span>{action.sub}</span>
+                      </span>
+                      <kbd className={styles.k}>{action.key}</kbd>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
           {qtyMode && highlighted ? (
             <div className={styles.qty}>
               <label htmlFor={`${listId}-qty`}>Quantity</label>
@@ -411,18 +613,52 @@ export function CommandLog({ userId }: { userId: string }) {
                 value={qty}
                 onChange={(event) => setQty(event.target.value)}
               />
-              <span>{highlighted.portion.servingLabel}</span>
+              <span className={styles.qtyServing}>× {servingCaption(highlighted.portion)}</span>
+              <span className={styles.qtyKcal}>
+                {previewQtyKcal(servingKcal(highlighted), highlighted.portion.amount, qty).toLocaleString('en-PH')}
+                <span className={styles.qtyUnit}>kcal</span>
+              </span>
             </div>
           ) : null}
-          <div className={styles.foot}>
-            <p>
-              <span className={styles.k}>↑↓</span> move <span className={styles.k}>Enter</span> log{' '}
-              <span className={styles.k}>Tab</span> qty <span className={styles.k}>⌥1–4</span> meal{' '}
-              <span className={styles.k}>Esc</span> close
-            </p>
-            <p className={styles.status} role="status">
-              {error ?? status ?? (searching ? 'Searching…' : null)}
-            </p>
+          <div className={styles.tray}>
+            {plate.length > 0 ? (
+              <div className={styles.plate} aria-label="This plate">
+                <div className={styles.chips}>
+                  {plate.map((item) => (
+                    <span key={item.id} className={styles.chip}>
+                      <span>{item.label}</span>
+                      <span className={styles.chipKcal}>{item.kcal.toLocaleString('en-PH')}</span>
+                      <button
+                        type="button"
+                        className={styles.chipRemove}
+                        aria-label={`Remove ${item.label}`}
+                        onClick={() => void removePlateItem(item.id)}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className={styles.plateTotal}>
+                  <span className={styles.plateLabel}>This plate</span>
+                  <span className={styles.plateValue}>{plateKcal.toLocaleString('en-PH')}</span>
+                  <span className={styles.plateUnit}>kcal</span>
+                </div>
+              </div>
+            ) : null}
+            <div className={styles.foot}>
+              <div className={styles.keys}>
+                {PALETTE_KEYS.map((item) => (
+                  <span key={item.key} className={styles.key}>
+                    <kbd className={styles.k}>{item.key}</kbd>
+                    <span>{item.label}</span>
+                  </span>
+                ))}
+              </div>
+              <p className={styles.status} data-ok={statusOk ? 'true' : 'false'} role="status">
+                {statusText}
+              </p>
+            </div>
           </div>
         </div>
       </dialog>

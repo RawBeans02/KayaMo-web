@@ -22,7 +22,7 @@ export function DeskBarChart({
         aria-labelledby={`${chartId}-title`}
       >
         <title id={`${chartId}-title`}>
-          {caption}: {bars.map((bar) => `${bar.weekday} ${bar.value} ${unit}`).join(', ')}
+          {`${caption}: ${bars.map((bar) => `${bar.weekday} ${bar.value} ${unit}`).join(', ')}`}
         </title>
         {bars.map((bar, index) => {
           const height = bar.future ? 0 : (bar.value / peak) * 96;
