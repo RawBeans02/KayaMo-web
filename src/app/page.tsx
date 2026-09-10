@@ -1,5 +1,8 @@
 import { createServerSupabase } from '@/lib/supabase/server';
 import { authCallbackPathFromSearch } from '@/lib/auth-landing';
+import { GUEST_COOKIE, isValidGuestId } from '@/lib/guest';
+import { Landing } from './landing/landing';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 export default async function Home({
@@ -15,5 +18,9 @@ export default async function Home({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  redirect(user ? '/today' : '/login');
+  if (user) redirect('/today');
+
+  // Keep the public home reachable from sign-in without losing a guest's diary.
+  const demoStarted = isValidGuestId((await cookies()).get(GUEST_COOKIE)?.value);
+  return <Landing demoStarted={demoStarted} />;
 }

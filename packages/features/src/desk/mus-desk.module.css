@@ -1,4 +1,26 @@
+/* The Mus thread reuses the phone's chat chrome, which styles itself with the
+   --km-* set defined on the mobile shell's .viewport. That ancestor does not
+   exist on the desk, so every one of those references resolved to nothing and
+   bubbles, borders and the composer lost their fills. Map the set onto the
+   desk's semantic tokens here so the chat renders in the desk palette. */
 .desk {
+  --km-bg: var(--color-bg);
+  --km-wash: var(--color-surface-2);
+  --km-surface: var(--color-surface);
+  --km-surface-2: var(--color-surface-2);
+  --km-text: var(--color-text);
+  --km-muted: var(--color-muted);
+  --km-action: var(--color-accent);
+  --km-action-fg: var(--color-accent-fg);
+  --km-growth: var(--color-proposal);
+  --km-growth-fg: var(--color-accent-fg);
+  --km-danger: var(--color-warning);
+  --km-glass: var(--color-surface);
+  --km-glass-clear: var(--color-surface);
+  --km-glass-edge: var(--color-line-strong);
+  --km-hairline: var(--color-line);
+  --km-shadow: none;
+  --km-scrim: var(--color-overlay);
   display: grid;
   grid-template-columns: minmax(0, 1fr) 316px;
   height: 100%;

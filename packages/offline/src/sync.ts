@@ -62,6 +62,7 @@ import { backoffMs } from './backoff';
 import {
   assertOfflineScope,
   getOfflineScope,
+  installClosedDbRecovery,
   setOfflineUserScope,
   StaleOfflineScopeError,
   type OfflineScope,
@@ -88,6 +89,12 @@ export type SyncDeps = {
   getClient: () => DbClient;
   fetchPage?: PullPageFetcher;
   onTelemetry?: (event: SyncTelemetryEvent) => void;
+  /**
+   * No-account demo. When there is no Supabase session, scope the offline
+   * database to this id instead of the signed-out one, which is deliberately
+   * evacuated. Sync stays paused either way — a guest has nothing to push.
+   */
+  guestId?: string | null;
 };
 
 export type SyncTelemetryEvent = {
@@ -626,7 +633,7 @@ async function bootstrapSync(): Promise<void> {
   const { data } = await deps.getClient().auth.getSession();
   if (!data.session) {
     state.paused = true;
-    await setOfflineUserScope(null);
+    await setOfflineUserScope(deps.guestId ?? null);
     await refreshPending();
     return;
   }
@@ -642,8 +649,9 @@ export function startSync(deps: SyncDeps): () => void {
   }
 
   setOnlineFlag(navigator.onLine);
+  const stopClosedDbRecovery = installClosedDbRecovery();
   void refreshPending();
-  void bootstrapSync();
+  void bootstrapSync().catch(() => undefined);
 
   const onOnline = () => {
     setOnlineFlag(true);
@@ -672,7 +680,7 @@ export function startSync(deps: SyncDeps): () => void {
     }
     if (event === 'SIGNED_OUT') {
       state.paused = true;
-      void setOfflineUserScope(null).catch(() => undefined);
+      void setOfflineUserScope(deps.guestId ?? null).catch(() => undefined);
       refreshSnapshot();
       notifySyncStatus();
     }
@@ -681,6 +689,7 @@ export function startSync(deps: SyncDeps): () => void {
   void refreshPending();
 
   return () => {
+    stopClosedDbRecovery();
     window.removeEventListener('online', onOnline);
     window.removeEventListener('offline', onOffline);
     document.removeEventListener('visibilitychange', onVisible);

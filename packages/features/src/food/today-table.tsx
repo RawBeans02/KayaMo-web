@@ -36,6 +36,7 @@ import {
   weekAverageBar,
   weekStripDays,
 } from './today-diary';
+import { useDeskLocale } from '../i18n/desk-locale';
 import { DeskMusPane } from '../desk/desk-mus';
 import styles from './desk.module.css';
 
@@ -70,6 +71,7 @@ function diaryBadge(source: string): { label: string; kind: 'ph' | 'user' | 'pla
 }
 
 export function TodayTable({ userId }: { userId: string }) {
+  const locale = useDeskLocale();
   const [clock, setClock] = useState({ timeZone: 'Asia/Manila', dayStartsAt: '00:00:00' });
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [targets, setTargets] = useState<NutritionTarget[]>([]);
@@ -172,7 +174,7 @@ export function TodayTable({ userId }: { userId: string }) {
       }),
     [clockToday, headline.targetKcal, history, today],
   );
-  const groups = useMemo(() => groupEntriesByMeal(entries), [entries]);
+  const groups = useMemo(() => groupEntriesByMeal(entries, locale), [entries, locale]);
   const todayKcal = useMemo(
     () => Math.round(entries.reduce((sum, row) => sum + (Number(row.kcal) || 0), 0)),
     [entries],
@@ -283,7 +285,7 @@ export function TodayTable({ userId }: { userId: string }) {
 
       <section className={styles.weekHero} aria-label="This week's average vs target">
         <div className={styles.weekHeroMain}>
-          <p className={styles.statLabel}>This week&apos;s average vs target</p>
+          <p className={styles.statLabelLead}>This week&apos;s average vs target</p>
           <div className={styles.weekHeroValue}>
             <span className={styles.weekAvg}>
               {headline.weekAverageKcal === null ? '—' : headline.weekAverageKcal.toLocaleString('en-PH')}

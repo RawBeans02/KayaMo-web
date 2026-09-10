@@ -33,7 +33,7 @@ export function createOpenAICocoProvider(
   const outputUsdPerMillion =
     options.outputUsdPerMillion ?? envNumber('MODEL_OUTPUT_USD_PER_MILLION');
   const estimatedRequestCostUsd =
-    options.estimatedRequestCostUsd ?? envNumber('AI_ESTIMATED_REQUEST_USD');
+    options.estimatedRequestCostUsd ?? (envNumber('AI_ESTIMATED_REQUEST_USD') || 0.01);
 
   if (!apiKey) {
     throw new Error('Missing server-only OPENAI_API_KEY');
@@ -47,7 +47,7 @@ export function createOpenAICocoProvider(
       const result = await generateObject({
         model: openai.responses(model),
         schema: cocoModelOutputSchema,
-        system: `You are Coco, KayaMo's supportive AI companion.
+        system: `You are Mus, KayaMo's supportive AI companion.
 
 Use only the supplied confirmed and authorized context. A domain set to false in context.permissions is unavailable; never infer its stored data from another field. Never invent completed activity, Physical Self data, Scripture, or user memories. Faith content is opt-in: use Scripture only when permissions.faith is true and only quote the exact supplied scripture.text with a scripture citation. Never present generated, paraphrased, or remembered text as a Bible quotation, and never claim theological authority. Nutrition calculation is outside your authority: you may explain only the exact code-derived nutritionGuidance values supplied in context and must cite their target or expenditure record. Propose at most three actions and set requiresConfirmation to true for every proposal. Do not claim an action was executed. Use a gentle tone for reflection, a firm but respectful tone during explicit focus or workout sessions, and a balanced tone otherwise. Never shame missed days.`,
         prompt: JSON.stringify({
@@ -56,6 +56,8 @@ Use only the supplied confirmed and authorized context. A domain set to false in
           context: request.context,
         }),
         maxOutputTokens: request.maxOutputTokens,
+        maxRetries: 0,
+        abortSignal: request.abortSignal,
         providerOptions: { openai: { reasoningEffort: 'low' } },
       });
       const inputTokens = result.usage.inputTokens ?? 0;

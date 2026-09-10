@@ -7,6 +7,7 @@ import {
   resetOfflineDb,
   reviveClosedOfflineDb,
   setOfflineUserScope,
+  swallowClosedDbRejection,
 } from './db';
 
 vi.mock('./sync', async () => {
@@ -61,6 +62,30 @@ describe('offline db reopen', () => {
     });
     expect(attempts).toBe(2);
     expect(titles).toEqual(['Retry me']);
+  });
+
+  it('retries a second time after another closed error', async () => {
+    await createLocalTask({ userId: 'user-a', title: 'Retry twice', origin: 'user' });
+    getOfflineDb().close();
+    let attempts = 0;
+    const titles = await recoverClosedOfflineDb(async () => {
+      attempts += 1;
+      if (attempts < 3) {
+        throw Object.assign(new Error('Database has been closed'), { name: 'DatabaseClosedError' });
+      }
+      return (await listLocalTasks('user-a')).map((row) => row.title);
+    });
+    expect(attempts).toBe(3);
+    expect(titles).toEqual(['Retry twice']);
+  });
+
+  it('swallows closed-database unhandled rejections without hiding other errors', () => {
+    const closed = { preventDefault: vi.fn(), reason: { name: 'DatabaseClosedError', message: 'Database has been closed' } };
+    const other = { preventDefault: vi.fn(), reason: new Error('boom') };
+    expect(swallowClosedDbRejection(closed)).toBe(true);
+    expect(closed.preventDefault).toHaveBeenCalledOnce();
+    expect(swallowClosedDbRejection(other)).toBe(false);
+    expect(other.preventDefault).not.toHaveBeenCalled();
   });
 
   it('reopens the same user scope after the connection is closed', async () => {

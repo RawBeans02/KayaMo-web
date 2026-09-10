@@ -1,8 +1,8 @@
 'use client';
 
-import type { MusEntry, MusEntryModule } from '@kayamo/ai';
-import { useEffect, useMemo, useState } from 'react';
-import { updateMusContextPermission } from '../mus/context-permissions';
+import { defaultMusContextPermissions, type MusContextPermissionDomain, type MusContextPermissions, type MusEntry, type MusEntryModule } from '@kayamo/ai';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { loadMusContextPermissions, updateMusContextPermission } from '../mus/context-permissions';
 import {
   MUS_FACE_RULES,
   MUS_FACES,
@@ -11,16 +11,6 @@ import {
   type MusFace,
 } from '../mus/mus-faces';
 import { useMusBusy, useMusSelection } from '../mus/mus-selection';
-import {
-  cycleMusPermLevel,
-  DEFAULT_MUS_PERM_LEVELS,
-  domainAllowedFromLevels,
-  MUS_PERM_MODULES,
-  readMusPermLevels,
-  readableModuleCount,
-  writeMusPermLevels,
-  type MusPermLevels,
-} from '../mus/perm-levels';
 import { MusThread } from '../screens/mus-thread';
 import { useDeskClock } from './use-desk-clock';
 import styles from './mus-rail.module.css';
@@ -45,11 +35,12 @@ function moduleFromPath(pathname: string): MusEntryModule {
   return 'dashboard';
 }
 
-function permColor(level: MusPermLevels[keyof MusPermLevels]): string {
-  if (level === 'never') return 'var(--color-muted-2)';
-  if (level === 'edit') return 'var(--color-accent)';
-  return 'var(--color-muted)';
-}
+const PERMISSION_ROWS: { key: MusContextPermissionDomain; label: string }[] = [
+  { key: 'physical_self', label: 'Food, nutrition & workouts' },
+  { key: 'goals_planning', label: 'Goals & planning' },
+  { key: 'memory', label: 'Saved memories' },
+  { key: 'faith', label: 'Faith context' },
+];
 
 export function MusRail({
   userId,
@@ -67,12 +58,30 @@ export function MusRail({
   const { today } = useDeskClock(userId);
   const selection = useMusSelection();
   const busy = useMusBusy();
-  const [levels, setLevels] = useState<MusPermLevels>(DEFAULT_MUS_PERM_LEVELS);
+  const guest = userId.startsWith('guest-');
+  const [permissions, setPermissions] = useState<MusContextPermissions>(defaultMusContextPermissions);
+  const [loaded, setLoaded] = useState(false);
+  const [pending, setPending] = useState(false);
+  const updating = useRef(false);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
   const [permsOpen, setPermsOpen] = useState(variant === 'page');
 
   useEffect(() => {
-    setLevels(readMusPermLevels(userId));
-  }, [userId]);
+    let cancelled = false;
+    async function reload() {
+      if (guest) return;
+      setLoaded(false);
+      try {
+        const value = await loadMusContextPermissions();
+        if (!cancelled) { setPermissions(value); setLoaded(true); setPermissionError(null); }
+      } catch {
+        if (!cancelled) setPermissionError('Could not verify access. Retry before using Mus.');
+      }
+    }
+    void reload();
+    window.addEventListener('kayamo:mus-permissions', reload);
+    return () => { cancelled = true; window.removeEventListener('kayamo:mus-permissions', reload); };
+  }, [guest, userId]);
 
   const face: MusFace = musFaceFor({ kind: busy ? 'thinking' : 'idle' });
   const faceSrc = musFaceSrc(face);
@@ -87,13 +96,24 @@ export function MusRail({
     [pathname, selection],
   );
 
-  function persist(next: MusPermLevels) {
-    setLevels(next);
-    writeMusPermLevels(userId, next);
-    const physical = domainAllowedFromLevels(next, 'physical_self');
-    const goals = domainAllowedFromLevels(next, 'goals_planning');
-    void updateMusContextPermission('physical_self', physical).catch(() => undefined);
-    void updateMusContextPermission('goals_planning', goals).catch(() => undefined);
+  async function persist(domain: MusContextPermissionDomain) {
+    if (!loaded || updating.current || guest) return;
+    updating.current = true;
+    setPending(true);
+    setPermissionError(null);
+    try {
+      const confirmed = await updateMusContextPermission(domain, !permissions[domain]);
+      setPermissions(confirmed);
+      window.dispatchEvent(new Event('kayamo:mus-permissions'));
+    } catch {
+      // A timed-out response may still have committed. Treat access as unknown
+      // until a fresh GET, and never claim a revocation succeeded.
+      setLoaded(false);
+      setPermissionError('Change not confirmed. Access may be unchanged. Retry to check the server before sharing anything.');
+    } finally {
+      updating.current = false;
+      setPending(false);
+    }
   }
 
   if (collapsed && variant === 'shell') {
@@ -111,7 +131,7 @@ export function MusRail({
     );
   }
 
-  const readable = readableModuleCount(levels);
+  const readable = Object.values(permissions).filter(Boolean).length;
 
   return (
     <aside
@@ -152,8 +172,7 @@ export function MusRail({
           </div>
         </dl>
         <p className={styles.note}>
-          Mus reads only what is on. Nothing at <span className={styles.mono}>suggest</span> or
-          below is ever written without you.
+          {guest ? 'Online Mus is unavailable in the local demo. Sign in to use it.' : 'These controls govern stored context for Mus chat. Food and workouts share one access setting. Your messages and explicit tool requests are still sent when you submit them. Mus proposes changes; you confirm them.'}
         </p>
         <button
           type="button"
@@ -162,13 +181,13 @@ export function MusRail({
           aria-expanded={permsOpen}
         >
           <span className={styles.mono}>
-            {permsOpen ? '▾' : '▸'} {readable} of 5 modules readable
+            {permsOpen ? '▾' : '▸'} {guest ? 'Sign in to manage access' : loaded ? `${readable} of 4 context areas readable` : 'Context access unverified'}
           </span>
         </button>
         {permsOpen ? (
           <div className={styles.perms} data-mus-perms="">
-            {MUS_PERM_MODULES.map((row) => {
-              const level = levels[row.key];
+            {PERMISSION_ROWS.map((row) => {
+              const level = guest ? 'sign in' : !loaded ? 'unverified' : permissions[row.key] ? 'read' : 'off';
               return (
                 <button
                   key={row.key}
@@ -176,11 +195,13 @@ export function MusRail({
                   className={styles.perm}
                   data-mus-perm={row.key}
                   data-mus-perm-level={level}
-                  onClick={() => persist({ ...levels, [row.key]: cycleMusPermLevel(level) })}
-                  aria-label={`${row.label} permission, currently ${level}. Click to cycle.`}
+                  disabled={guest || !loaded || pending}
+                  onClick={() => void persist(row.key)}
+                  aria-label={`${row.label} access, currently ${level}`}
+                  aria-pressed={loaded && permissions[row.key]}
                 >
                   <span>{row.label}</span>
-                  <span className={styles.permLevel} style={{ color: permColor(level) }}>
+                  <span className={styles.permLevel} >
                     {level}
                   </span>
                 </button>
@@ -189,6 +210,8 @@ export function MusRail({
           </div>
         ) : null}
       </div>
+
+      {permissionError ? <div role="alert"><p>{permissionError}</p><button type="button" disabled={pending} onClick={() => window.dispatchEvent(new Event('kayamo:mus-permissions'))}>Retry access check</button></div> : null}
 
       {variant === 'shell' ? (
         <div className={styles.thread}>

@@ -1,12 +1,7 @@
 import { TodosDesk } from '@kayamo/features/desktop';
-import { createServerSupabase } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
+import { requireShellUserId } from '@/lib/shell-user';
 
 export default async function TodosPage() {
-  const supabase = await createServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
-  return <TodosDesk userId={user.id} />;
+  const userId = await requireShellUserId();
+  return <TodosDesk userId={userId} />;
 }

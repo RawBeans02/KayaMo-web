@@ -1,3 +1,4 @@
+import { reserveWebAiRequest } from '@/lib/server-ai-allowance';
 import { NextResponse } from 'next/server';
 import { AiBudgetError, AiConfigError, completeObject } from '@kayamo/ai';
 import { getAgentSpendUsd, insertAgentRunTelemetry } from '@kayamo/db';
@@ -23,7 +24,7 @@ function nonnegativeEnvNumber(name: string, fallback: number): number {
 }
 
 function gymModelId(): string {
-  return process.env.MODEL_GYM?.trim() || 'gpt-5.6';
+  return process.env.MODEL_GYM?.trim() || process.env.MUS_ORCHESTRATOR_MODEL?.trim() || process.env.MODEL_SMALL?.trim() || 'gpt-5.6-luna';
 }
 
 const GYM_CONSULT_SYSTEM = `You assemble one gym session for a Philippine commercial gym.
@@ -45,6 +46,9 @@ export async function POST(request: Request) {
   if (!user) {
     return NextResponse.json({ error: 'Sign in to consult a session.' }, { status: 401 });
   }
+
+  const allowanceError = await reserveWebAiRequest(user.id);
+  if (allowanceError) return allowanceError;
 
   const parsed = requestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {

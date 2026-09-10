@@ -1,7 +1,7 @@
 'use client';
 
 import { createBrowserSupabase } from '@kayamo/db';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { authRedirectTo, type AuthRedirectPorts } from '../ports';
 import styles from './login-form.module.css';
 
@@ -50,10 +50,33 @@ export function LoginForm({
 }) {
   const [pending, setPending] = useState<'email' | 'google' | null>(null);
   const [clientError, setClientError] = useState<string | null>(null);
-  const [clientSent, setClientSent] = useState(false);
+  const [serverErrorDismissed, setServerErrorDismissed] = useState(false);
+  const [clientSent, setClientSent] = useState(sent);
+  const [sentEmail, setSentEmail] = useState('');
+  const [cooldown, setCooldown] = useState(0);
+  const retryAt = useRef(0);
+  const cooldownActive = cooldown > 0;
+  const inputRef = useRef<HTMLInputElement>(null);
+  const requestInFlight = useRef(false);
+  const errorId = useId();
+
+  useEffect(() => {
+    if (!cooldownActive) return;
+    const timer = window.setInterval(
+      () => setCooldown(Math.max(0, Math.ceil((retryAt.current - Date.now()) / 1000))),
+      1000,
+    );
+    return () => window.clearInterval(timer);
+  }, [cooldownActive]);
+
+  function startCooldown() {
+    retryAt.current = Date.now() + 60_000;
+    setCooldown(60);
+  }
 
   async function onEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (requestInFlight.current || cooldown > 0) return;
     const email = String(new FormData(event.currentTarget).get('email') ?? '').trim();
     if (!email) {
       setClientError('Email is required');
@@ -61,17 +84,33 @@ export function LoginForm({
     }
     setPending('email');
     setClientError(null);
-    const supabase = createBrowserSupabase();
-    const { error: otpError } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: authRedirectTo(ports) },
-    });
-    setPending(null);
-    if (otpError) {
-      setClientError(otpError.message);
-      return;
+    setClientSent(false);
+    setServerErrorDismissed(true);
+    requestInFlight.current = true;
+    try {
+      const supabase = createBrowserSupabase();
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: authRedirectTo(ports) },
+      });
+      if (otpError) {
+        setClientError(
+          otpError.status === 429
+            ? 'Too many requests. Please wait a minute before trying again.'
+            : 'We couldn’t send the sign-in link. Check your email address and try again.',
+        );
+        if (otpError.status === 429) startCooldown();
+        return;
+      }
+      setSentEmail(email);
+      setClientSent(true);
+      startCooldown();
+    } catch {
+      setClientError('Could not connect. Check your connection and try again.');
+    } finally {
+      requestInFlight.current = false;
+      setPending(null);
     }
-    setClientSent(true);
   }
 
   async function onGoogle() {
@@ -86,47 +125,99 @@ export function LoginForm({
     if (oauthError) setClientError(oauthError.message);
   }
 
-  const shownError = clientError ?? error;
-  const shownSent = clientSent || sent;
+  const shownError = clientError ?? (serverErrorDismissed ? null : error);
+  const shownSent = clientSent;
 
   return (
     <div className={styles.root}>
       {setup ? (
         <p className={styles.banner} data-kind="warn" role="status">
-          Supabase env is empty. Copy <code>.env.example</code> to <code>.env.local</code>, run{' '}
-          <code>npx supabase start</code>, then paste the URL and keys from{' '}
+          Supabase env is empty. Copy <code>.env.example</code> to <code>.env.local</code>
+          , run <code>npx supabase start</code>, then paste the URL and keys from{' '}
           <code>npx supabase status</code>.
         </p>
       ) : null}
 
       {shownSent ? (
         <p className={styles.banner} data-kind="ok" role="status">
-          Check your inbox — or Inbucket at localhost:54324 if you are on local Supabase.
+          {magicLinkOnly ? (
+            <>
+              Check your inbox
+              {sentEmail ? (
+                <>
+                  {' '}
+                  at <strong>{sentEmail}</strong>
+                </>
+              ) : null}
+              . Open the latest email to sign in. Can’t find it? Check your spam folder.
+            </>
+          ) : (
+            'Check your inbox for your sign-in link.'
+          )}
         </p>
       ) : null}
 
       {shownError ? (
-        <p className={styles.banner} data-kind="warn" role="alert">
+        <p className={styles.banner} data-kind="warn" role="alert" id={errorId}>
           {shownError}
         </p>
       ) : null}
 
-      <form onSubmit={(event) => void onEmail(event)} className={styles.stack}>
+      <form
+        onSubmit={(event) => void onEmail(event)}
+        className={styles.stack}
+        aria-busy={pending === 'email'}
+      >
         <label className={styles.field}>
           <span>Email</span>
           <input
+            ref={inputRef}
             type="email"
             name="email"
             required
             autoComplete="email"
             inputMode="email"
             placeholder="you@example.com"
+            aria-describedby={shownError ? errorId : undefined}
+            readOnly={pending === 'email'}
+            onChange={() => {
+              setClientSent(false);
+              setClientError(null);
+              setServerErrorDismissed(true);
+            }}
           />
         </label>
-        <button type="submit" className={styles.primary} disabled={setup || pending !== null}>
-          {pending === 'email' ? 'Sending…' : 'Send magic link'}
+        <button
+          type="submit"
+          className={styles.primary}
+          disabled={setup || pending !== null || cooldown > 0}
+        >
+          {pending === 'email'
+            ? 'Sending…'
+            : cooldown > 0
+              ? `Request another link in ${cooldown}s`
+              : magicLinkOnly
+                ? shownSent
+                  ? 'Resend sign-in link'
+                  : 'Email me a sign-in link'
+                : 'Send magic link'}
         </button>
       </form>
+
+      {shownSent ? (
+        <button
+          type="button"
+          className={styles.ghost}
+          onClick={() => {
+            setClientSent(false);
+            setClientError(null);
+            inputRef.current?.focus();
+            inputRef.current?.select();
+          }}
+        >
+          Use a different email
+        </button>
+      ) : null}
 
       {magicLinkOnly ? null : (
         <>

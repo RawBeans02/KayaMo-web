@@ -1,7 +1,7 @@
 import { liveQuery } from 'dexie';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import type { LocalFoodEntry, LocalMealTemplate } from './db';
-import { isDatabaseClosedError, reviveClosedOfflineDb } from './db';
+import { isDatabaseClosedError, recoverClosedOfflineDb, reviveClosedOfflineDb } from './db';
 import { getPlanningSnapshot, type PlanningSnapshot } from './planning-snapshot';
 import { bindStatusStore, getSyncStatusSnapshot, type SyncStatus } from './sync';
 import { listLocalFoodEntries, listLocalFoodHistory, listLocalMealTemplates } from './writes';
@@ -18,7 +18,7 @@ function observeLive<T>(
   onClosed: () => void,
   onError?: () => void,
 ): () => void {
-  const subscription = liveQuery(query).subscribe({
+  const subscription = liveQuery(() => recoverClosedOfflineDb(query)).subscribe({
     next: onNext,
     error: (error) => {
       if (isDatabaseClosedError(error)) {

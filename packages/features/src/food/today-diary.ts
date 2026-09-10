@@ -1,4 +1,12 @@
-import { orderedMealSlots, mealSlotLabel, asMealSlot, shiftLogicalDate, type MealSlot } from '@kayamo/food/quick-log';
+import {
+  orderedMealSlots,
+  mealSlotLabel,
+  asMealSlot,
+  shiftLogicalDate,
+  DEFAULT_LOCALE,
+  type Locale,
+  type MealSlot,
+} from '@kayamo/food/quick-log';
 import { dailyKcalTotals, isoWeekFromLogicalDate, mondayOfLogicalWeek, type HeadlineEntry } from './week-headline';
 
 export { isoWeekFromLogicalDate };
@@ -108,13 +116,16 @@ export type MealGroup<T extends DiaryEntry = DiaryEntry> = {
   empty: boolean;
 };
 
-export function groupEntriesByMeal<T extends DiaryEntry>(entries: readonly T[]): MealGroup<T>[] {
+export function groupEntriesByMeal<T extends DiaryEntry>(
+  entries: readonly T[],
+  locale: Locale = DEFAULT_LOCALE,
+): MealGroup<T>[] {
   return orderedMealSlots().map((slot) => {
     const rows = entries.filter((row) => asMealSlot(row.meal_slot) === slot);
     const kcal = rows.reduce((sum, row) => sum + (Number(row.kcal) || 0), 0);
     return {
       slot,
-      label: mealSlotLabel(slot, 'taglish'),
+      label: mealSlotLabel(slot, locale),
       rows,
       countLabel: rows.length === 0 ? '' : `${rows.length} ${rows.length === 1 ? 'item' : 'items'}`,
       kcalLabel: rows.length === 0 ? '' : Math.round(kcal).toLocaleString('en-PH'),

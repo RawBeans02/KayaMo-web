@@ -1,3 +1,10 @@
+export {
+  DESK_LOCALES,
+  readDeskLocale,
+  setDeskLocale,
+  toggleDeskLocale,
+  useDeskLocale,
+} from './i18n/desk-locale';
 export { CommandLog } from './food/command-log';
 export { OPEN_LOG_EVENT } from './food/command-log-model';
 export { ConversationalLog } from './food/conversational-log';

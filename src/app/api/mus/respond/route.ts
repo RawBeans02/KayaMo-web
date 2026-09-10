@@ -1,3 +1,4 @@
+import { reserveWebAiRequest } from '@/lib/server-ai-allowance';
 import { NextResponse } from 'next/server';
 import { allowedMusActions, createCocoRouter, musEntrySchema, type CocoProvider } from '@kayamo/ai';
 import { createOpenAICocoProvider } from '@kayamo/ai/server';
@@ -44,6 +45,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Sign in to talk with Mus.' }, { status: 401 });
   }
 
+  const allowanceError = await reserveWebAiRequest(user.id);
+  if (allowanceError) return allowanceError;
+
   const parsed = requestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid Mus request.' }, { status: 400 });
@@ -84,6 +88,7 @@ export async function POST(request: Request) {
         }),
     },
     config: {
+      maxRetries: 0,
       dailyBudgetUsd: nonnegativeEnvNumber('AI_DAILY_BUDGET_USD_PER_USER', 0.05),
       estimatedRequestCostUsd: nonnegativeEnvNumber('AI_ESTIMATED_REQUEST_USD', 0.01),
     },

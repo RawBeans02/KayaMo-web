@@ -10,6 +10,20 @@ test.describe('desktop shell overflow', () => {
 
   test('main scrolls inside the shell; ⌘\\ reclaims the 316px rail', async ({ page }) => {
     test.setTimeout(90_000);
+    const overlayErrors: string[] = [];
+    page.on('pageerror', (error) => {
+      const text = error.message;
+      if (text.includes('hydrat') || text.includes('Database has been closed') || text.includes('DatabaseClosedError')) {
+        overlayErrors.push(text);
+      }
+    });
+    page.on('console', (message) => {
+      if (message.type() !== 'error') return;
+      const text = message.text();
+      if (text.includes('hydrat') || text.includes('Database has been closed') || text.includes('DatabaseClosedError')) {
+        overlayErrors.push(text);
+      }
+    });
     await page.goto('/login');
     const skip = page.getByRole('button', { name: 'Skip login on this machine' });
     if (!(await skip.isVisible().catch(() => false))) {
@@ -23,6 +37,7 @@ test.describe('desktop shell overflow', () => {
       'local_db_error',
       { timeout: 15_000 },
     );
+    expect(overlayErrors, 'theme boot and Dexie close must not raise a Next overlay').toEqual([]);
 
     await seedTodayEntries(page);
     await page.reload();
@@ -34,6 +49,9 @@ test.describe('desktop shell overflow', () => {
     await expect(page.locator('[data-calories-log]')).toBeVisible();
     await expect(page.locator('[data-entry-row]').first()).toBeVisible();
 
+    // Entry redesign starts quiet; exercise the same open-rail geometry explicitly.
+    await expect(page.locator('[data-desk-shell]')).toHaveAttribute('data-rail', 'collapsed');
+    await page.getByRole('button', { name: 'Expand Mus', exact: true }).first().click();
     const before = await measureShell(page);
     expect(before.pageScrolls, 'document should not scroll — main owns overflow').toBe(false);
     expect(before.mainScrolls, 'main must overflow internally when the log is long').toBe(true);
@@ -57,6 +75,7 @@ test.describe('desktop shell overflow', () => {
 });
 
 async function measureShell(page: Page) {
+  await expect(page.locator('[data-desk-shell]')).toBeVisible();
   return page.evaluate(() => {
     const shell = document.querySelector<HTMLElement>('[data-desk-shell]');
     const main = document.querySelector<HTMLElement>('[data-shell="main"]');

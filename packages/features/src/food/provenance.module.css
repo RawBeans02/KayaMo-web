@@ -3,10 +3,10 @@
   margin-left: 0.35rem;
   padding: 0.05rem 0.35rem;
   border: 1px solid var(--color-line);
-  border-radius: 0.25rem;
+  border-radius: 3px;
   color: var(--color-muted);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 0.62rem;
+  font-size: var(--text-mono-2xs);
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -14,16 +14,25 @@
 }
 
 .check {
+  display: inline-grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
   margin-left: 0.35rem;
-  color: var(--color-accent);
-  font-size: 0.85rem;
+  border: 1px solid var(--color-accent);
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+  font-size: 9px;
+  font-weight: 700;
+  vertical-align: middle;
 }
 
 .estimate {
   margin-left: 0.35rem;
-  color: var(--color-muted);
+  color: var(--color-muted-2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 0.62rem;
+  font-size: var(--text-mono-2xs);
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -34,16 +43,22 @@
   align-items: baseline;
   gap: 0.3rem;
   font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
+  font-size: 21px;
   font-weight: 600;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 
 .unit {
-  color: var(--color-muted);
+  color: var(--color-muted-2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 0.62rem;
+  font-size: var(--text-mono-2xs);
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/* Results rows in the palette set the numeral one step larger. */
+.kcalLarge {
+  font-size: 23px;
 }

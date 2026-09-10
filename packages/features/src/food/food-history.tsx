@@ -2,6 +2,7 @@
 
 import { createBrowserSupabase } from '@kayamo/db';
 import { asMealSlot, mealSlotLabel, orderedMealSlots, type MealSlot } from '@kayamo/food/quick-log';
+import { useDeskLocale } from '../i18n/desk-locale';
 import {
   logicalDateFromInstant,
   useLiveFoodHistory,
@@ -15,6 +16,7 @@ import styles from './food-history.module.css';
 export const FOOD_HISTORY_FILTER_ID = 'food-history-filter';
 
 export function FoodHistory({ userId }: { userId: string }) {
+  const locale = useDeskLocale();
   const rows = useLiveFoodHistory(userId);
   const [range, setRange] = useState<FoodHistoryRange>('week');
   const [slot, setSlot] = useState<MealSlot | 'all'>('all');
@@ -104,7 +106,7 @@ export function FoodHistory({ userId }: { userId: string }) {
             <option value="all">All meals</option>
             {orderedMealSlots().map((id) => (
               <option key={id} value={id}>
-                {mealSlotLabel(id, 'taglish')}
+                {mealSlotLabel(id, locale)}
               </option>
             ))}
           </select>
@@ -141,6 +143,7 @@ export function FoodHistory({ userId }: { userId: string }) {
 }
 
 function FoodHistoryRow({ row }: { row: LocalFoodEntry }) {
+  const locale = useDeskLocale();
   const slot = asMealSlot(row.meal_slot);
   return (
     <tr>
@@ -148,7 +151,7 @@ function FoodHistoryRow({ row }: { row: LocalFoodEntry }) {
         {row.logical_date}
         <small>{row.logged_at.slice(11, 16)} UTC</small>
       </th>
-      <td>{slot ? mealSlotLabel(slot, 'taglish') : row.meal_slot}</td>
+      <td>{slot ? mealSlotLabel(slot, locale) : row.meal_slot}</td>
       <td>
         <strong>{row.food_name_snapshot}</strong>
         <small>{row.serving_label_snapshot ?? `${row.grams} g`}</small>

@@ -1,6 +1,7 @@
 'use client';
 
 import { isMealSlot, mealSlotAtHour, mealSlotLabel, type MealSlot } from '@kayamo/food/quick-log';
+import { useDeskLocale } from '../i18n/desk-locale';
 import {
   isEstimateResult,
   logCountsFromHistory,
@@ -148,6 +149,7 @@ function HitRow({
           verified={showsVerifiedCheck(hit)}
           estimate={isEstimateResult(hit)}
           servingLabel={hit.portion.servingLabel}
+          large={kind === 'results'}
         />
       </span>
     </button>
@@ -178,6 +180,7 @@ export function CommandLog({
   const [selected, setSelected] = useState(0);
   const [qtyMode, setQtyMode] = useState(false);
   const [qty, setQty] = useState('1');
+  const locale = useDeskLocale();
   const [mealSlot, setMealSlot] = useState<MealSlot>('tanghalian');
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -354,7 +357,7 @@ export function CommandLog({
     }
     try {
       const row = await logFoodEntry(input);
-      const label = mealSlotLabel(mealSlot, 'taglish');
+      const label = mealSlotLabel(mealSlot, locale);
       setStatus(loggedStatus(label));
       showUndo([row.id], `Logged ${candidate.name}`);
       setPlate((items) => [
@@ -484,7 +487,7 @@ export function CommandLog({
                   onClick={() => setMealSlot(slot)}
                 >
                   <span className={styles.digit}>{index + 1}</span>
-                  <span>{mealSlotLabel(slot, 'taglish')}</span>
+                  <span>{mealSlotLabel(slot, locale)}</span>
                 </button>
               ))}
             </div>

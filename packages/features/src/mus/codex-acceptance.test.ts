@@ -38,7 +38,7 @@ describe('codex acceptance: desks, vision, gym consult', () => {
     expect(verify).toContain('module="verify"');
   });
 
-  it('uses one five-level MusRail on the Mus screen and the shell', () => {
+  it('uses server-confirmed context access on the Mus screen and shell', () => {
     const desk = readFileSync(join(featuresRoot, 'desk/mus-desk.tsx'), 'utf8');
     const rail = readFileSync(join(featuresRoot, 'desk/mus-rail.tsx'), 'utf8');
     const levels = readFileSync(join(featuresRoot, 'mus/perm-levels.ts'), 'utf8');
@@ -46,7 +46,10 @@ describe('codex acceptance: desks, vision, gym consult', () => {
     expect(desk).toContain('variant="page"');
     expect(desk).not.toContain('ask first');
     expect(rail).toContain('chrome="rail"');
-    expect(rail).toContain('MUS_PERM_MODULES');
+    expect(rail).toContain('loadMusContextPermissions');
+    expect(rail).toContain('updateMusContextPermission');
+    expect(rail).toContain('unverified');
+    expect(rail).not.toContain('writeMusPermLevels');
     expect(rail).not.toContain('ask first');
     expect(levels).toContain('edit w/ approval');
     expect(levels).toContain("'never'");

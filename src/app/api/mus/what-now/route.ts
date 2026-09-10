@@ -1,3 +1,4 @@
+import { reserveWebAiRequest } from '@/lib/server-ai-allowance';
 import { NextResponse } from 'next/server';
 import { handleWhatNow } from '@kayamo/features/mus-plan-server';
 import { createServerSupabase } from '@/lib/supabase/server';
@@ -10,6 +11,9 @@ export async function POST(request: Request) {
   if (!user) {
     return NextResponse.json({ error: 'Sign in to ask Mus.' }, { status: 401 });
   }
+  const allowanceError = await reserveWebAiRequest(user.id);
+  if (allowanceError) return allowanceError;
+
   const result = await handleWhatNow(supabase, user.id, await request.json().catch(() => null));
   return NextResponse.json(result.body, { status: result.status });
 }

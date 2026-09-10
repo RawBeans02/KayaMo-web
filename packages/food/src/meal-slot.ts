@@ -5,6 +5,7 @@ export type MealSlot = (typeof MEAL_SLOTS)[number];
 export const LOCALES = ['en', 'fil', 'taglish'] as const;
 export type Locale = (typeof LOCALES)[number];
 
+// Shared product default; desktop chooses its own English UI default.
 export const DEFAULT_LOCALE: Locale = 'taglish';
 
 /**

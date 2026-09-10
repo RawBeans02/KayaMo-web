@@ -699,8 +699,34 @@ export async function recoverClosedOfflineDb<T>(run: () => Promise<T>): Promise<
   } catch (error) {
     if (!isDatabaseClosedError(error)) throw error;
     reviveClosedOfflineDb();
-    return await run();
+    try {
+      return await run();
+    } catch (retryError) {
+      if (!isDatabaseClosedError(retryError)) throw retryError;
+      await Promise.resolve();
+      reviveClosedOfflineDb();
+      return await run();
+    }
   }
+}
+
+export function swallowClosedDbRejection(event: {
+  reason: unknown;
+  preventDefault: () => void;
+}): boolean {
+  if (!isDatabaseClosedError(event.reason)) return false;
+  event.preventDefault();
+  reviveClosedOfflineDb();
+  return true;
+}
+
+export function installClosedDbRecovery(): () => void {
+  if (typeof window === 'undefined') return () => {};
+  const onRejection = (event: PromiseRejectionEvent) => {
+    swallowClosedDbRejection(event);
+  };
+  window.addEventListener('unhandledrejection', onRejection);
+  return () => window.removeEventListener('unhandledrejection', onRejection);
 }
 
 function bindActiveScope(db: KayaMoDB): void {

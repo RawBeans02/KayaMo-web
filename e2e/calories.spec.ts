@@ -46,7 +46,7 @@ test.describe('calories diary', () => {
     await page.locator('[data-add-meal="meryenda"]').click();
     const palette = page.locator('[data-palette="log"]');
     await expect(palette).toBeVisible();
-    await expect(palette.getByRole('button', { name: /Meryenda/ })).toHaveAttribute('aria-pressed', 'true');
+    await expect(palette.getByRole('button', { name: /Snack/ })).toHaveAttribute('aria-pressed', 'true');
     await page.keyboard.press('Escape');
     await expect(palette).toBeHidden();
 

@@ -22,6 +22,7 @@ export type CocoProviderRequest = {
   message: string;
   context: CocoContextSnapshot;
   maxOutputTokens: number;
+  abortSignal?: AbortSignal;
 };
 
 export type CocoProviderResult = {
@@ -190,11 +191,11 @@ function withSafety(
   return { ...output, safety: cocoSafetyResultSchema.parse(safety) };
 }
 
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, onTimeout: () => void): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(
-      () => reject(new CocoRouterError('timeout', 'Coco provider timed out')),
+      () => { onTimeout(); reject(new CocoRouterError('timeout', 'Coco provider timed out')); },
       timeoutMs,
     );
   });
@@ -294,6 +295,7 @@ export function createCocoRouter(deps: {
 
     let lastError: unknown;
     for (let attempt = 0; attempt <= config.maxRetries; attempt += 1) {
+      const controller = new AbortController();
       try {
         const result = await withTimeout(
           deps.provider.generate({
@@ -303,8 +305,10 @@ export function createCocoRouter(deps: {
             message: request.message,
             context: request.context,
             maxOutputTokens: config.maxOutputTokens,
+            abortSignal: controller.signal,
           }),
           config.timeoutMs,
+          () => controller.abort(),
         );
         const output = authorizeOutput(
           cocoModelOutputSchema.parse(result.output),
@@ -328,6 +332,8 @@ export function createCocoRouter(deps: {
         return { source: 'model', response: withSafety(output, safety) };
       } catch (error) {
         lastError = error;
+      } finally {
+        controller.abort();
       }
     }
 

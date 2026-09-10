@@ -9,8 +9,9 @@
   --color-accent-fg: #fffbf4;
   --color-text: #17211b;
   --color-muted: #5a4433;
-  /* Darker than the prototype #6e5f4c so 10.5px mono meets AA on sunken. */
-  --color-muted-2: #4a3c2e;
+  /* Design value. Measured 5.05:1 on sunken, 5.53:1 on bg, 5.98:1 on surface —
+     clears AA (4.5:1) on every ground, so it needs no darkening. */
+  --color-muted-2: #6e5f4c;
   --color-warning: #b5652f;
   --color-line: #1f4d3a1f;
   --color-line-strong: #1f4d3a33;
@@ -18,6 +19,9 @@
   --color-proposal: #d4a72c;
   --color-source-usda: #a7bfa8;
   --color-source-user: #5a4433;
+  /* Sync/presence dot. Tracks the accent in light but stays sage in night,
+     where the accent turns mustard and would read as a warning. */
+  --color-presence: #1f4d3a;
 
   --font-body: var(--font-source-sans), 'Source Sans 3', ui-sans-serif, system-ui,
     sans-serif;
@@ -46,6 +50,17 @@
   --text-caption: 0.75rem;
   --text-caption--line-height: 1.35;
   --text-caption--letter-spacing: 0.08em;
+
+  /* Mono ladder. The desk ranks labels by size, so these are absolute px, not
+     rem — a root-size change must not collapse the steps into each other.
+     3xs quietest tags · 2xs badges and marks · xs eyebrows and column heads ·
+     sm screen eyebrows and chips · md kbd, aliases, meta · lg timestamps. */
+  --text-mono-3xs: 8.5px;
+  --text-mono-2xs: 9px;
+  --text-mono-xs: 9.5px;
+  --text-mono-sm: 10px;
+  --text-mono-md: 10.5px;
+  --text-mono-lg: 11.5px;
 
   --radius-sm: 3px;
   --radius-md: 8px;
@@ -98,12 +113,13 @@ html[data-kayamo-theme='night'] {
   --color-muted: #a7bfa8;
   --color-muted-2: #8fa590;
   --color-warning: #d98a4f;
-  --color-line: #f7f2e726;
-  --color-line-strong: #f7f2e740;
-  --color-overlay: #00000085;
+  --color-line: #f7f2e71f;
+  --color-line-strong: #f7f2e733;
+  --color-overlay: #000000b8;
   --color-proposal: #d4a72c;
   --color-source-usda: #a7bfa8;
-  --color-source-user: #c4b09a;
+  --color-source-user: #c9a882;
+  --color-presence: #a7bfa8;
 }
 
 @media (prefers-reduced-motion: reduce) {

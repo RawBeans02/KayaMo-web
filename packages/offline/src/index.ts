@@ -7,10 +7,12 @@ export {
   getOfflineDbVersion,
   getOfflineScope,
   isDatabaseClosedError,
+  installClosedDbRecovery,
   recoverClosedOfflineDb,
   resetOfflineDb,
   reviveClosedOfflineDb,
   setOfflineUserScope,
+  swallowClosedDbRejection,
   StaleOfflineScopeError,
   type KayaMoDB,
 } from './db';

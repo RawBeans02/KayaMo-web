@@ -16,6 +16,7 @@
     "test:db:integration": "pnpm --filter @kayamo/db test:integration",
     "db:generate": "pnpm --filter @kayamo/db generate",
     "ph-core:build": "tsx scripts/build-ph-core.ts",
+    "demo:catalog:build": "tsx scripts/build-demo-catalog.ts",
     "gym:kb:build": "tsx scripts/build-gym-kb.ts",
     "todo:kb:build": "tsx scripts/build-todo-kb.ts",
     "format": "prettier --write .",

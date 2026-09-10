@@ -105,6 +105,8 @@ async function liveGenerateObject<S extends z.ZodType>(
     system: string;
     messages: AiMessage[];
     abortSignal?: AbortSignal;
+    maxRetries: number;
+    maxOutputTokens: number;
     providerOptions?: { openai?: { reasoningEffort?: 'none' | 'low' | 'medium' } };
   }) => Promise<{ object: unknown }>;
   return generate({
@@ -113,6 +115,8 @@ async function liveGenerateObject<S extends z.ZodType>(
     system: args.system,
     messages: args.messages,
     abortSignal: args.abortSignal,
+    maxRetries: 0,
+    maxOutputTokens: 1500,
     ...(args.tier === 'vision' || Boolean(modelIdOverride)
       ? { providerOptions: { openai: { reasoningEffort: 'low' } } }
       : {}),

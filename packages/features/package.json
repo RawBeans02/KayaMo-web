@@ -10,6 +10,7 @@
     "./api-origin": "./src/api/api-origin.ts",
     "./auth": "./src/auth/server.ts",
     "./desktop": "./src/desktop.ts",
+    "./food-catalog": "./src/food/hydrate-catalog.ts",
     "./gym": "./src/gym/index.ts",
     "./todo": "./src/todo/index.ts",
     "./mus-server": "./src/mus/server-context.ts",

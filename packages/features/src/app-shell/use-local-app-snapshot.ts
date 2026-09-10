@@ -186,7 +186,7 @@ export function useLocalAppSnapshot(userId: string, logicalDate: string) {
   }, [logicalDate, userId]);
 
   useEffect(() => {
-    void refresh();
+    void refresh().catch(() => undefined);
   }, [refresh]);
 
   return {

@@ -1,5 +1,7 @@
 # Handoff: KayaMo Desktop (Today · Verify · Foods · Mus · Gym · Todos)
 
+> September 9, 2026: entry-page composition, demo copy/CTA, rail default and catalog grouping are superseded by [the approved entry direction](../2026-09-09-entry-direction.md). Keep these HTML exports as reference archives; do not use their older copy or layout defaults to undo the approved changes.
+
 ## Overview
 
 The desktop shell for KayaMo: a Manila-based calorie, training and planning app whose

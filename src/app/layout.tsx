@@ -33,19 +33,25 @@ const plex = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: 'KayaMo',
-  description: 'Desktop KayaMo — log food from the keyboard, verify PH core.',
+  description: 'KayaMo — Filipino food, everyday portions, and your training in one place.',
 };
 
 const THEME_BOOT = `try{var t=localStorage.getItem('kayamo:theme');var n=t==='night'||(t!=='day'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.kayamoTheme=n?'night':'day';document.documentElement.style.colorScheme=n?'dark':'light';}catch(e){}`;
+
+// English unless the reader has chosen Taglish. Painted before hydration so the
+// first frame is already in the right language.
+const LOCALE_BOOT = `try{var l=localStorage.getItem('kayamo:locale');document.documentElement.dataset.kayamoLocale=(l==='taglish'||l==='fil')?l:'en';}catch(e){document.documentElement.dataset.kayamoLocale='en';}`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
       className={`${sourceSans.variable} ${sourceSerif.variable} ${barlow.variable} ${plex.variable} h-full`}
+      suppressHydrationWarning
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
+        <script dangerouslySetInnerHTML={{ __html: LOCALE_BOOT }} />
       </head>
       <body className="min-h-full bg-bg font-body text-text antialiased">{children}</body>
     </html>

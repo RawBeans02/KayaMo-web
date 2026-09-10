@@ -4,7 +4,13 @@ import { useEffect, useRef } from 'react';
 import styles from '../food/desk.module.css';
 import { useGymSession } from './gym-session-provider';
 
-export function GymRestBar() {
+export function GymRestBar({
+  variant = 'shell',
+  restFrom,
+}: {
+  variant?: 'shell' | 'page';
+  restFrom?: string;
+}) {
   const session = useGymSession();
   const pinged = useRef(false);
 
@@ -33,24 +39,25 @@ export function GymRestBar() {
   if (!session.timer || !session.workout) return null;
 
   const done = session.remainingSeconds === 0;
+  const from = restFrom?.trim() || 'set';
 
   return (
     <div
       className={styles.restBar}
       data-gym-rest=""
+      data-embed={variant === 'page' ? '' : undefined}
       data-urgent={session.urgent ? 'true' : undefined}
       data-done={done ? 'true' : undefined}
       role="status"
       aria-live="polite"
     >
-      <p className={styles.restBarLabel}>{done ? 'Rest done' : 'Rest'}</p>
+      <p className={styles.restBarLabel}>{done ? 'Rest done' : `Rest · ${from}`}</p>
       <p className={styles.restBarClock} data-gym-rest-clock="">
         {session.restLabel}
       </p>
-      <p className={styles.restBarNote}>
-        {session.elapsedLabel ? `${session.elapsedLabel} · ` : ''}
-        Timer keeps running if you leave Gym.
-      </p>
+      <span className={styles.restTrack} aria-hidden="true">
+        <span style={{ width: `${done ? 100 : session.restPct}%` }} />
+      </span>
       <div className={styles.restBarActions}>
         <button type="button" onClick={() => void session.extend(-30)}>
           −30s
@@ -62,6 +69,9 @@ export function GymRestBar() {
           Skip rest
         </button>
       </div>
+      {variant === 'shell' ? (
+        <p className={styles.restBarNote}>Timer keeps running if you leave Gym.</p>
+      ) : null}
     </div>
   );
 }

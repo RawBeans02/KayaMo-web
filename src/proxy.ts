@@ -1,5 +1,6 @@
 import { createCookieSupabase, isSupabaseConfigured } from '@kayamo/db';
 import { type NextRequest, NextResponse } from 'next/server';
+import { GUEST_COOKIE, isValidGuestId } from '@/lib/guest';
 
 const PROTECTED = new Set([
   '/today',
@@ -23,9 +24,12 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const gated = isProtected(pathname);
   const isLogin = pathname === '/login';
+  // The demo carries no Supabase session, so it can read and write nothing on
+  // the server. It only unlocks the routes so the shell can render locally.
+  const guest = isValidGuestId(request.cookies.get(GUEST_COOKIE)?.value);
 
   if (!isSupabaseConfigured()) {
-    if (gated) {
+    if (gated && !guest) {
       const url = request.nextUrl.clone();
       url.pathname = '/login';
       url.searchParams.set('setup', '1');
@@ -52,7 +56,7 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (gated && !user) {
+  if (gated && !user && !guest) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('next', pathname);

@@ -45,16 +45,22 @@ export function ProvenanceKcal({
   verified,
   estimate,
   servingLabel,
+  large,
 }: {
   kcal: number | string;
   source: ResolveSource | string;
   verified?: boolean;
   estimate?: boolean;
   servingLabel?: string | null;
+  /** Palette results rows set the numeral one step larger than suggestions. */
+  large?: boolean;
 }) {
   const rounded = typeof kcal === 'number' ? Math.round(kcal) : Math.round(Number(kcal));
   return (
-    <span className={styles.kcal} title={servingLabel ?? undefined}>
+    <span
+      className={large ? `${styles.kcal} ${styles.kcalLarge}` : styles.kcal}
+      title={servingLabel ?? undefined}
+    >
       <span>{Number.isFinite(rounded) ? rounded.toLocaleString('en-PH') : '—'}</span>
       <span className={styles.unit}>kcal</span>
       <ProvenanceMark source={source} verified={verified} estimate={estimate} />

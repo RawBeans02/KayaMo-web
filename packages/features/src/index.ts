@@ -80,3 +80,4 @@ export {
   TargetsDialog,
   TodayScreen,
 } from './screens/app-screens';
+export { installDemoCatalog } from './food/demo-catalog';

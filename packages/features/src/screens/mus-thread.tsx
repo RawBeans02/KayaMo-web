@@ -290,9 +290,17 @@ export function MusThread({
             source = parsed.source;
             nextProposals = parsed.proposals;
           }
+        } else {
+          reply = response.status === 429
+            ? 'Your AI request allowance is used for today. Manual tracking still works.'
+            : 'Online Mus is temporarily unavailable. Please try again later; your message is saved locally.';
+          setProposalNote(reply);
         }
       } catch {
-        // The deterministic reply keeps Mus useful offline.
+        reply = userId.startsWith('guest-')
+          ? 'Online Mus is not available in the local demo. Sign in to use it.'
+          : 'Could not reach online Mus. Your message is saved locally; please try again when connected.';
+        setProposalNote(reply);
       }
       const mus = await appendLocalCocoMessage({
         userId,

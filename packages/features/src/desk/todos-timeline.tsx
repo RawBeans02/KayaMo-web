@@ -33,6 +33,7 @@ type TimelineItem = {
   locked?: boolean;
   flexibility?: LocalTimeBlock['flexibility'];
   ghost?: boolean;
+  source_id?: string | null;
 };
 
 export function TodosTimeline({
@@ -41,6 +42,11 @@ export function TodosTimeline({
   conflicts,
   selectedId,
   readOnly = false,
+  doneIds,
+  nowMin = null,
+  dayStart = DAY_START_MIN,
+  dayEnd = DAY_END_MIN,
+  hourPx = HOUR_PX,
   onSelect,
   onCommit,
   onCreateAt,
@@ -52,6 +58,11 @@ export function TodosTimeline({
   conflicts: Set<string>;
   selectedId: string | null;
   readOnly?: boolean;
+  doneIds?: Set<string>;
+  nowMin?: number | null;
+  dayStart?: number;
+  dayEnd?: number;
+  hourPx?: number;
   onSelect: (id: string | null) => void;
   onCommit: (id: string, startMin: number, endMin: number) => void;
   onCreateAt: (startMin: number) => void;
@@ -69,6 +80,7 @@ export function TodosTimeline({
       end_min: block.end_min,
       locked: block.locked,
       flexibility: block.flexibility,
+      source_id: block.source_id,
     })),
     ...ghosts.map((ghost) => ({
       id: ghost.id,
@@ -81,6 +93,13 @@ export function TodosTimeline({
 
   function shown(item: TimelineItem): Draft {
     return drafts[item.id] ?? { start: item.start_min, end: item.end_min };
+  }
+
+  function kindOf(item: TimelineItem): 'fixed' | 'done' | 'planned' | 'proposed' {
+    if (item.ghost) return 'proposed';
+    if (item.source_id && doneIds?.has(item.source_id)) return 'done';
+    if (item.locked || item.flexibility === 'FIXED' || item.flexibility === 'PROTECTED') return 'fixed';
+    return 'planned';
   }
 
   function beginDrag(
@@ -98,8 +117,8 @@ export function TodosTimeline({
     target.setPointerCapture(event.pointerId);
 
     function move(ev: PointerEvent) {
-      const delta = ((ev.clientY - originY) / HOUR_PX) * 60;
-      const shifted = shiftTimeRange(origin.start, origin.end, delta, mode);
+      const delta = ((ev.clientY - originY) / hourPx) * 60;
+      const shifted = shiftTimeRange(origin.start, origin.end, delta, mode, dayStart, dayEnd);
       latest = { start: shifted.startMin, end: shifted.endMin };
       setDrafts((current) => ({ ...current, [item.id]: latest }));
     }
@@ -150,37 +169,61 @@ export function TodosTimeline({
     if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
     event.preventDefault();
     const delta = event.key === 'ArrowUp' ? -SNAP_MIN : SNAP_MIN;
-    const next = shiftTimeRange(pos.start, pos.end, delta, event.shiftKey ? 'resize' : 'move');
+    const next = shiftTimeRange(pos.start, pos.end, delta, event.shiftKey ? 'resize' : 'move', dayStart, dayEnd);
     setDrafts((current) => ({ ...current, [item.id]: { start: next.startMin, end: next.endMin } }));
     if (item.ghost) onGhostCommit?.(item.id, next.startMin, next.endMin);
     else onCommit(item.id, next.startMin, next.endMin);
   }
 
+  const hours = hourMarks(dayStart, dayEnd);
+  const innerHeight = ((dayEnd - dayStart) / 60) * hourPx;
+  const showNow =
+    nowMin !== null && nowMin >= dayStart && nowMin <= dayEnd
+      ? blockTopPx(nowMin, dayStart, hourPx)
+      : null;
+
   return (
     <div
       ref={rootRef}
       className={styles.timeline}
+      data-desk=""
       tabIndex={0}
       role="list"
-      aria-label={readOnly ? 'Day timeline' : 'Day timeline. Arrow keys move a selected block 15 minutes. Shift+arrow resizes. Delete removes it.'}
+      aria-label={
+        readOnly
+          ? 'Day timeline'
+          : 'Day timeline. Arrow keys move a selected block 15 minutes. Shift+arrow resizes. Delete removes it.'
+      }
+      style={{ height: innerHeight }}
       onKeyDown={readOnly ? undefined : onKeyDown}
       onDoubleClick={
         readOnly
           ? undefined
           : (event) => {
               const rect = event.currentTarget.getBoundingClientRect();
-              const start = yToMinutes(event.clientY - rect.top);
-              onCreateAt(Math.max(DAY_START_MIN, Math.min(DAY_END_MIN - 30, start)));
+              const start = yToMinutes(event.clientY - rect.top, dayStart, hourPx);
+              onCreateAt(Math.max(dayStart, Math.min(dayEnd - 30, start)));
             }
       }
     >
-      {hourMarks().map((mark) => (
-        <div key={mark} className={styles.hourLane} style={{ top: blockTopPx(mark), height: HOUR_PX }}>
+      {hours.map((mark) => (
+        <div
+          key={mark}
+          className={styles.hourLane}
+          style={{ top: blockTopPx(mark, dayStart, hourPx), height: hourPx }}
+        >
           <span>{minutesToLabel(mark)}</span>
         </div>
       ))}
+      {showNow !== null ? (
+        <div className={styles.nowLine} style={{ top: showNow }}>
+          <span className={styles.nowTag}>now</span>
+        </div>
+      ) : null}
       {items.map((item) => {
         const pos = shown(item);
+        const kind = kindOf(item);
+        const flag = kind === 'fixed' ? '◆' : kind === 'done' ? '✓' : item.ghost ? 'from Mus' : '';
         return (
           <div
             key={item.id}
@@ -190,9 +233,10 @@ export function TodosTimeline({
             data-locked={item.locked ? 'true' : undefined}
             data-flex={item.flexibility}
             data-ghost={item.ghost ? 'true' : undefined}
+            data-kind={kind}
             style={{
-              top: blockTopPx(pos.start),
-              height: blockHeightPx(pos.start, pos.end),
+              top: blockTopPx(pos.start, dayStart, hourPx),
+              height: blockHeightPx(pos.start, pos.end, hourPx),
             }}
           >
             <button
@@ -202,21 +246,20 @@ export function TodosTimeline({
               onPointerDown={readOnly ? undefined : (event) => beginDrag(event, item, 'move')}
             >
               <strong>
-                {item.ghost ? 'Proposed · ' : ''}
                 {item.title}
+                {flag ? <span className={styles.timeBlockFlag}> {flag}</span> : null}
               </strong>
               <small>
                 {minutesToLabel(pos.start)}–{minutesToLabel(pos.end)}
-                {item.locked ? ' · locked' : ''}
               </small>
             </button>
             {readOnly ? null : (
-            <button
-              type="button"
-              className={styles.resizeHandle}
-              aria-label={`Resize ${item.title}`}
-              onPointerDown={(event) => beginDrag(event, item, 'resize')}
-            />
+              <button
+                type="button"
+                className={styles.resizeHandle}
+                aria-label={`Resize ${item.title}`}
+                onPointerDown={(event) => beginDrag(event, item, 'resize')}
+              />
             )}
           </div>
         );

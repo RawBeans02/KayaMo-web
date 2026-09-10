@@ -20,9 +20,11 @@ import {
 } from 'react';
 import {
   formatRestClock,
+  restElapsedPct,
   restIsUrgent,
   restRemainingSeconds,
   sessionElapsedLabel,
+  sessionElapsedSeconds,
 } from '../gym/session-clock';
 import { useDeskClock } from './use-desk-clock';
 
@@ -32,8 +34,11 @@ export type GymSessionValue = {
   nowMs: number;
   remainingSeconds: number;
   restLabel: string;
+  restPct: number;
   urgent: boolean;
   elapsedLabel: string | null;
+  elapsedSeconds: number;
+  elapsedClock: string;
   refresh: () => Promise<void>;
   extend: (seconds: number) => Promise<void>;
   skip: () => Promise<void>;
@@ -94,6 +99,7 @@ export function GymSessionProvider({
   }, [refresh]);
 
   const remaining = timer ? restRemainingSeconds(timer, nowMs) : 0;
+  const elapsedSeconds = workout ? sessionElapsedSeconds(workout.started_at, nowMs) : 0;
   const ticking = Boolean(timer && remaining > 0);
 
   useEffect(() => {
@@ -108,8 +114,11 @@ export function GymSessionProvider({
       nowMs,
       remainingSeconds: remaining,
       restLabel: formatRestClock(remaining),
+      restPct: timer ? restElapsedPct(timer, remaining, nowMs) : 0,
       urgent: restIsUrgent(remaining),
       elapsedLabel: workout ? sessionElapsedLabel(workout.started_at, nowMs) : null,
+      elapsedSeconds,
+      elapsedClock: formatRestClock(elapsedSeconds),
       refresh,
       extend,
       skip,

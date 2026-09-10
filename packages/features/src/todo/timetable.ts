@@ -4,6 +4,10 @@ export const DAY_START_MIN = 6 * 60;
 export const DAY_END_MIN = 22 * 60;
 export const HOUR_PX = 48;
 export const SNAP_MIN = 15;
+/** Design timetable: 07:00–21:00 at 44px per hour. */
+export const DESK_DAY_START_MIN = 7 * 60;
+export const DESK_DAY_END_MIN = 22 * 60;
+export const DESK_HOUR_PX = 44;
 
 export function clampMinutes(value: number, min = 0, max = 24 * 60): number {
   return Math.max(min, Math.min(max, value));
@@ -43,16 +47,20 @@ export function labelToMinutes(label: string): number | null {
   return Number(match[1]) * 60 + Number(match[2]);
 }
 
-export function blockTopPx(startMin: number): number {
-  return ((clampMinutes(startMin) - DAY_START_MIN) / 60) * HOUR_PX;
+export function blockTopPx(startMin: number, dayStart = DAY_START_MIN, hourPx = HOUR_PX): number {
+  return ((clampMinutes(startMin) - dayStart) / 60) * hourPx;
 }
 
-export function blockHeightPx(startMin: number, endMin: number): number {
-  return Math.max(HOUR_PX / 4, ((endMin - startMin) / 60) * HOUR_PX);
+export function blockHeightPx(
+  startMin: number,
+  endMin: number,
+  hourPx = HOUR_PX,
+): number {
+  return Math.max(hourPx / 4, ((endMin - startMin) / 60) * hourPx);
 }
 
-export function yToMinutes(y: number): number {
-  return snapMinutes(DAY_START_MIN + (y / HOUR_PX) * 60);
+export function yToMinutes(y: number, dayStart = DAY_START_MIN, hourPx = HOUR_PX): number {
+  return snapMinutes(dayStart + (y / hourPx) * 60);
 }
 
 export type TimeWindow = { startMin: number; endMin: number };
