@@ -164,7 +164,7 @@ export function DesktopShell({
               </button>
               <p className={styles.syncLine}>
                 <span className={styles.syncDot} aria-hidden="true" />
-                {guest ? <p className={styles.syncText} data-testid="sync-status" data-sync-kind="local_only">Saved on this device · demo</p> : <SyncStatusBar className={styles.syncText} />}
+                {guest ? <span className={styles.syncText} data-testid="sync-status" data-sync-kind="local_only">Saved on this device · demo</span> : <SyncStatusBar className={styles.syncText} />}
               </p>
               <div className={styles.account}>
                 <span className={styles.email} title={email}>

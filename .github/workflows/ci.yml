@@ -51,8 +51,8 @@ jobs:
         run: pnpm --filter @kayamo/offline test
       - name: Install Playwright Chromium
         run: pnpm exec playwright install chromium --with-deps
-      - name: Public website and core demo regressions (no account required)
-        run: pnpm test:e2e -- e2e/smoke.spec.ts e2e/entry-pages.spec.ts e2e/web-release.spec.ts
+      - name: Full website regressions (demo and disposable authenticated account)
+        run: pnpm exec playwright test
       - name: Stop disposable Supabase
         if: always()
         run: supabase stop --no-backup

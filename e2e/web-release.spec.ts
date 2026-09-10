@@ -11,16 +11,40 @@ async function demo(page: Page) {
   await expect(page.getByTestId('sync-status')).not.toHaveAttribute('data-sync-kind', 'local_db_error');
 }
 
-test('failed demo catalog is recoverable without opening an empty workspace', async ({ page }) => {
-  let fail = true;
-  await page.route('**/demo-catalog.json', (route) => fail ? route.fulfill({ status: 503, body: '{}' }) : route.continue());
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Explore the demo' }).click();
-  await expect(page.getByRole('alert').filter({ hasText: 'Your saved data' })).toContainText('has not been cleared');
-  await expect(page.locator('[data-desk-shell]')).toHaveCount(0);
-  fail = false;
-  await page.getByRole('button', { name: 'Retry', exact: true }).click();
-  await expect(page.locator('[data-desk-shell]')).toBeVisible();
+for (const status of [503, 200]) {
+  test(`demo catalog failure (${status}) is recoverable without opening an empty workspace`, async ({ page }) => {
+    let fail = true;
+    await page.route('**/demo-catalog.json', (route) => fail ? route.fulfill({ status, contentType: 'application/json', body: '{}' }) : route.continue());
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Explore the demo' }).click();
+    await expect(page.getByRole('alert').filter({ hasText: 'Your saved data' })).toContainText('has not been cleared');
+    await expect(page.locator('[data-desk-shell]')).toHaveCount(0);
+    fail = false;
+    await page.getByRole('button', { name: 'Retry', exact: true }).click();
+    await expect(page.locator('[data-desk-shell]')).toBeVisible();
+  });
+}
+
+test('empty remote refresh preserves searchable demo foods and valid shell markup', async ({ page }) => {
+  const renderingErrors: string[] = [];
+  page.on('pageerror', (error) => renderingErrors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error' && /hydrat|descendant|cannot contain/i.test(message.text())) {
+      renderingErrors.push(message.text());
+    }
+  });
+  await page.route('**/rest/v1/foods?**', (route) => route.fulfill({
+    status: 200, contentType: 'application/json', body: '[]',
+  }));
+  await demo(page);
+  const refreshed = page.waitForResponse((response) => new URL(response.url()).pathname === '/rest/v1/foods');
+  await page.goto('/foods');
+  await (await refreshed).finished();
+  await page.getByRole('button', { name: /^PH core/ }).click();
+  await page.getByLabel('Filter by name or Taglish alias').fill('adobo');
+  await expect(page.locator('[data-foods-row]').first()).toBeVisible();
+  await expect(page.getByTestId('sync-status')).toHaveAttribute('data-sync-kind', 'local_only');
+  expect(renderingErrors).toEqual([]);
 });
 
 test('task draft survives polling and saved title survives reload', async ({ page }) => {

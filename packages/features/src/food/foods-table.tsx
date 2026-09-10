@@ -100,8 +100,16 @@ export function FoodsTable({ userId }: { userId: string }) {
         for (const food of rows) {
           await cacheFoodWithServings(applyOverlayToFood(food, overlay[food.id]), byId.get(food.id) ?? []);
         }
+        // A remote result is not a deletion manifest for the offline catalog.
+        // Read back the account-scoped cache so offline-only foods and servings
+        // survive empty/partial refreshes; cached tombstones stay excluded.
+        const cached = await recoverClosedOfflineDb(() => listCachedFoodsWithServings());
         if (cancelled) return;
-        paint(rows, byId, aliasMap);
+        paint(
+          cached.map(({ food }) => food),
+          new Map(cached.map(({ food, servings: list }) => [food.id, list])),
+          aliasMap,
+        );
         setError(null);
       } catch {
         if (!cancelled && cachedCount === 0) setError('Could not load the catalog.');

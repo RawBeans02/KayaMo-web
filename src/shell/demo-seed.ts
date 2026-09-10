@@ -13,5 +13,11 @@ export async function seedDemoCatalog(guestId: string): Promise<void> {
     download = null;
     throw error;
   });
-  await installDemoCatalog(guestId, await download);
+  try {
+    await installDemoCatalog(guestId, await download);
+  } catch (error) {
+    // Invalid payloads must be retryable too, not cached forever as a success.
+    download = null;
+    throw error;
+  }
 }
