@@ -49,8 +49,8 @@ jobs:
         run: pnpm test:db:integration
       - name: Run offline sync regressions
         run: pnpm --filter @kayamo/offline test
-      - name: Install Playwright Chromium
-        run: pnpm exec playwright install chromium --with-deps
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium firefox webkit --with-deps
       - name: Full website regressions (demo and disposable authenticated account)
         run: pnpm exec playwright test
       - name: Stop disposable Supabase

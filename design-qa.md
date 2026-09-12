@@ -1,74 +1,61 @@
-# KayaMo Claude Design Fidelity QA
+# Botanical redesign — implementation QA
 
-**Final result: passed**
+final result: blocked
 
-## Visual truth and evidence
+## Scope and visual truth
 
-- Source: `/Users/rovs/Downloads/KayaMo mobile app design (2).zip`
-- Reference viewport: 390 × 844 px
-- Implementation: `/app` in the KayaMo PWA
-- Side-by-side comparisons:
-  - `docs/design/qa-round-2/final-home-aligned-comparison.png`
-  - `docs/design/qa-round-2/final-today-populated-comparison.png`
-  - `docs/design/qa-round-2/final-health-comparison.png`
-  - `docs/design/qa-round-2/final-journey-comparison.png`
-- Additional interaction captures:
-  - `docs/design/qa-round-2/refined-chat.png`
-  - `docs/design/qa-round-2/final-focus-aligned.png`
-  - `docs/design/qa-round-2/final-home-day.png`
+The selected direction is the daily timeline/priorities layout, with only the botanical texture carried over from concept 3. This is a working website redesign, not an Apple approval claim. Native assets and defaults are outside this release.
 
-The source and implementation were inspected together at the same 390 px width. Copy and totals intentionally differ where the implementation shows confirmed IndexedDB records instead of Claude's static sample records.
+- Source: `docs/design/botanical/evidence/reference.png`, copied from `/Users/rovs/.codex/generated_images/01a06373-5b0e-7231-b583-5ae731ec9c7d/exec-db002b69-8095-41e4-b55a-e4a7aae33b44.png`.
+- Implementation: `docs/design/botanical/evidence/home-v3.png`, local `/today`.
+- Source pixels: 1487 × 1058. Reference normalized to 1440 × 1024 for comparison (negligible aspect-ratio difference).
+- Implementation: Chromium, 1440 × 1024 CSS pixels, device scale factor 1. The earlier WebKit v2 capture was scale factor 2 and normalized before full-view comparison.
+- State: light theme, September 11, 2026, three illustrative tasks and time blocks stored in the isolated test guest's IndexedDB. No production sample activity is inserted.
+- Full-view evidence: `docs/design/botanical/evidence/comparison-v3.png` contains source and implementation together.
+- Focused evidence: `docs/design/botanical/evidence/detail-v3.png` aligns the plan panels after accounting for the real demo disclosure. The v2 detail image was incorrectly density-normalized and is not acceptance evidence.
+- Supplemental evidence: `home-320.png`, `mus-390.png`, `settings-390.png`, `verify-320.png` in the same evidence directory. Also inspected Home and Mus in the in-app browser.
 
-## Iteration history
+## Findings that still block full-design acceptance
 
-### Iteration 1 — blocked
+1. **[P1] Mus asset family is unfinished.** Home/login use the new transparent neutral character, but the conversation and expression gallery still show the older detailed artwork on black circles. This visibly breaks the approved identity. Thinking, happy, and concerned candidates contain baked checkerboards. Clean and validate their alpha, then supply web-scoped asset overrides without replacing native defaults. Local background-removal permission is still pending.
+2. **Verification gaps remain.** The full matrix of zoom, long text, open editors, worst-case glass contrast, reduced motion/transparency, dark screenshots, and screen-reader behavior is not yet documented. Passing overflow assertions is not equivalent to completing that review.
 
-- [P1] Home used a large boxed habitat and a generic full-width tab dock instead of Claude's open atmosphere and floating capsule.
-- [P1] Today, Health, and Journey reduced the selected design to generic cards and omitted its compact record hierarchy.
-- [P1] The floating Coco puck overlapped content and did not match the selected design's contextual Coco entry points.
-- [P2] Chat lacked the selected source/citation and explicit “Remember this” treatment.
-- [P2] Tab changes reset or leaked scroll position instead of preserving a position per destination.
-- [P2] Re-entering an active focus action could create a second active session.
+## Required fidelity surfaces
 
-### Iteration 2 — passed
+- **Typography:** system sans replaces the former family mixture as explicitly requested. Date hierarchy and plan headings were enlarged after comparison. Body text remains 16px by design rather than copying all enlarged mock text. The small-screen Home label was corrected in v4.
+- **Spacing/layout:** the two-column timeline/priorities structure, opaque reading surfaces, compact sidebar and labeled bottom navigation are implemented. The production demo notice adds vertical space absent from the mock; this is intentional, not an attempt at exact coordinate matching. All five destinations now have real pages. Timeline dot/icon refinements are minor follow-up polish.
+- **Colors/tokens:** pearl, charcoal and botanical green are web-scoped. Glass is reserved for shell/compact controls; content panels are opaque. Dark and reduced-transparency preferences persist. Worst-case contrast testing is still a release gate, not claimed as passed.
+- **Images:** generated seed mark, neutral Mus and sidebar texture are real raster assets, not CSS drawings. App favicon, browser install artwork and social-preview metadata are web-only. The remaining Mus states are explicitly not approved.
+- **Copy/content:** no sample tasks, invented XP or fabricated streaks are inserted into user records. Generic saved tasks use neutral category labels/icons instead of guessing life areas from their text. Demo data boundaries and unavailable areas are stated. Goal pause/resume text was corrected so it does not falsely promise automatic removal/addition of ordinary daily tasks.
 
-- Home now uses the source's 52 px top inset, 22 px gutters, 196 px Coco habitat, stage progress control, 24 px mission card, confirmed ledger, and full-width Talk to Coco control.
-- Today now uses the compact header companion, lime next-action band, borderless task rows, visible completed rows, focus card, and local reflection surface.
-- Health now follows the source's Food → Weight & guidance → Fitness sequence with code-derived numbers and real food provenance.
-- Journey now follows the source's stage, trace, goals, presence, faith, and settings hierarchy. Missing companion evolution art is not replaced with fake placeholders.
-- Coco chat now matches the source hierarchy and provides a working explicit memory write.
-- Focus now supports “Return later” without cancelling or duplicating the timestamp-backed session.
-- Day is the default blue/white experience; aubergine/lime remains night mode.
+## Comparison history
 
-No actionable P0, P1, or P2 visual or interaction findings remain.
+1. **v1:** `comparison-v1.png` showed undersized date/navigation hierarchy and weak sidebar texture. Enlarged sidebar/typography and increased texture presence; restored functional previous/next week controls.
+2. **v2:** `comparison-v2.png` showed improved major proportions, but a high-specificity global font reset suppressed control typography and week controls lost their borders. Replaced that reset with zero-specificity defaults and corrected the week-action selector. Enlarged the plan heading and priority labels.
+3. **v3:** `comparison-v3.png` and `detail-v3.png` confirm those fixes. Remaining differences above are not silently accepted. Earlier responsive verification overflow and duplicate goal notices were fixed; browser regressions verify the changed behavior.
+4. **v4:** `home-320-v4.png` confirms the Home label is subordinate to the date. `mus-390-v4.png` confirms a visible demo-unavailability explanation in the conversation header and the expression gallery moved into a keyboard-accessible disclosure. The prior v3 captures provide the before evidence. The date advanced to September 12 for these empty-state captures; this is a date-label change, not layout drift. Eighteen affected browser checks passed after these fixes. The old artwork remains a separate blocker.
 
-## Accessibility and interaction checks
+## Functional verification
 
-- All visible buttons, links, fields, and summaries measured at least 44 × 44 px in the live browser audit.
-- No document-level horizontal overflow was present.
-- Native modal dialogs provide modal focus behavior, Escape dismissal, accessible labels, and focus return.
-- Tab buttons expose `aria-current`; completion rows expose pressed state; the countdown exposes `role="timer"`.
-- Focus order follows each screen's visual order: header, primary action, records, secondary content, then tab navigation.
-- Main screens have one vertical scroll area. Each tab preserves its own position.
-- Reduced motion, reduced transparency, and higher contrast remain supported.
-- Large content is allowed to reflow and scroll; no fixed-height text containers clip user copy.
+- Full browser run: **105/105 passed** across Chromium, Firefox and WebKit (35 per browser), retaining the original 29 behaviors and adding six redesign regressions per browser. The subsequent Home/Mus refinement pass also passed **18/18** affected checks.
+- Covered: demo identity, email-link recovery/resend/cooldown, food entry and undo, task capture/edit/reload, workout continuation/results, goal first step and milestone history, server-confirmed Mus permissions/proposals, date isolation, recovered task drafts, primary navigation, appearance persistence, and narrow legacy-tool overflow.
+- Viewport checks include 320, 390, 768, 1024 and 1440px; tools additionally tested at 320/390/768px.
+- macOS Safari keyboard test uses native Option-Tab to reach buttons; the focus assertion is unchanged. An intermittent callback check passed in isolation and in the final full run without weakening its assertions.
+- Unit tests passed; final type checks, lint and production build also passed. Build warnings and release gates are recorded in `docs/design/botanical/implementation-status.md`.
+- Disposable database integration and hosted preview/live smoke checks have **not** passed for this redesign. No production deployment was replaced.
 
-## Data-integrity checks
+## Implementation checklist
 
-- Nutrition values remain record-derived and show source/confidence; no design-only calorie values were introduced.
-- Weight trend bars render only when at least two real measurements exist.
-- Journey progress comes from the idempotent accepted event ledger; no restriction, weight-loss, or pain-based reward was added.
-- Diary/reflection stays local. “Remember this” is a separate explicit synced-memory action.
-- Coco continues to require user confirmation for writes.
+- [x] Selected layout, web tokens, responsive five-destination shell, working Home/Goals/Life/Grove, settings and public entry.
+- [x] Canonical shared feature extraction and targeted updates, preserving unrelated mobile changes.
+- [x] Full cross-browser functional suite.
+- [x] Correct narrow Home hierarchy and make Mus expression guidance secondary.
+- [ ] Complete Mus asset family.
+- [ ] Resolve remaining visual findings and complete accessibility/state matrix.
+- [ ] Check partial-write recovery for multi-record goal creation; the inherited sequence is not an atomic transaction.
+- [ ] Run disposable database integration, preview deployment review and live smoke checks.
+- [ ] Preserve rollback deployment before production promotion.
 
-## Verification
+## Follow-up polish
 
-- `pnpm lint` — passed
-- `pnpm typecheck` — passed
-- `pnpm test` — passed
-- `pnpm build` — passed for the full workspace
-- Next builds now use webpack explicitly, avoiding the environment-specific Turbopack worker-port panic.
-- Google font files used by the design are local, so production builds do not depend on network access.
-- Database RLS integration tests remain environment-gated when local Supabase is not running; all available unit and offline tests passed.
-
-final result: passed
+Increase timeline icon prominence and consider subtle timeline markers using the existing icon library. Keep task semantics grounded in saved fields. Do not add guessed categories just to resemble the sample picture.

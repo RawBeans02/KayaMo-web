@@ -24,7 +24,7 @@ export function LoginView({ localDev }: { localDev: boolean }) {
         </Link>
         <div className={styles.navActions}>
           <ThemeToggle />
-          <Link className={styles.back} href={fromDemo ? '/calories' : '/'}>
+          <Link className={styles.back} href={fromDemo ? '/today' : '/'}>
             {fromDemo ? 'Back to your demo' : 'Back to home'}{' '}
             <span aria-hidden="true">↗</span>
           </Link>
@@ -69,7 +69,7 @@ export function LoginView({ localDev }: { localDev: boolean }) {
           <div className={styles.companion}>
             <Image
               className={styles.mus}
-              src="/mus-neutral.webp"
+              src="/botanical/mus-neutral.webp"
               alt="Mus, your seed companion"
               width={160}
               height={160}
@@ -85,7 +85,7 @@ export function LoginView({ localDev }: { localDev: boolean }) {
         </aside>
       </div>
       <footer className={styles.footer}>
-        Food, training, and the little things that add up.
+        Small steps. Meaningful goals. Room to grow.
       </footer>
     </main>
   );

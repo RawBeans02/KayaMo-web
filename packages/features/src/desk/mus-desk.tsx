@@ -13,6 +13,11 @@ export function MusDesk({ userId }: { userId: string }) {
         userId={userId}
         logicalDate={today}
         recommended={null}
+        unavailableMessage={
+          userId.startsWith('guest-')
+            ? 'Demo: online chat is unavailable. Sign in to talk with Mus.'
+            : undefined
+        }
         chrome="page"
         entry={{ module: 'mus', view: 'command_center', selectedIds: [] }}
       />

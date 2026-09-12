@@ -81,6 +81,7 @@ export function MusThread({
   compact = false,
   chrome,
   entry,
+  unavailableMessage,
 }: {
   userId: string;
   logicalDate: string;
@@ -88,6 +89,7 @@ export function MusThread({
   compact?: boolean;
   chrome?: 'full' | 'rail' | 'page';
   entry?: MusEntry;
+  unavailableMessage?: string;
 }) {
   const layout = chrome ?? (compact ? 'rail' : 'full');
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -526,7 +528,7 @@ export function MusThread({
           <img src={MUS_SEED_SRC} alt="" width={48} height={48} />
           <div>
             <h2 id="mus-chat-title">Mus</h2>
-            <p>tone · balanced · adapts to the moment</p>
+            <p>{unavailableMessage ?? 'tone · balanced · adapts to the moment'}</p>
           </div>
           {layout === 'page' ? (
             <span className={styles.musPageMeta}>state · {busy ? 'thinking' : 'neutral'}</span>

@@ -1,0 +1,77 @@
+.page {
+  max-width: 900px;
+  margin: auto;
+}
+.page h1 {
+  font-size: 32px;
+  font-weight: 650;
+  letter-spacing: -1px;
+  margin-bottom: 24px;
+}
+.sections {
+  display: grid;
+  gap: 20px;
+}
+.sections section,
+.account {
+  padding: 28px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 20px;
+}
+.sections h2,
+.account h2 {
+  font-size: 21px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.sections p,
+.account p {
+  color: var(--color-muted);
+  margin-bottom: 18px;
+}
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.options button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 12px;
+  background: var(--color-surface);
+  min-height: 48px;
+}
+.options button[aria-pressed='true'] {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+}
+.check {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.check input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--color-accent);
+}
+.check small {
+  display: block;
+  color: var(--color-muted);
+  font-size: 14px;
+  margin-top: 6px;
+}
+.sections a,
+.account a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.account {
+  margin-top: 20px;
+}

@@ -1,3 +1,4 @@
 @import '@kayamo/config/tailwind.css';
 @import '@kayamo/ui/tokens.css';
+@import './botanical.css';
 @source "../**/*.{ts,tsx}";

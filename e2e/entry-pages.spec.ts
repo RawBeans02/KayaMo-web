@@ -12,7 +12,7 @@ test.describe('public entry pages', () => {
       await page.setViewportSize({ width, height: 900 });
       await page.goto('/');
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-        'The tracker that already knows kanin.',
+        'A calmer day.A step toward you.',
       );
       await expect(page.getByRole('button', { name: 'Explore the demo' })).toBeVisible();
       await page.screenshot({ path: testInfo.outputPath('landing.png'), fullPage: true });
@@ -44,6 +44,7 @@ test.describe('public entry pages', () => {
 
   test('theme toggle and keyboard focus work on the login', async ({
     page,
+    browserName,
   }, testInfo) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/login');
@@ -52,7 +53,12 @@ test.describe('public entry pages', () => {
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-kayamo-theme', 'night');
     await page.getByRole('textbox', { name: 'Email', exact: true }).focus();
-    await page.keyboard.press('Tab');
+    // macOS WebKit follows Safari's default keyboard policy: Option-Tab
+    // reaches every control, while plain Tab skips buttons. Keep the same
+    // focus assertion and exercise the platform's native keyboard shortcut.
+    await page.keyboard.press(
+      browserName === 'webkit' && process.platform === 'darwin' ? 'Alt+Tab' : 'Tab',
+    );
     await expect(
       page.getByRole('button', { name: 'Email me a sign-in link' }),
     ).toBeFocused();
@@ -66,14 +72,14 @@ test.describe('public entry pages', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
     await page.getByRole('button', { name: 'Explore the demo' }).click();
-    await page.waitForURL('**/calories');
+    await page.waitForURL('**/today');
     const original = (await context.cookies()).find(
       (cookie) => cookie.name === 'kayamo_guest',
     )?.value;
     expect(original).toBeTruthy();
     await page.goto('/');
     await page.getByRole('button', { name: 'Continue your demo' }).click();
-    await page.waitForURL('**/calories');
+    await page.waitForURL('**/today');
     const resumed = (await context.cookies()).find(
       (cookie) => cookie.name === 'kayamo_guest',
     )?.value;
@@ -148,22 +154,18 @@ test.describe('public entry pages', () => {
     await expect(page.getByText('This link has expired')).toHaveCount(0);
   });
 
-  test('demo opens with a quiet rail; both toggle directions work', async ({ page }) => {
+  test('demo opens without a competing rail and Mus uses one destination', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
     await page.getByRole('button', { name: 'Explore the demo' }).click();
-    await page.waitForURL('**/calories');
-    await expect(page.locator('[data-desk-shell]')).toHaveAttribute(
-      'data-rail',
-      'collapsed',
-    );
-    await page.getByRole('button', { name: 'Expand Mus', exact: true }).first().click();
-    await expect(page.locator('[data-desk-shell]')).toHaveAttribute('data-rail', 'open');
-    await page.getByRole('button', { name: 'Collapse Mus', exact: true }).click();
-    await expect(page.locator('[data-desk-shell]')).toHaveAttribute(
-      'data-rail',
-      'collapsed',
-    );
+    await page.waitForURL('**/today');
+    await expect(page.locator('[data-desk-shell]')).toHaveAttribute('data-rail', 'off');
+    await page.getByRole('link', { name: 'Ask Mus', exact: true }).click();
+    await expect(page.locator('[data-mus-desk]')).toBeVisible();
+    await page.getByRole('link', { name: 'Home', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Home', exact: true })).toBeVisible();
     await page.setViewportSize({ width: 1024, height: 900 });
     await expect(page.locator('[data-desk-shell]')).toBeVisible();
     expect(

@@ -6,21 +6,34 @@ const VIEWPORT = { width: 1440, height: 800 };
 test.use({ viewport: VIEWPORT });
 
 test.describe('desktop shell overflow', () => {
-  test.skip(Boolean(process.env.PLAYWRIGHT_BASE_URL), 'Local grid contract — not the hosted build.');
+  test.skip(
+    Boolean(process.env.PLAYWRIGHT_BASE_URL),
+    'Local grid contract — not the hosted build.',
+  );
 
-  test('main scrolls inside the shell; ⌘\\ reclaims the 316px rail', async ({ page }) => {
+  test('main scrolls inside the shell; the Mus shortcut opens its dedicated destination', async ({
+    page,
+  }) => {
     test.setTimeout(90_000);
     const overlayErrors: string[] = [];
     page.on('pageerror', (error) => {
       const text = error.message;
-      if (text.includes('hydrat') || text.includes('Database has been closed') || text.includes('DatabaseClosedError')) {
+      if (
+        text.includes('hydrat') ||
+        text.includes('Database has been closed') ||
+        text.includes('DatabaseClosedError')
+      ) {
         overlayErrors.push(text);
       }
     });
     page.on('console', (message) => {
       if (message.type() !== 'error') return;
       const text = message.text();
-      if (text.includes('hydrat') || text.includes('Database has been closed') || text.includes('DatabaseClosedError')) {
+      if (
+        text.includes('hydrat') ||
+        text.includes('Database has been closed') ||
+        text.includes('DatabaseClosedError')
+      ) {
         overlayErrors.push(text);
       }
     });
@@ -37,7 +50,10 @@ test.describe('desktop shell overflow', () => {
       'local_db_error',
       { timeout: 15_000 },
     );
-    expect(overlayErrors, 'theme boot and Dexie close must not raise a Next overlay').toEqual([]);
+    expect(
+      overlayErrors,
+      'theme boot and Dexie close must not raise a Next overlay',
+    ).toEqual([]);
 
     await seedTodayEntries(page);
     await page.reload();
@@ -49,28 +65,22 @@ test.describe('desktop shell overflow', () => {
     await expect(page.locator('[data-calories-log]')).toBeVisible();
     await expect(page.locator('[data-entry-row]').first()).toBeVisible();
 
-    // Entry redesign starts quiet; exercise the same open-rail geometry explicitly.
-    await expect(page.locator('[data-desk-shell]')).toHaveAttribute('data-rail', 'collapsed');
-    await page.getByRole('button', { name: 'Expand Mus', exact: true }).first().click();
     const before = await measureShell(page);
-    expect(before.pageScrolls, 'document should not scroll — main owns overflow').toBe(false);
-    expect(before.mainScrolls, 'main must overflow internally when the log is long').toBe(true);
+    expect(before.pageScrolls, 'document should not scroll — main owns overflow').toBe(
+      false,
+    );
+    expect(before.mainScrolls, 'main must overflow internally when the log is long').toBe(
+      true,
+    );
     expect(before.footerInView, 'sidebar footer must stay in the viewport').toBe(true);
-    expect(before.railFootInView, 'rail footer must stay in the viewport').toBe(true);
-    expect(before.railWidth).toBeGreaterThanOrEqual(310);
-    expect(before.railWidth).toBeLessThanOrEqual(322);
-    expect(before.columnCount).toBe(3);
-
-    await page.keyboard.press(process.platform === 'darwin' ? 'Meta+\\' : 'Control+\\');
-    await expect(page.locator('[data-desk-shell]')).toHaveAttribute('data-rail', 'collapsed');
-
-    const after = await measureShell(page);
-    expect(after.pageScrolls).toBe(false);
-    expect(after.footerInView).toBe(true);
-    expect(after.columnCount).toBe(3);
-    expect(after.railWidth, 'collapsed rail is 40px, not an empty 316px gap').toBeGreaterThanOrEqual(36);
-    expect(after.railWidth).toBeLessThanOrEqual(48);
-    expect(after.mainWidth - before.mainWidth).toBeGreaterThan(250);
+    expect(before.columnCount).toBe(2);
+    await expect(page.locator('[data-mus-rail="shell"]')).toHaveCount(0);
+    await page.keyboard.press(
+      process.platform === 'darwin' ? 'Meta+Backslash' : 'Control+Backslash',
+    );
+    await expect(page).toHaveURL(/\/mus$/);
+    await expect(page.locator('[data-mus-desk]')).toBeVisible();
+    await expect(page.locator('[data-desk-shell]')).toHaveAttribute('data-rail', 'off');
   });
 });
 
@@ -82,20 +92,24 @@ async function measureShell(page: Page) {
     const footer = document.querySelector<HTMLElement>('[data-shell="sidebar-footer"]');
     const rail = document.querySelector<HTMLElement>('[data-shell="rail"]');
     const railFoot = document.querySelector<HTMLElement>('[data-shell="rail-foot"]');
-    if (!shell || !main || !footer || !rail) {
+    if (!shell || !main || !footer) {
       throw new Error('shell landmarks missing');
     }
     const viewport = window.innerHeight;
     const footerBox = footer.getBoundingClientRect();
-    const railBox = rail.getBoundingClientRect();
+    const railBox = rail?.getBoundingClientRect();
     const railFootBox = railFoot?.getBoundingClientRect();
-    const columns = getComputedStyle(shell).gridTemplateColumns.split(' ').filter(Boolean);
+    const columns = getComputedStyle(shell)
+      .gridTemplateColumns.split(' ')
+      .filter(Boolean);
     return {
       pageScrolls: document.documentElement.scrollHeight > viewport + 1,
       mainScrolls: main.scrollHeight > main.clientHeight + 1,
       footerInView: footerBox.bottom <= viewport + 1 && footerBox.top >= 0,
-      railFootInView: railFootBox ? railFootBox.bottom <= viewport + 1 && railFootBox.top >= 0 : true,
-      railWidth: Math.round(railBox.width),
+      railFootInView: railFootBox
+        ? railFootBox.bottom <= viewport + 1 && railFootBox.top >= 0
+        : true,
+      railWidth: Math.round(railBox?.width ?? 0),
       mainWidth: Math.round(main.getBoundingClientRect().width),
       columnCount: columns.length,
     };

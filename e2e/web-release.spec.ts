@@ -94,6 +94,7 @@ test('demo food logging persists and guest AI requests never leave the browser',
   await palette.getByRole('combobox').press('Enter');
   await expect(page.getByLabel('This plate')).toContainText(/kanin/i);
   await page.keyboard.press('Escape');
+  await page.goto('/calories');
   await page.reload();
   await expect(page.locator('[data-entry-row]').filter({ hasText: /kanin/i })).toHaveCount(1);
   await page.goto('/gym');

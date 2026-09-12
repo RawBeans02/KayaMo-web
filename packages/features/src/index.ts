@@ -81,3 +81,4 @@ export {
   TodayScreen,
 } from './screens/app-screens';
 export { installDemoCatalog } from './food/demo-catalog';
+export { GoalFlow } from './journey/goal-flow';

@@ -224,8 +224,8 @@ export function MusRail({
           />
         </div>
       ) : (
-        <div className={styles.states}>
-          <h2 className={styles.mono}>Mus states</h2>
+        <details className={styles.states}>
+          <summary>About Mus’s expressions</summary>
           <div className={styles.stateGrid}>
             {MUS_FACES.map((name) => {
               const src = musFaceSrc(name);
@@ -242,7 +242,7 @@ export function MusRail({
               );
             })}
           </div>
-        </div>
+        </details>
       )}
 
       {variant === 'shell' ? (

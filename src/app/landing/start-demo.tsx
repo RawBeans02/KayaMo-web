@@ -6,7 +6,7 @@ import styles from './landing.module.css';
 
 /**
  * Starts the no-account demo: issues a guest cookie, then lands the visitor on
- * the diary — the screen that actually shows what the product does.
+ * Home, without replacing an existing guest identity or its saved records.
  */
 export function StartDemo({
   children,
@@ -26,7 +26,7 @@ export function StartDemo({
     try {
       const response = await fetch('/api/demo', { method: 'POST' });
       if (!response.ok) throw new Error('demo');
-      router.push('/calories');
+      router.push('/today');
     } catch {
       setBusy(false);
       setFailed(true);
