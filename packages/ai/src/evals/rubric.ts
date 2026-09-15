@@ -78,6 +78,13 @@ export const ROBOT_TELLS: readonly RobotTell[] = [
     pattern: /^\s*(?:I(?:'m| am) sorry|Apologies|Unfortunately)\b/i,
     why: 'opens on an apology rather than on the person',
   },
+  // Lis tends growth; it is not a cartoon bee. The metaphor is a register, not
+  // a costume, and a pun is the fastest way to turn warmth into a mascot voice.
+  {
+    id: 'pollinator-pun',
+    pattern: /\b(?:buzz(?:ing|ed)?\s+(?:through|about|by)|un-?bee-?lievable|bee-?autiful|hive\s+of|sweet\s+as\s+honey|busy\s+as\s+a\s+bee)\b/i,
+    why: 'a bee pun; the metaphor is a register, not a costume',
+  },
 ];
 
 export type RobotTellHit = { id: string; why: string; excerpt: string };
@@ -168,3 +175,22 @@ export function checkVoiceBounds(shape: VoiceShape, bounds: VoiceBounds): string
   }
   return failures;
 }
+
+
+/**
+ * Growth language, used sparingly.
+ *
+ * Lis speaks like something that tends what you are growing — that is a warmth
+ * register, not a theme to decorate every reply with. Once per reply is a voice;
+ * three times is a greetings card, and it crowds out the concrete thing the
+ * person actually needed. Counted rather than banned for that reason.
+ */
+const GROWTH_WORDS =
+  /\b(?:bloom(?:ing|ed|s)?|blossom(?:ing|ed|s)?|flourish(?:ing|ed|es)?|grow(?:th|ing)?|seed(?:ling|s)?|sprout(?:ing|ed|s)?|root(?:ed|s)?|nurtur(?:e|ing|ed)|cultivat(?:e|ing|ed)|garden|pollinat(?:e|ing|ed)|nectar|honey|hive|bee)\b/gi;
+
+export function countGrowthLanguage(message: string): string[] {
+  return message.match(GROWTH_WORDS) ?? [];
+}
+
+/** More than this in one reply reads as theme, not voice. */
+export const GROWTH_LANGUAGE_LIMIT = 2;

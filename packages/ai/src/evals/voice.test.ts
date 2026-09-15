@@ -5,8 +5,10 @@ import { findBannedCopy } from '../banned-copy';
 import { evaluateCocoSafety } from '../safety';
 import { baselineContext, validOutput } from './doubles';
 import {
+  GROWTH_LANGUAGE_LIMIT,
   ROBOT_TELLS,
   checkVoiceBounds,
+  countGrowthLanguage,
   findRobotTells,
   measureVoice,
 } from './rubric';
@@ -164,6 +166,7 @@ describe('the robot-tell bank', () => {
         delve: "Let's dive into your week.",
         'assist-you-with': 'I can help you with your plan.',
         'apology-opener': "I'm sorry, I cannot do that.",
+        'pollinator-pun': "Let's buzz through your day.",
       };
       const text = sample[tell.id];
       expect(text, `no sample written for ${tell.id}`).toBeDefined();
@@ -181,6 +184,60 @@ describe('the robot-tell bank', () => {
     for (const text of human) {
       expect(findRobotTells(text), text).toEqual([]);
     }
+  });
+});
+
+/**
+ * The voice direction is that Lis tends what you are growing — the Grove keeps
+ * measuring the person's progress, and Lis is the thing helping it along. That
+ * is a register, not a theme, and it has two distinct failure modes worth
+ * separating: sounding like a cartoon, and sounding like a greetings card.
+ */
+describe('growth language stays a register, not a theme', () => {
+  it('reads as voice when it appears once', () => {
+    const text = 'Twenty minutes is enough for something real. Want to start there?';
+    expect(countGrowthLanguage(text).length).toBeLessThanOrEqual(GROWTH_LANGUAGE_LIMIT);
+    expect(findRobotTells(text)).toEqual([]);
+  });
+
+  it('counts the theme when a reply is soaked in it', () => {
+    const overdone =
+      'Let your goals bloom and grow! Every seed you plant will flourish as you nurture your garden.';
+    expect(countGrowthLanguage(overdone).length).toBeGreaterThan(GROWTH_LANGUAGE_LIMIT);
+  });
+
+  it.each([
+    ["let's buzz through your day"],
+    ['un-bee-lievable progress'],
+    ['a hive of activity today'],
+    ['busy as a bee this week'],
+  ])('flags the pun in %s', (text) => {
+    expect(findRobotTells(text).map((hit) => hit.id)).toContain('pollinator-pun');
+  });
+
+  it('leaves ordinary use of these words alone', () => {
+    // "grow" is a normal English verb and the Grove is a real product surface;
+    // neither should trip anything.
+    for (const text of [
+      'Your grove has three confirmed milestones.',
+      'That habit will grow easier once the first week is behind you.',
+    ]) {
+      expect(findRobotTells(text), text).toEqual([]);
+      expect(countGrowthLanguage(text).length).toBeLessThanOrEqual(
+        GROWTH_LANGUAGE_LIMIT,
+      );
+    }
+  });
+
+  it('never lets the metaphor replace the concrete next thing', () => {
+    // The real risk: warmth crowding out the answer. A reply that names a
+    // supplied record is doing its job; one that only blooms is not.
+    const vague = 'Keep blooming! You are growing beautifully.';
+    const useful = 'Prepare breakfast is still open. Want to start there?';
+    expect(measureVoice(vague, ['Prepare breakfast']).referencedRecords).toEqual([]);
+    expect(measureVoice(useful, ['Prepare breakfast']).referencedRecords).toEqual([
+      'Prepare breakfast',
+    ]);
   });
 });
 
