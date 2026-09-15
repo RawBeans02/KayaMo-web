@@ -7,6 +7,7 @@ import { createCocoRouter, type CocoRouterResult } from '../coco-router';
 import { LIS_EVAL_CASES } from './cases';
 import { baselineContext } from './doubles';
 import { isLisEvalConfigured, lisEvalSkipReason } from './env';
+import { loadRootEnv } from './load-root-env';
 import { checkVoiceBounds, findRobotTells, measureVoice } from './rubric';
 import { readBaseline, writeBaseline } from './baselines';
 
@@ -24,6 +25,10 @@ import { readBaseline, writeBaseline } from './baselines';
  * asserting against them. Recording is a deliberate, reviewable act — there is
  * no snapshot `-u` here that can silently bless a worse reply.
  */
+
+// Module body runs after imports, so this lands before the gate is evaluated.
+// vitest does not read .env.local the way Next does at runtime.
+loadRootEnv();
 
 const describeLive = isLisEvalConfigured() ? describe : describe.skip;
 const RECORDING = Boolean(process.env.LIS_EVAL_RECORD?.trim());

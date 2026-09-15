@@ -187,7 +187,14 @@ function fallbackOutput(
       ? `Lis's AI limit is resting for today. Your next grounded step is still: ${next.title}.`
       : deniedDomain
         ? `I would need access to ${PERMISSION_ASK[deniedDomain]} before I can do that. You can turn it on under Context access.`
-        : `I could not reach Lis right now. We can still take one clear step: ${next.title}.`;
+        : deniedAction
+          // Refused, but not for want of a permission: the action is simply not
+          // one this screen offers. Still a refusal, and still not an outage —
+          // saying "I could not reach Lis" here sends people to look for a
+          // problem that does not exist, which is the bug this branch exists
+          // to stop.
+          ? `That is not something I can do from here. The next clear step is still: ${next.title}.`
+          : `I could not reach Lis right now. We can still take one clear step: ${next.title}.`;
   return {
     message,
     tone: request.mode === 'focus' || request.mode === 'workout' ? 'firm' : 'balanced',

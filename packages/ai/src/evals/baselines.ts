@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 
 const BASELINE_DIR = join(dirname(fileURLToPath(import.meta.url)), 'baselines');
 
-export type KaiBaseline = {
+export type LisBaseline = {
   caseId: string;
   reply: string;
   source: string;
@@ -29,9 +29,9 @@ function baselinePath(caseId: string): string {
   return join(BASELINE_DIR, `${caseId}.json`);
 }
 
-export async function readBaseline(caseId: string): Promise<KaiBaseline | null> {
+export async function readBaseline(caseId: string): Promise<LisBaseline | null> {
   try {
-    return JSON.parse(await readFile(baselinePath(caseId), 'utf8')) as KaiBaseline;
+    return JSON.parse(await readFile(baselinePath(caseId), 'utf8')) as LisBaseline;
   } catch {
     return null;
   }
@@ -39,7 +39,7 @@ export async function readBaseline(caseId: string): Promise<KaiBaseline | null> 
 
 export async function writeBaseline(
   caseId: string,
-  baseline: KaiBaseline,
+  baseline: LisBaseline,
 ): Promise<void> {
   await mkdir(BASELINE_DIR, { recursive: true });
   await writeFile(baselinePath(caseId), `${JSON.stringify(baseline, null, 2)}\n`, 'utf8');

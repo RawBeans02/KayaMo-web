@@ -74,9 +74,9 @@ export const ROBOT_TELLS: readonly RobotTell[] = [
     why: 'help-desk framing',
   },
   {
-    id: 'apology-opener',
-    pattern: /^\s*(?:I(?:'m| am) sorry|Apologies|Unfortunately)\b/i,
-    why: 'opens on an apology rather than on the person',
+    id: 'apology',
+    pattern: /\b(?:I(?:'m| am) sorry|Apologies|I apologi[sz]e|I should ?n(?:'|o)t have)\b/i,
+    why: 'apologises instead of simply correcting itself',
   },
   // Lis tends growth; it is not a cartoon bee. The metaphor is a register, not
   // a costume, and a pun is the fastest way to turn warmth into a mascot voice.

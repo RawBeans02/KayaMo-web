@@ -118,7 +118,7 @@ describe('deterministic copy', () => {
   it('never opens on an apology or a help-desk line', async () => {
     for (const { label, text } of await deterministicMessages()) {
       const tells = findRobotTells(text).filter((hit) =>
-        ['apology-opener', 'assist-you-with', 'happy-to-help'].includes(hit.id),
+        ['apology', 'assist-you-with', 'happy-to-help'].includes(hit.id),
       );
       expect(tells.map((hit) => hit.id), label).toEqual([]);
     }
@@ -165,7 +165,7 @@ describe('the robot-tell bank', () => {
         'feel-free': 'Feel free to ask me anything.',
         delve: "Let's dive into your week.",
         'assist-you-with': 'I can help you with your plan.',
-        'apology-opener': "I'm sorry, I cannot do that.",
+        apology: "You're right — I'm sorry, I shouldn't have said that.",
         'pollinator-pun': "Let's buzz through your day.",
       };
       const text = sample[tell.id];

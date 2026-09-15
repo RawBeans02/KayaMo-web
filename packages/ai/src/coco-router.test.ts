@@ -198,6 +198,39 @@ describe('governed Coco router', () => {
       expect(result.response.message).not.toMatch(/could not reach|couldn't reach/i);
     });
 
+    it('says so plainly when the action is simply not offered here', async () => {
+      // `create_time_block` is a task action, so it maps to no permission
+      // domain. It is still a refusal, and must not read as an outage.
+      const route = createCocoRouter({
+        provider: provider({
+          message: 'Blocking that out now.',
+          tone: 'balanced',
+          proposals: [
+            {
+              proposalId: 'p-1',
+              action: 'create_time_block',
+              summary: 'Block 9 to 10',
+              requiresConfirmation: true,
+              arguments: {
+                title: 'Deep work',
+                logicalDate: '2026-08-22',
+                start: '09:00',
+                end: '10:00',
+                flexibility: 'FLEXIBLE',
+              },
+            },
+          ],
+          citations: [],
+        }),
+        budget: new InMemoryCocoBudgetStore(),
+        config: { maxRetries: 0 },
+      });
+      const result = await route(request({ allowedActions: ['create_task'] }));
+      expect(result.source).toBe('fallback');
+      expect(result.response.message).toContain('not something I can do from here');
+      expect(result.response.message).not.toMatch(/could not reach/i);
+    });
+
     it('still blames nothing in particular when the provider genuinely fails', async () => {
       const route = createCocoRouter({
         provider: { generate: async () => { throw new Error('network down'); } },
