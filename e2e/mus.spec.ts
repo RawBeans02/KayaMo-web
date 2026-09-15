@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.use({ viewport: { width: 1440, height: 800 } });
 
-test.describe('Mus rail vocabulary', () => {
+test.describe('Lis rail vocabulary', () => {
   test.skip(
     Boolean(process.env.PLAYWRIGHT_BASE_URL),
     'Local desk — not the hosted build.',
@@ -45,8 +45,7 @@ test.describe('Mus rail vocabulary', () => {
       { timeout: 15_000 },
     );
 
-    await expect(page.locator('[data-desk-shell]')).toHaveAttribute('data-rail', 'off');
-    await page.getByRole('link', { name: 'Ask Mus', exact: true }).click();
+    await page.getByRole('link', { name: 'Ask Lis', exact: true }).click();
     await expect(page.locator('[data-mus-rail="page"]')).toBeVisible();
     await expect(page.getByText('ask first')).toHaveCount(0);
     const todayPerm = page.locator('[data-mus-perm="physical_self"]');
@@ -71,31 +70,11 @@ test.describe('Mus rail vocabulary', () => {
       'data-mus-perm-level',
       'read',
     );
-    await page.getByText('About Mus’s expressions', { exact: true }).click();
-    await expect(page.locator('[data-mus-face="happy"]')).toBeVisible();
-    await expect(page.locator('[data-mus-face="happy"] img')).toHaveAttribute(
-      'src',
-      /mus-happy\.png/,
-    );
-    await expect(page.locator('[data-mus-face="concerned"] img')).toHaveAttribute(
-      'src',
-      /mus-concerned\.png/,
-    );
-    await expect(page.locator('[data-mus-face="neutral"] img')).toHaveAttribute(
-      'src',
-      /mus-neutral\.png/,
-    );
-    await expect(page.locator('[data-mus-face="thinking"] img')).toHaveAttribute(
-      'src',
-      /mus-thinking\.png/,
-    );
-    await expect(page.locator('[data-mus-face="concerned"]')).toContainText(
-      'Concern for the user',
-    );
-    await expect(page.locator('[data-mus-face="happy"]')).toContainText(
-      'milestone the user chose',
-    );
-    await expect(page.getByRole('navigation', { name: 'Conversations' })).toBeVisible();
-    await expect(page.locator('[data-desk-shell]')).toHaveAttribute('data-rail', 'off');
+    // Lis has no character: the expressions gallery and every mascot image are
+    // gone, and the mark is a sparkle in an accent circle.
+    await expect(page.getByText('About Lis’s expressions')).toHaveCount(0);
+    await expect(page.locator('[data-mus-face]')).toHaveCount(0);
+    await expect(page.locator('img[src*="mus-"]')).toHaveCount(0);
+    await expect(page.locator('img[src*="seed-mark"]')).toHaveCount(0);
   });
 });

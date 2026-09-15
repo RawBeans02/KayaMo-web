@@ -85,7 +85,7 @@ function liftNeedsBusyStation(slug: string, busyGear: string[]): boolean {
 }
 
 function sourceTag(source: LocalGymSessionItem['source']): string {
-  if (source === 'ai') return 'Mus';
+  if (source === 'ai') return 'Lis';
   if (source === 'copy') return 'copy';
   if (source === 'live') return 'live';
   return 'you';
@@ -460,6 +460,7 @@ export function GymDesk({ userId }: { userId: string }) {
     .filter((row) => !items.some((item) => item.slug === row.slug))
     .slice(0, 6);
   const splitLabel = consult?.splitLabel ?? (visibleItems.length > 0 ? 'frame' : 'empty frame');
+  const sessionComplete = totalSets > 0 && doneSets >= totalSets;
 
   return (
     <section className={styles.deskScreen} aria-labelledby="gym-title" data-gym="">
@@ -473,7 +474,7 @@ export function GymDesk({ userId }: { userId: string }) {
           </h1>
         </div>
         <p className={styles.deskHeadLede}>
-          Build the frame, lock what must stay, let Mus fill the gaps. Planned targets survive a
+          Build the frame, lock what must stay, let Lis fill the gaps. Planned targets survive a
           lighter set.
         </p>
       </header>
@@ -504,12 +505,17 @@ export function GymDesk({ userId }: { userId: string }) {
             Copy last workout
           </button>
           {active ? (
-            <button type="button" className={styles.pill} disabled={busy} onClick={() => void onFinish()}>
-              Finish
+            <button
+              type="button"
+              className={sessionComplete ? styles.sessionFinish : styles.pill}
+              disabled={busy}
+              onClick={() => void onFinish()}
+            >
+              {sessionComplete ? 'Finish' : 'End early'}
             </button>
           ) : (
             <button type="button" className={styles.pill} disabled={busy} onClick={() => void onConsult()}>
-              Ask Mus to fill gaps
+              Ask Lis to fill gaps
             </button>
           )}
         </div>
@@ -539,7 +545,7 @@ export function GymDesk({ userId }: { userId: string }) {
         <span className={styles.busyOverlap}>
           {busyUnfinished.length === 0
             ? 'Nothing you still owe needs a busy station.'
-            : `${busyUnfinished.length} unfinished ${busyUnfinished.length === 1 ? 'lift needs' : 'lifts need'} a station you marked busy — swaps offered below.`}
+            : `${busyUnfinished.length} unfinished ${busyUnfinished.length === 1 ? 'lift needs' : 'lifts need'} a station you marked busy. Swaps are offered below.`}
         </span>
       </section>
 
@@ -865,7 +871,7 @@ export function GymDesk({ userId }: { userId: string }) {
                     </div>
                     {item.discomfort ? (
                       <p className={styles.note}>
-                        Discomfort flagged. Pick a substitute from the catalog — this is not a diagnosis.
+                        Discomfort flagged. Pick a substitute from the catalog. This is not a diagnosis.
                       </p>
                     ) : null}
                     {stationBusy && swaps.length > 0 ? (

@@ -1,129 +1,147 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { ThemeToggle } from '@/shell/theme-toggle';
 import { BotanicalIcon } from '@kayamo/features/desktop';
 import { StartDemo } from './start-demo';
 import styles from './landing.module.css';
 
+/**
+ * kayamo.fit — Liquid Glass hero.
+ *
+ * A centred glass nav pill over the app's own backdrop wash, one 76px
+ * headline, one primary action (the no-account demo) and three glass
+ * feature cards. The assistant is Lis: a sparkle, never a character.
+ */
 export function Landing({ demoStarted = false }: { demoStarted?: boolean }) {
   return (
     <main className={styles.page} id="main-content">
-      <header className={styles.nav}>
-        <Link className={styles.brandRow} href="/" aria-label="KayaMo home">
-          <Image src="/botanical/seed-mark.webp" alt="" width={38} height={38} />
-          <span className={styles.brand}>KayaMo</span>
-        </Link>
-        <nav className={styles.navLinks} aria-label="Main navigation">
-          <ThemeToggle />
-          <a className={styles.aboutLink} href="#how-it-works">
-            How it works
-          </a>
-          <Link className={styles.navSignIn} href="/login">
-            Sign in
+      <header className={styles.navRow}>
+        <nav
+          className={`${styles.navPill} kgPanelStrong kgFloat`}
+          aria-label="Main navigation"
+        >
+          <Link className={styles.brandRow} href="/" aria-label="KayaMo home">
+            <span className={styles.brandMark} aria-hidden="true" />
+            <span className={styles.brand}>KayaMo</span>
           </Link>
+          <span className={styles.navLinks}>
+            <a className={styles.navLink} href="#how-it-works">
+              How it works
+            </a>
+            <a className={styles.navLink} href="#lis">
+              Lis
+            </a>
+            <a className={styles.navLink} href="#questions">
+              Questions
+            </a>
+          </span>
+          <span className={styles.navActions}>
+            <ThemeToggle />
+            <StartDemo variant="nav">
+              {demoStarted ? 'Continue' : 'Try it free'}
+            </StartDemo>
+          </span>
         </nav>
       </header>
+
       <section className={styles.hero} aria-labelledby="landing-title">
-        <div>
-          <p className={styles.eyebrow}>A little room to grow</p>
-          <h1 className={styles.heroTitle} id="landing-title">
-            A calmer day.
-            <br />A step toward you.
-          </h1>
-          <p className={styles.heroLede}>
-            Bring your daily plan, meaningful goals, food, and movement into one quiet
-            space. Start small. Keep what matters.
-          </p>
-          <div className={styles.heroCtas}>
-            <StartDemo>
-              {demoStarted ? 'Continue your demo' : 'Explore the demo'}
-            </StartDemo>
-            <Link className={styles.textLink} href="/login">
-              Already here? Sign in
-              <BotanicalIcon name="arrow" size={18} />
-            </Link>
-          </div>
-          <p className={styles.heroNote}>
-            No account needed. Demo entries stay in this browser.
-          </p>
-          <ul className={styles.tags} aria-label="Product highlights">
-            <li>Daily steps</li>
-            <li>Personal goals</li>
-            <li>Food & movement</li>
-          </ul>
+        <h1 className={styles.heroTitle} id="landing-title">
+          One place for the day you meant to have.
+        </h1>
+        <p className={styles.heroLede}>
+          Plan, meals, and movement in a single glanceable view. Lis keeps the plan
+          honest; you keep the day.
+        </p>
+        <div className={styles.heroCtas}>
+          <StartDemo>{demoStarted ? 'Continue your demo' : 'Explore the demo'}</StartDemo>
+          <Link className={`kgGhost ${styles.heroSecondary}`} href="/login">
+            Sign in
+            <BotanicalIcon name="arrow" size={18} />
+          </Link>
         </div>
-        <div className={styles.product}>
-          <Image
-            src="/botanical/mus-neutral.webp"
-            width={300}
-            height={300}
-            alt="Mus, KayaMo’s seed companion"
-            className={styles.heroMus}
-            priority
-          />
-          <p className={styles.musNote}>
-            <strong>Meet Mus.</strong> A companion for thinking things through.
-            <br />
-            You choose what to share—and what to do next.
-          </p>
-        </div>
+        <p className={styles.heroNote}>
+          Runs in your browser. No account needed. Demo entries stay on this device.
+        </p>
       </section>
-      <figure className={styles.preview}>
-        <figcaption>
-          <strong>Your day, with room to breathe.</strong>
-          <span>
-            A real Home screen with illustrative tasks. Your own space starts with your
-            records.
-          </span>
-        </figcaption>
-        <Image
-          src="/botanical/home-preview.webp"
-          alt="KayaMo Home: a daily timeline, priorities, and quick access to food and workouts"
-          width={1440}
-          height={1024}
-          sizes="(max-width: 960px) 100vw, 1248px"
-        />
-      </figure>
+
+      <section className={styles.claims} aria-label="What KayaMo does">
+        <div className={`${styles.claimLead} kgSurface`} id="lis">
+          <p className={styles.claimTitle}>Lis proposes. You confirm.</p>
+          <p className={styles.claimBody}>
+            Say what you ate or did in plain words. Lis drafts the entry and shows where
+            the numbers came from. Nothing reaches your diary until you say yes.
+          </p>
+        </div>
+        <dl className={styles.claimList}>
+          <div>
+            <dt>One plan</dt>
+            <dd>
+              Tasks, meals and workouts on a single timeline, with the next step as the
+              largest thing on screen.
+            </dd>
+          </div>
+          <div>
+            <dt>Yours, offline too</dt>
+            <dd>
+              Every entry is written to your device first and syncs when you are back.
+              Export it whenever you want.
+            </dd>
+          </div>
+        </dl>
+      </section>
+
       <section className={styles.how} id="how-it-works" aria-labelledby="how-title">
         <div className={styles.sectionHeading}>
-          <p className={styles.eyebrow}>Small steps. Your pace.</p>
+          <p className={`kgEyebrow ${styles.eyebrow}`}>Small steps. Your pace.</p>
           <h2 id="how-title">A simple rhythm for everyday growth.</h2>
         </div>
-        <div className={styles.points}>
-          <article>
-            <span className={styles.step}>01 / PLAN</span>
-            <h3>Choose what matters today.</h3>
-            <p>
-              Capture a task, see your schedule, and make a little progress on a goal. The
-              full planner is there when your day needs more detail.
-            </p>
-          </article>
-          <article>
-            <span className={styles.step}>02 / CARE</span>
-            <h3>Keep your everyday close.</h3>
-            <p>
-              Log food with familiar Filipino portions and visible sources. Continue a
-              workout and keep a clear record of what you did.
-            </p>
-          </article>
-          <article>
-            <span className={styles.step}>03 / REFLECT</span>
-            <h3>See the steps add up.</h3>
-            <p>
-              Your Grove holds confirmed progress. Ask Mus for help when you want it.
-              Suggestions become changes only after you confirm.
-            </p>
-          </article>
-        </div>
+        <ol className={styles.steps}>
+          <li className={styles.step}>
+            <span className={styles.stepNum} aria-hidden="true">
+              01
+            </span>
+            <div>
+              <h3>Choose what matters today.</h3>
+              <p>
+                Capture a task, see your schedule, and make a little progress on a goal.
+                The full planner is there when your day needs more detail.
+              </p>
+            </div>
+          </li>
+          <li className={styles.step}>
+            <span className={styles.stepNum} aria-hidden="true">
+              02
+            </span>
+            <div>
+              <h3>Keep your everyday close.</h3>
+              <p>
+                Log meals with editable portions and visible nutrition sources. Continue a
+                workout and keep a clear record of what you did.
+              </p>
+            </div>
+          </li>
+          <li className={styles.step}>
+            <span className={styles.stepNum} aria-hidden="true">
+              03
+            </span>
+            <div>
+              <h3>See the steps add up.</h3>
+              <p>
+                Your Grove holds confirmed progress. Ask Lis for help when you want it.
+                Suggestions become changes only after you confirm.
+              </p>
+            </div>
+          </li>
+        </ol>
       </section>
+
       <section className={styles.closer} aria-labelledby="demo-title">
-        <div>
-          <p className={styles.eyebrow}>Kaya mo. One day at a time.</p>
+        <div className={styles.closerLead}>
+          <p className={`kgEyebrow ${styles.eyebrow}`}>One day at a time</p>
           <h2 id="demo-title">Start with one small step.</h2>
           <p>Try a daily plan, create a goal, or log a meal. Explore at your own pace.</p>
-          <StartDemo>Try KayaMo without an account</StartDemo>
+          <StartDemo variant="ghost">Start the demo</StartDemo>
         </div>
-        <div className={styles.faq}>
+        <div className={`${styles.faq} kgSurface`} id="questions">
           <details>
             <summary>What happens to my demo entries?</summary>
             <p>
@@ -132,7 +150,7 @@ export function Landing({ demoStarted = false }: { demoStarted?: boolean }) {
             </p>
           </details>
           <details>
-            <summary>Does Mus see everything I save?</summary>
+            <summary>Does Lis see everything I save?</summary>
             <p>
               No. You control access to food and workouts, goals and planning, saved
               memories, and faith context. AI requires an account and is subject to
@@ -148,9 +166,10 @@ export function Landing({ demoStarted = false }: { demoStarted?: boolean }) {
           </details>
         </div>
       </section>
+
       <footer className={styles.foot}>
         <span className={styles.brand}>KayaMo</span>
-        <span>Made for the everyday. Made for the Philippines.</span>
+        <span>Personal growth, on your terms.</span>
         <Link href="/login">Sign in</Link>
       </footer>
     </main>

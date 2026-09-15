@@ -12,7 +12,7 @@ test.describe('public entry pages', () => {
       await page.setViewportSize({ width, height: 900 });
       await page.goto('/');
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-        'A calmer day.A step toward you.',
+        'One place for the day you meant to have.',
       );
       await expect(page.getByRole('button', { name: 'Explore the demo' })).toBeVisible();
       await page.screenshot({ path: testInfo.outputPath('landing.png'), fullPage: true });
@@ -30,13 +30,17 @@ test.describe('public entry pages', () => {
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
       ).toBe(true);
       if (width < 800) {
+        // The mascot is retired. The intent it guarded still holds: on a phone
+        // the email field must come before any supporting copy.
         const form = await page
           .getByRole('textbox', { name: 'Email', exact: true })
           .boundingBox();
-        const mascot = await page
-          .getByRole('img', { name: 'Mus, your seed companion' })
+        const help = await page
+          .getByRole('group', { name: 'Need help signing in?' })
+          .or(page.getByText('Need help signing in?'))
+          .first()
           .boundingBox();
-        expect(form!.y).toBeLessThan(mascot!.y);
+        expect(form!.y).toBeLessThan(help!.y);
       }
       await page.screenshot({ path: testInfo.outputPath('login.png'), fullPage: true });
     });
@@ -154,16 +158,18 @@ test.describe('public entry pages', () => {
     await expect(page.getByText('This link has expired')).toHaveCount(0);
   });
 
-  test('demo opens without a competing rail and Mus uses one destination', async ({
+  test('demo opens without a competing rail and Lis uses one destination', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
     await page.getByRole('button', { name: 'Explore the demo' }).click();
     await page.waitForURL('**/today');
-    await expect(page.locator('[data-desk-shell]')).toHaveAttribute('data-rail', 'off');
-    await page.getByRole('link', { name: 'Ask Mus', exact: true }).click();
+    await page.getByRole('link', { name: 'Ask Lis', exact: true }).click();
     await expect(page.locator('[data-mus-desk]')).toBeVisible();
+    // Exactly one assistant rail on the Lis screen: the shell no longer mounts
+    // a second one, which is what "competing rail" meant.
+    await expect(page.locator('[data-mus-rail]')).toHaveCount(1);
     await page.getByRole('link', { name: 'Home', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Home', exact: true })).toBeVisible();
     await page.setViewportSize({ width: 1024, height: 900 });

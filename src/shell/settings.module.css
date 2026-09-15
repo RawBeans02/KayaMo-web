@@ -1,77 +1,503 @@
+/* Profile — Liquid Glass.
+ *
+ * Grouped list cards in the iOS Settings shape: a kgPanel with 6px padding,
+ * 56px rows inside it, hairlines between rows. Nothing here redeclares a
+ * glass recipe — the panels compose `kgPanel` / `kgPanelStrong` from
+ * glass-materials.module.css, which is the only place `backdrop-filter`
+ * survives this repo's CSS pipeline.
+ *
+ * Class names deliberately avoid the substrings `card`, `panel` and
+ * `section`: the compatibility bridge in glass-materials targets those and
+ * would stack a second blur on surfaces that already have one.
+ */
+
 .page {
-  max-width: 900px;
-  margin: auto;
-}
-.page h1 {
-  font-size: 32px;
-  font-weight: 650;
-  letter-spacing: -1px;
-  margin-bottom: 24px;
-}
-.sections {
   display: grid;
-  gap: 20px;
+  gap: 14px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding-bottom: 24px;
 }
-.sections section,
+
+.head {
+  padding: 6px 2px 4px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Account ─────────────────────────────────────────────── */
+
 .account {
-  padding: 28px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
-  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 28px;
 }
-.sections h2,
-.account h2 {
-  font-size: 21px;
+
+/* The guest variant is a link to sign-in, so it takes press feedback. */
+a.account {
+  color: inherit;
+  text-decoration: none;
+  transition: transform 120ms var(--ease-glass);
+}
+
+a.account:active {
+  transform: scale(0.99);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: var(--track);
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.accountBody {
+  display: block;
+  flex: 1;
+  min-width: 0;
+}
+
+.accountName {
+  display: block;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.accountMeta {
+  display: block;
+  margin: 1px 0 0;
+  color: var(--ink2);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+/* ── Grouped list ────────────────────────────────────────── */
+
+.list {
+  display: grid;
+  padding: 6px;
+  border-radius: 28px;
+}
+
+/* Hairline between rows only — 28 outer − 6 padding = 22 inner (concentric). */
+.list > * + * {
+  box-shadow: inset 0 1px 0 var(--stroke2);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 22px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  transition:
+    transform 120ms var(--ease-glass),
+    background var(--swap) linear;
+}
+
+button.row,
+a.row,
+summary.row,
+label.row {
+  cursor: pointer;
+}
+
+button.row:hover,
+a.row:hover,
+summary.row:hover,
+label.row:hover {
+  background: var(--glass);
+}
+
+button.row:active,
+a.row:active,
+summary.row:active,
+label.row:active {
+  transform: scale(0.98);
+}
+
+.rowIcon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--ink2);
+}
+
+.rowLabel {
+  flex: 1 1 140px;
+  min-width: 0;
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 8px;
+  letter-spacing: -0.01em;
 }
-.sections p,
-.account p {
-  color: var(--color-muted);
-  margin-bottom: 18px;
+
+.rowNote {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink2);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.4;
 }
-.options {
+
+.rowValue {
+  flex: none;
+  color: var(--ink2);
+  font-size: 15px;
+}
+
+.caret {
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--ink3);
+  transition: transform 220ms var(--ease-glass);
+}
+
+/* A row with nothing behind it. Reads as text, not as a control, so it
+ * never promises a capability the desk does not have yet. */
+.rowInert {
+  cursor: default;
+}
+
+/* An unavailable row says so in its note. Dimming the label to --ink3 measures
+   2.6:1 once reduced transparency makes the surface opaque, which makes the
+   label harder to read than the sentence explaining why it is off. Keep the
+   label at meta ink and let the note carry the state. */
+.rowInert .rowLabel {
+  color: var(--ink2);
+}
+
+.rowInert .rowIcon {
+  color: var(--ink3);
+}
+
+.danger .rowLabel,
+.danger .rowIcon {
+  color: var(--danger-text);
+}
+
+/* An inert destructive row keeps the word, not the warning colour: a red you
+   cannot act on is noise, and at 55% it measured 1.96:1 on the opaque surface. */
+.rowInert.danger .rowLabel {
+  color: var(--ink2);
+}
+
+.rowInert.danger .rowIcon {
+  color: var(--ink3);
+}
+
+/* Lis's mark: a sparkle in an accent circle. Never a character. */
+.lisMark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  margin: 0 -4px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+/* ── Appearance: segmented control ───────────────────────── */
+
+.segRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 24px;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 14px;
 }
-.options button {
+
+.seg {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  flex: 1 1 232px;
+  min-width: 232px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--track);
+}
+
+.segIndicator {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 6px) / 3);
+  border-radius: 999px;
+  background: var(--glass-strong);
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: transform 220ms var(--ease-glass);
+  pointer-events: none;
+}
+
+.seg button {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink2);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 120ms var(--ease-glass),
+    color var(--swap) linear;
+}
+
+.seg button[aria-pressed='true'] {
+  color: var(--ink);
+}
+
+.seg button:active {
+  transform: scale(0.97);
+}
+
+.seg button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+/* ── iOS switch ──────────────────────────────────────────── */
+
+.switch {
+  position: relative;
+  flex: none;
+  width: 51px;
+  height: 31px;
+}
+
+/* The real control stays a checkbox — it keeps native keyboard handling,
+ * the implicit checked state, and the `checkbox` role the accessibility
+ * suite asserts against. The pill below is presentation only. */
+.switchInput {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.switchTrack {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--track);
+  transition: background 200ms linear;
+  pointer-events: none;
+}
+
+.switchKnob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition:
+    transform 220ms var(--ease-glass),
+    width 160ms var(--ease-glass);
+}
+
+.switchInput:checked ~ .switchTrack {
+  background: var(--accent);
+}
+
+.switchInput:checked ~ .switchTrack .switchKnob {
+  transform: translateX(20px);
+}
+
+/* Press stretches the knob, the way the platform switch does. */
+.switchInput:active ~ .switchTrack .switchKnob {
+  width: 31px;
+}
+
+.switchInput:checked:active ~ .switchTrack .switchKnob {
+  transform: translateX(16px);
+}
+
+.switchInput:focus-visible ~ .switchTrack {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.switchInput:disabled {
+  cursor: default;
+}
+
+.switchInput:disabled ~ .switchTrack {
+  opacity: 0.45;
+}
+
+/* ── Disclosure ──────────────────────────────────────────── */
+
+.details summary {
+  list-style: none;
+}
+
+.details summary::-webkit-details-marker {
+  display: none;
+}
+
+.details[open] .caret {
+  transform: rotate(90deg);
+}
+
+.detailsBody {
+  display: grid;
   gap: 10px;
-  padding: 12px 20px;
-  border: 1px solid var(--color-line-strong);
-  border-radius: 12px;
-  background: var(--color-surface);
-  min-height: 48px;
-}
-.options button[aria-pressed='true'] {
-  background: var(--color-accent);
-  color: var(--color-accent-fg);
-}
-.check {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-}
-.check input {
-  width: 22px;
-  height: 22px;
-  accent-color: var(--color-accent);
-}
-.check small {
-  display: block;
-  color: var(--color-muted);
+  padding: 2px 16px 16px;
+  color: var(--ink2);
   font-size: 14px;
-  margin-top: 6px;
+  line-height: 1.5;
 }
-.sections a,
-.account a {
-  color: var(--color-accent);
+
+.detailsBody p {
+  margin: 0;
+}
+
+.detailsBody strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ── Misc ────────────────────────────────────────────────── */
+
+.link {
+  color: var(--accent-text);
+  font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-.account {
-  margin-top: 20px;
+
+.status {
+  margin: 0;
+  padding: 14px;
+  color: var(--ink2);
+  font-size: 14px;
+}
+
+.error {
+  margin: 0;
+  padding: 0 14px 12px;
+  color: var(--danger-text);
+  font-size: 13px;
+}
+
+.signOut {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 8px;
+}
+
+/* SignOutButton carries a class from the shell stylesheet; reach the element
+ * itself so this screen can give it the muted 48px footer treatment without
+ * editing a file another surface shares. */
+.signOut button {
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink2);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    transform 120ms var(--ease-glass),
+    color var(--swap) linear,
+    background var(--swap) linear;
+}
+
+.signOut button:hover {
+  color: var(--ink);
+  background: var(--glass);
+}
+
+.signOut button:active {
+  transform: scale(0.97);
+}
+
+.signOut button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+@media (min-width: 900px) {
+  .page {
+    gap: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  a.account:active,
+  button.row:active,
+  a.row:active,
+  summary.row:active,
+  label.row:active,
+  .seg button:active,
+  .signOut button:active {
+    transform: none;
+  }
+
+  .switchInput:active ~ .switchTrack .switchKnob,
+  .switchInput:checked:active ~ .switchTrack .switchKnob {
+    width: 27px;
+  }
+
+  .switchInput:checked:active ~ .switchTrack .switchKnob {
+    transform: translateX(20px);
+  }
 }

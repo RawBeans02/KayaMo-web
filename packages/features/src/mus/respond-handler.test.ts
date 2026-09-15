@@ -143,7 +143,7 @@ describe('handleMusRespond ordering', () => {
     const result = await handleMusRespond(d);
 
     expect(result.status).toBe(400);
-    expect(result.body).toEqual({ error: 'Invalid Kai request.' });
+    expect(result.body).toEqual({ error: 'Invalid Lis request.' });
     expect(d.reserveAllowance).not.toHaveBeenCalled();
   });
 

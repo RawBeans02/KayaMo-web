@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { InMemoryCocoBudgetStore } from '../budget';
 import { createCocoRouter } from '../coco-router';
 import {
-  KAI_PERSONA_VERSION,
-  kaiPersonaFingerprint,
-  renderKaiBasePersona,
-  renderKaiIdentityCard,
-  renderKaiSystemPrompt,
+  LIS_PERSONA_VERSION,
+  lisPersonaFingerprint,
+  renderLisBasePersona,
+  renderLisIdentityCard,
+  renderLisSystemPrompt,
 } from '../persona';
 import { baselineContext, recordingProvider } from './doubles';
-import { KAI_EVAL_CASES, KAI_EVAL_GROUPS, casesInGroup } from './cases';
+import { LIS_EVAL_CASES, LIS_EVAL_GROUPS, casesInGroup } from './cases';
 
 /**
  * Tier 1a — prompt assembly. The highest-value, lowest-cost layer, because most
@@ -21,34 +21,35 @@ import { KAI_EVAL_CASES, KAI_EVAL_GROUPS, casesInGroup } from './cases';
 describe('the persona cannot drift silently', () => {
   /**
    * Pairs the wording with a version number. Editing the persona without
-   * bumping KAI_PERSONA_VERSION fails here, which is the point: the change has
+   * bumping LIS_PERSONA_VERSION fails here, which is the point: the change has
    * to announce itself in the diff and invalidate the recorded baselines
    * deliberately rather than quietly.
    */
   const FINGERPRINTS: Record<number, string> = {
-    1: 'e5874c8dbd703f10d0dcfb823efbc44860dd2ed1ca25468ecef6fc63ecb33f87',
+    // 1 was the same wording under the name Kai, before the rename to Lis.
+    2: '8803c6d2bdef9a7e1d471f9bd5b9016460b202e7941c07c8ecba8b8470281fa6',
   };
 
   it('matches the fingerprint recorded for its version', () => {
-    const expected = FINGERPRINTS[KAI_PERSONA_VERSION];
+    const expected = FINGERPRINTS[LIS_PERSONA_VERSION];
     expect(
       expected,
-      `No fingerprint recorded for KAI_PERSONA_VERSION ${KAI_PERSONA_VERSION}. ` +
-        `If you changed the persona on purpose, add: ${KAI_PERSONA_VERSION}: '${kaiPersonaFingerprint()}'`,
+      `No fingerprint recorded for LIS_PERSONA_VERSION ${LIS_PERSONA_VERSION}. ` +
+        `If you changed the persona on purpose, add: ${LIS_PERSONA_VERSION}: '${lisPersonaFingerprint()}'`,
     ).toBeDefined();
     expect(
-      kaiPersonaFingerprint(),
-      'The persona changed without a version bump. Bump KAI_PERSONA_VERSION and ' +
+      lisPersonaFingerprint(),
+      'The persona changed without a version bump. Bump LIS_PERSONA_VERSION and ' +
         're-record baselines rather than editing this hash to match.',
     ).toBe(expected);
   });
 });
 
 describe('the assembled system prompt', () => {
-  const prompt = () => renderKaiSystemPrompt(baselineContext());
+  const prompt = () => renderLisSystemPrompt(baselineContext());
 
-  it('names the assistant Kai and nothing else', () => {
-    expect(prompt()).toContain("You are Kai, KayaMo's supportive AI companion.");
+  it('names the assistant Lis and nothing else', () => {
+    expect(prompt()).toContain("You are Lis, KayaMo's supportive AI companion.");
     expect(prompt()).not.toMatch(/\b(?:Mus|Coco)\b/);
   });
 
@@ -68,8 +69,8 @@ describe('the assembled system prompt', () => {
     // Phase 4 fills the identity card. Until then the prompt must be exactly the
     // base persona — no placeholder, no "the user has not told you anything",
     // which reliably turns the first reply into an interrogation.
-    expect(renderKaiIdentityCard(baselineContext())).toBe('');
-    expect(prompt()).toBe(renderKaiBasePersona());
+    expect(renderLisIdentityCard(baselineContext())).toBe('');
+    expect(prompt()).toBe(renderLisBasePersona());
   });
 });
 
@@ -100,8 +101,8 @@ describe('what the router actually sends the provider', () => {
 
   it('renders a system prompt from that snapshot', async () => {
     const provider = await capture();
-    const system = provider.lastSystemPrompt(renderKaiSystemPrompt);
-    expect(system).toContain('You are Kai');
+    const system = provider.lastSystemPrompt(renderLisSystemPrompt);
+    expect(system).toContain('You are Lis');
   });
 
   /**
@@ -129,7 +130,7 @@ describe('what the router actually sends the provider', () => {
       },
     });
 
-    const system = renderKaiSystemPrompt(withRecords);
+    const system = renderLisSystemPrompt(withRecords);
     expect(system).not.toContain('SENTINEL-TASK-TITLE');
     expect(system).not.toContain('SENTINEL-MEMORY-CONTENT');
 
@@ -146,17 +147,17 @@ describe('what the router actually sends the provider', () => {
 });
 
 describe('the case table', () => {
-  it.each(KAI_EVAL_GROUPS)('has at least one %s case', (group) => {
+  it.each(LIS_EVAL_GROUPS)('has at least one %s case', (group) => {
     expect(casesInGroup(group).length).toBeGreaterThan(0);
   });
 
   it('uses unique, stable ids', () => {
-    const ids = KAI_EVAL_CASES.map((testCase) => testCase.id);
+    const ids = LIS_EVAL_CASES.map((testCase) => testCase.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
 
   it('gives every case something to assert', () => {
-    for (const testCase of KAI_EVAL_CASES) {
+    for (const testCase of LIS_EVAL_CASES) {
       const { source, mustMatch, mustNotMatch, bounds, judge } = testCase.expect;
       expect(
         Boolean(source || mustMatch || mustNotMatch || bounds || judge),

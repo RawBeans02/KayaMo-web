@@ -1,223 +1,649 @@
+/* ── KayaMo · Liquid Glass — Home, Life, Goals, Grove ─────────────────────
+   Materials come from the global `kg*` classes (glass.css and
+   glass-materials.module.css). This module owns layout, type and the shapes
+   these four screens do not share with anything else; it never re-declares a
+   glass recipe.
+
+   One documented exception: `.primary` and `.secondary`. The task editor and
+   the goal flow compose those by name from outside this group, so they have to
+   stand on their own rather than expecting `kgAccent` / `kgGhost` in the
+   markup. They mirror the global recipes exactly.
+
+   No `backdrop-filter` is written on content surfaces on purpose: content sits
+   IN the page, so it takes `kgSurface` (no blur). Only the dialog, which
+   genuinely floats above everything, blurs — and there the `-webkit-` line
+   comes first, which this pipeline requires. */
+
 .page {
-  color: var(--color-text);
   max-width: 1280px;
-  margin: auto;
+  margin: 0 auto;
+  color: var(--ink);
 }
+
+/* ── Screen headers ─────────────────────────────────────────────────── */
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.header > div {
+  min-width: 0;
 }
 .header h1 {
-  font-size: 32px;
-  line-height: 1.2;
-  font-weight: 650;
-  letter-spacing: -1px;
-  margin: 0 0 8px;
+  margin: 0;
 }
-.header p,
-.muted {
-  color: var(--color-muted);
+.lede {
+  margin: 10px 0 0;
+  max-width: 58ch;
+  color: var(--ink2);
   font-size: 15px;
   line-height: 1.5;
 }
-header.homeHeader h1 {
-  font-size: 17px;
-  font-weight: 500;
-  letter-spacing: 0;
+.muted {
+  color: var(--ink2);
+  font-size: 13px;
+  line-height: 1.55;
 }
-.homeHeader .homeDate {
-  font-size: clamp(28px, 2.7vw, 40px);
-  font-weight: 650;
-  color: var(--color-text);
-  letter-spacing: -1px;
-  line-height: 1.2;
-  margin-bottom: 8px;
-}
-.homeHeader > div {
-  min-width: 0;
+
+/* The date sits above the title, the way a day view names itself. */
+.homeDate {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink2);
 }
 .ask {
-  display: flex;
-  align-items: center;
+  padding: 0 18px 0 8px;
   gap: 10px;
-  padding: 7px 16px 7px 8px;
-  border: 1px solid var(--color-line);
-  border-radius: 32px;
-  background: var(--glass);
-  backdrop-filter: blur(12px);
-  font-weight: 550;
   white-space: nowrap;
+  text-decoration: none;
 }
-.ask img {
-  width: 52px;
-  height: 52px;
-  object-fit: contain;
+/* Lis's mark: a sparkle in an accent circle, never a face. */
+.askMark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
+
+/* ── Week strip ─────────────────────────────────────────────────────── */
 .week {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr)) auto;
-  padding: 8px;
-  border: 1px solid var(--color-line);
-  border-radius: 20px;
-  background: var(--glass);
-  margin-bottom: 24px;
   gap: 6px;
+  padding: 8px;
+  margin-bottom: 20px;
 }
 .weekActions {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 8px;
+  padding: 0 6px;
 }
 .week .weekActions button {
-  border: 1px solid var(--color-line-strong);
-  border-radius: 50%;
   width: 44px;
   min-height: 44px;
-  padding: 10px;
+  border-radius: 999px;
+  color: var(--ink2);
+  box-shadow: inset 0 0 0 1px var(--stroke2);
 }
 .week button {
   display: grid;
   justify-items: center;
+  align-content: center;
   gap: 6px;
-  min-height: 72px;
-  border: 0;
-  border-radius: 12px;
-  color: var(--color-muted);
-  background: transparent;
+  min-height: 68px;
   padding: 10px 4px;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  color: var(--ink2);
+  font-size: 13px;
+  font-weight: 600;
 }
 .week button b {
-  font-weight: 600;
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
   font-size: 19px;
-  color: var(--color-text);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
 }
 .week button[aria-pressed='true'] {
-  background: var(--color-accent);
-  color: var(--color-accent-fg);
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 .week button[aria-pressed='true'] b {
   color: inherit;
 }
+
+/* ── Sections ───────────────────────────────────────────────────────── */
 .grid {
   display: grid;
-  grid-template-columns: minmax(0, 2.08fr) minmax(280px, 1fr);
+  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr);
   gap: 20px;
-  align-items: stretch;
-}
-.panel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
-  border-radius: 20px;
-  padding: 28px;
-  min-width: 0;
-}
-.panel h2 {
-  font-size: 22px;
-  font-weight: 650;
-  letter-spacing: -0.5px;
-  margin: 0 0 4px;
-}
-.panel p {
-  line-height: 1.5;
-}
-.plan {
-  min-height: 640px;
-}
-.plan h2 {
-  font-size: 32px;
+  align-items: start;
 }
 .side {
   display: grid;
-  gap: 18px;
+  gap: 20px;
 }
-.timeline {
-  list-style: none;
-  padding: 0;
-  margin: 28px 0;
-}
-.timeline li {
-  display: grid;
-  grid-template-columns: 55px minmax(0, 1fr);
-  align-items: start;
-  position: relative;
-}
-.time {
-  font-size: 17px;
-  font-weight: 600;
-  padding-top: 32px;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-muted);
-}
-.activity {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 20px 8px 20px 20px;
-  min-height: 112px;
-  border-left: 1px solid var(--color-line-strong);
-  border-bottom: 1px solid var(--color-line);
+.panel {
+  padding: 24px;
   min-width: 0;
 }
-.activityText {
+.panel h2,
+.sectionTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.panelHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.panelHead p {
+  margin: 0;
+}
+.cards {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.stack {
+  display: grid;
+  gap: 16px;
+}
+
+/* ── Next up hero ───────────────────────────────────────────────────── */
+.nextUp {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  padding: 20px;
+  margin-bottom: 10px;
+  background: var(--glass-strong);
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    inset 0 0 0 1px var(--stroke2);
+}
+.nextUpBody {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.nextUpText {
+  flex: 1;
+  min-width: 180px;
+}
+.nextUpTitle {
+  margin: 6px 0 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.nextUpMeta {
+  margin: 3px 0 0;
+  font-size: 14px;
+  color: var(--ink2);
+}
+.nextUpActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.overflow {
+  flex: none;
+  text-decoration: none;
+}
+
+/* ── Plan list ──────────────────────────────────────────────────────── */
+.planList {
+  list-style: none;
+  display: grid;
+  margin: 0;
+  padding: 0;
+}
+.planRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 8px 6px 8px 14px;
+  border-radius: 20px;
+}
+.planRow + .planRow {
+  box-shadow: inset 0 1px 0 var(--stroke2);
+}
+.planText {
   flex: 1;
   min-width: 0;
 }
-.activityText strong {
+.planTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+.planMeta {
+  margin: 1px 0 0;
+  font-size: 13px;
+  color: var(--ink2);
+}
+.planTime {
+  flex: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Capture field ──────────────────────────────────────────────────── */
+.capture {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 0 8px 0 16px;
+  border-radius: 18px;
+  background: var(--field);
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+  color: var(--ink2);
+}
+.capture input {
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 16px;
+}
+.capture input::placeholder {
+  color: var(--ink2);
+}
+
+/* ── Check-off rows ─────────────────────────────────────────────────── */
+.priorities {
+  list-style: none;
+  display: grid;
+  margin: 0;
+  padding: 0;
+}
+.priorities li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+}
+.priorities li + li {
+  box-shadow: inset 0 1px 0 var(--stroke2);
+}
+.done {
+  opacity: 0.55;
+}
+/* 26px circle, 44px target: the label carries the hit area. */
+.checkBox {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  margin-left: -9px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.check {
+  width: 26px;
+  height: 26px;
+  margin: 0;
+  flex: none;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--ink3);
+  cursor: pointer;
+  transition:
+    background-color 160ms linear,
+    box-shadow 160ms linear;
+}
+.check:checked {
+  background-color: var(--accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.6 8.4l2.9 2.9 5.9-6.6' fill='none' stroke='%2304120a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 16px 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+.taskTitle {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.done .taskTitle {
+  text-decoration: line-through;
+  color: var(--ink2);
+}
+
+/* ── Glance cards ───────────────────────────────────────────────────── */
+.glance {
+  display: grid;
+  gap: 10px;
+  padding: 22px 24px;
+  text-decoration: none;
+  color: inherit;
+}
+.glanceHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.glanceHead svg:first-child {
+  color: var(--accent-text);
+  flex: none;
+}
+.glanceHead .caret {
+  margin-left: auto;
+  color: var(--ink2);
+}
+.glanceNum {
   display: block;
-  font-size: 19px;
+  font-size: 34px;
+  line-height: 1.05;
+}
+.glanceUnit {
+  margin-left: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ink2);
+}
+.glanceMeta {
+  font-size: 13px;
+  color: var(--ink2);
+}
+.bar {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--track);
+  overflow: hidden;
+}
+.barFill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* ── Navigation rows (Life, tools) ──────────────────────────────────── */
+.tool {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 60px;
+  padding: 10px 12px;
+  margin: 0 -12px;
+  border-radius: 20px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 16px;
+}
+.tool + .tool {
+  box-shadow: inset 0 1px 0 var(--stroke2);
+}
+.tool > span {
+  flex: 1;
+  min-width: 0;
+}
+.tool strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.tool small {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--ink2);
+}
+.tool svg:first-child {
+  color: var(--accent-text);
+  flex: none;
+}
+.tool svg:last-child {
+  color: var(--ink2);
+  flex: none;
+}
+.tool:hover {
+  background: var(--glass-strong);
+}
+
+/* ── Goals ──────────────────────────────────────────────────────────── */
+.goalCard {
+  display: grid;
+  gap: 12px;
+  padding: 22px 22px 16px;
+}
+.goalHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.goalHead h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  overflow-wrap: anywhere;
+}
+.goalProgress {
+  flex: none;
+  font-size: 13px;
+  color: var(--ink2);
+  font-variant-numeric: tabular-nums;
+}
+.milestones {
+  list-style: none;
+  display: grid;
+  margin: 0;
+  padding: 0;
+}
+.milestone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+}
+.milestone + .milestone {
+  box-shadow: inset 0 1px 0 var(--stroke2);
+}
+.dot {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1.5px var(--ink3);
+  color: transparent;
+}
+.dotDone {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+.msTitle {
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
   font-weight: 600;
   overflow-wrap: anywhere;
 }
-.activityText small {
-  display: block;
-  color: var(--color-muted);
-  margin-top: 5px;
-  font-size: 14px;
+.msDone .msTitle {
+  color: var(--ink2);
+  text-decoration: line-through;
 }
-.activityIcon {
+.goalOpen {
+  justify-self: start;
+  text-decoration: none;
+}
+
+/* ── Grove ──────────────────────────────────────────────────────────── */
+.streak {
+  position: relative;
+  overflow: hidden;
+  padding: 24px;
+}
+.streakBody {
+  position: relative;
+}
+.streakNum {
+  display: block;
+  margin: 6px 0 0;
+  font-size: 44px;
+  line-height: 1;
+}
+.streakUnit {
+  margin-left: 8px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ink2);
+}
+.streakNote {
+  margin: 12px 0 0;
+  max-width: 44ch;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink2);
+}
+.groveGrid {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 8px;
+}
+.cell {
+  aspect-ratio: 1;
+  border-radius: 9px;
+  background: var(--track);
+}
+.cellPlanted {
+  background: var(--accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.cellToday {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.stat {
+  display: block;
+  margin: 10px 0 6px;
+  font-size: 34px;
+  line-height: 1.05;
+}
+.statUnit {
+  margin-left: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ink2);
+}
+.history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.history li {
+  padding: 14px 0;
+}
+.history li + li {
+  box-shadow: inset 0 1px 0 var(--stroke2);
+}
+.history strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+.history p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--ink2);
+}
+
+/* ── Empty, notice, actions ─────────────────────────────────────────── */
+.empty {
+  padding: 26px 0 8px;
+  max-width: 48ch;
+}
+.empty h3 {
+  margin: 0 0 8px;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.empty p {
+  margin: 0 0 18px;
+  color: var(--ink2);
+  font-size: 15px;
+  line-height: 1.55;
+}
+.notice {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: var(--color-surface-2);
-  color: var(--color-accent);
-  flex-shrink: 0;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 16px;
+  padding: 14px 18px;
+  border-radius: 20px;
+  background: var(--glass-strong);
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+  font-size: 14px;
 }
-.timeline li:first-child .activity {
-  background: var(--color-surface-2);
-  border-radius: 16px;
-  border-color: transparent;
-}
-.timeline li:last-child .activity {
-  border-bottom: 0;
-}
-.primary,
-.secondary {
-  display: inline-flex;
-  justify-content: center;
+.actions {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  padding: 11px 16px;
-  border-radius: 12px;
-  min-height: 44px;
-  font-weight: 550;
-  text-decoration: none;
-  border: 1px solid transparent;
-}
-.primary {
-  background: var(--color-accent);
-  color: var(--color-accent-fg);
-}
-.secondary {
-  background: var(--color-surface);
-  border-color: var(--color-line-strong);
-  color: var(--color-text);
+  gap: 10px;
+  margin-top: 18px;
 }
 .iconButton {
   display: inline-flex;
@@ -225,125 +651,52 @@ header.homeHeader h1 {
   justify-content: center;
   width: 44px;
   height: 44px;
-  border-radius: 12px;
+  flex: none;
   border: 0;
+  border-radius: 999px;
   background: transparent;
-  color: var(--color-muted);
-  flex-shrink: 0;
+  color: var(--ink2);
 }
-.iconButton:hover,
-.tool:hover {
-  background: var(--color-surface-2);
+.iconButton:hover {
+  background: var(--glass-strong);
+  color: var(--ink);
 }
-.priorities {
-  display: grid;
-  list-style: none;
-  margin: 18px 0;
-  padding: 0;
-  gap: 6px;
-}
-.priorities li {
-  display: flex;
+
+/* ── Legacy control shims ───────────────────────────────────────────
+   Mirrors of the global kgAccent / kgGhost recipes for the components
+   outside this group that compose these class names. */
+.primary,
+.secondary {
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  min-height: 56px;
-}
-.priorities input {
-  width: 22px;
-  height: 22px;
-  accent-color: var(--color-accent);
-  flex-shrink: 0;
-}
-.taskTitle {
-  font-size: 18px;
-  text-align: left;
-  border: 0;
-  background: transparent;
-  padding: 8px 0;
-  font-weight: 550;
-  line-height: 1.4;
-  overflow-wrap: anywhere;
-}
-.done .taskTitle {
-  text-decoration: line-through;
-  color: var(--color-muted);
-}
-.capture {
-  display: flex;
-  align-items: center;
+  justify-content: center;
   gap: 8px;
-  border: 1px solid var(--color-line-strong);
-  border-radius: 12px;
-  padding: 7px 10px;
-  background: var(--color-surface);
-}
-.capture input {
-  min-width: 0;
-  flex: 1;
+  min-height: 48px;
+  padding: 0 22px;
   border: 0;
-  background: transparent;
-  min-height: 40px;
-  color: var(--color-text);
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
 }
-.capture input::placeholder {
-  color: var(--color-muted);
+.primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 8px 24px var(--accent-glow);
 }
-.tool {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 58px;
-  padding: 10px 0;
-  font-size: 16px;
-}
-.tool > span {
-  flex: 1;
-}
-.tool svg:first-child {
-  color: var(--color-accent);
-}
-.encouragement {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-top: 14px;
-  border-radius: 12px;
-  background: var(--color-surface-2);
-  padding: 14px;
-  color: var(--color-muted);
-  font-size: 14px;
-}
-.encouragement img {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-}
-.empty {
-  padding: 38px 0;
-  max-width: 460px;
-}
-.empty h3 {
-  font-size: 19px;
+.secondary {
+  background: var(--glass);
+  color: var(--ink);
   font-weight: 600;
-  margin-bottom: 8px;
+  box-shadow: inset 0 0 0 1px var(--stroke);
 }
-.empty p {
-  color: var(--color-muted);
-  margin: 0 0 18px;
-}
-.notice {
-  padding: 12px 16px;
-  border-radius: 12px;
-  background: var(--color-surface-2);
-  margin: 0 0 16px;
-}
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 20px;
-  align-items: center;
-}
+
+/* ── Dialogs ────────────────────────────────────────────────────────
+   The only surface here that genuinely floats above scrolling content,
+   so the only one that blurs. `-webkit-` first: this pipeline drops both
+   declarations when the prefixed line comes second. */
 .dialog {
   position: fixed;
   inset: 0 0 0 auto;
@@ -353,18 +706,26 @@ header.homeHeader h1 {
   height: 100dvh;
   max-height: 100dvh;
   padding: 28px;
-  border: 1px solid var(--color-line);
-  background: var(--color-surface);
-  color: var(--color-text);
+  border: 0;
+  border-radius: 0;
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(40px) saturate(180%);
+  box-shadow:
+    inset 1px 0 0 var(--stroke),
+    var(--shadow-deep);
+  color: var(--ink);
   overflow: auto;
 }
 .dialog::backdrop {
-  background: var(--color-overlay);
+  background: rgba(0, 0, 0, 0.4);
 }
 .dialog h2 {
-  font-size: 24px;
-  font-weight: 650;
-  margin-bottom: 20px;
+  margin: 0 0 20px;
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
 }
 .form {
   display: grid;
@@ -373,147 +734,92 @@ header.homeHeader h1 {
 .form label {
   display: grid;
   gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
 }
 .form input,
 .form textarea,
 .form select {
   width: 100%;
-  min-height: 46px;
-  padding: 11px 12px;
-  border: 1px solid var(--color-line-strong);
-  border-radius: 12px;
-  background: var(--color-surface);
-  color: var(--color-text);
-}
-.cards {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.stat {
-  font-size: 36px;
-  letter-spacing: -1px;
-  font-weight: 650;
-  margin: 16px 0;
-}
-.history {
-  list-style: none;
-  padding: 0;
-  margin: 16px 0 0;
-}
-.history li {
-  padding: 18px 0;
-  border-bottom: 1px solid var(--color-line);
-}
-.history li:last-child {
+  min-height: 52px;
+  padding: 14px 18px;
   border: 0;
+  border-radius: 18px;
+  background: var(--field);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 400;
+  box-shadow: inset 0 0 0 1px var(--stroke2);
 }
+
+/* ── Responsive ─────────────────────────────────────────────────────── */
 @media (max-width: 1100px) {
   .grid {
-    grid-template-columns: minmax(0, 1.6fr) minmax(250px, 1fr);
+    grid-template-columns: minmax(0, 1.4fr) minmax(260px, 1fr);
     gap: 16px;
   }
   .panel {
-    padding: 22px;
-  }
-  .activity {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .activity .primary {
-    margin-left: 54px;
+    padding: 20px;
   }
 }
 @media (max-width: 900px) {
   .grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .side {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .plan {
-    min-height: 0;
+}
+@media (max-width: 700px) {
+  .groveGrid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 }
 @media (max-width: 600px) {
-  .homeHeader {
-    flex-wrap: wrap;
-  }
-  .homeHeader h1 {
-    font-size: 16px;
-  }
-  .homeHeader .homeDate {
-    font-size: 28px;
+  .header {
+    gap: 14px;
   }
   .week {
     grid-template-columns: repeat(7, minmax(0, 1fr));
+    padding: 6px;
+    gap: 3px;
   }
   .weekActions {
     grid-column: 1 / -1;
     justify-content: flex-end;
   }
-  .header h1 {
-    font-size: 28px;
-  }
-  .header p {
-    font-size: 14px;
-  }
-  .ask {
-    padding: 4px 10px 4px 4px;
-    font-size: 14px;
-    gap: 4px;
-  }
-  .ask img {
-    width: 40px;
-    height: 40px;
-  }
-  .week {
-    padding: 5px;
-    gap: 2px;
-    margin-bottom: 16px;
-  }
   .week button {
     min-height: 62px;
     font-size: 12px;
+    padding: 8px 2px;
   }
   .side,
   .cards {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .panel {
-    padding: 20px;
+    padding: 18px;
   }
-  .panel h2 {
-    font-size: 21px;
+  .nextUp,
+  .glance,
+  .goalCard,
+  .streak {
+    padding: 18px;
   }
-  .activityIcon {
-    display: none;
+  .nextUpTitle {
+    font-size: 19px;
   }
-  .activity .primary {
-    margin-left: 0;
+  .glanceNum,
+  .stat {
+    font-size: 30px;
   }
-  .activity {
-    padding-left: 12px;
+  .streakNum {
+    font-size: 38px;
   }
   .dialog {
-    padding: 24px 20px;
+    padding: 22px 18px;
   }
-  .timeline li {
-    grid-template-columns: 48px minmax(0, 1fr);
-  }
-  .activityText strong {
-    font-size: 16px;
-  }
-}
-:global(html[data-reduce-transparency='true']) .week,
-:global(html[data-reduce-transparency='true']) .ask {
-  background: var(--color-surface);
-  backdrop-filter: none;
-}
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .week,
   .ask {
-    background: var(--color-surface);
-    backdrop-filter: none;
+    padding: 0 14px 0 6px;
   }
 }

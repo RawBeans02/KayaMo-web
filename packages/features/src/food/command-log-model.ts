@@ -8,9 +8,9 @@ import {
 } from '@kayamo/food/search-ui';
 import { MEAL_SLOTS, type MealSlot } from '@kayamo/food/quick-log';
 
-const COMMAND_LOG_SOURCES = new Set<CatalogFood['source']>(['ph_core', 'user']);
+const COMMAND_LOG_SOURCES = new Set<CatalogFood['source']>(['ph_core', 'user', 'usda_fdc', 'off']);
 
-/** Cmd+K stays on persistable local catalog. USDA/OFF need a service-role resolve path we do not have. */
+/** Quick entry includes every sourced food already present in the local catalog. */
 export function catalogForCommandLog(foods: readonly CatalogFood[]): CatalogFood[] {
   return foods.filter((food) => COMMAND_LOG_SOURCES.has(food.source));
 }
@@ -164,7 +164,7 @@ export function readyCatalogFoods(
   limit = 4,
 ): CatalogFood[] {
   return catalog
-    .filter((food) => food.source === 'ph_core' || food.source === 'user')
+    .filter((food) => COMMAND_LOG_SOURCES.has(food.source))
     .slice()
     .sort((a, b) => {
       const byCount = (logCounts.get(b.id) ?? 0) - (logCounts.get(a.id) ?? 0);
@@ -184,7 +184,7 @@ export function loggedStatus(slotLabel: string): string {
 
 export function idlePaletteStatus(plateCount: number): string {
   if (plateCount > 0) return `${plateCount} logged · keep going`;
-  return 'Stays open — a plate is several items';
+  return 'Stays open · a plate is several items';
 }
 
 export function paletteStateLabel(view: PaletteView, resultCount: number): string {
@@ -245,21 +245,21 @@ export function candidateFromCatalogFood(
 
 export const PALETTE_LEAVE_ACTIONS = [
   {
-    href: '/verify',
-    title: 'Create it in PH core',
+    href: '/foods',
+    title: 'Create a custom food',
     sub: 'Name, macros per 100 g, a serving, a source note',
     key: '⌘N',
   },
   {
     href: '/foods',
-    title: 'Search brands and USDA',
-    sub: 'Leaves the palette and opens Foods, filtered',
+    title: 'Search worldwide foods',
+    sub: 'Open international ingredient and packaged-food search',
     key: '⌘⇧F',
   },
   {
     href: '/mus',
-    title: 'Ask Mus what this is',
-    sub: 'Mus proposes a row. You confirm before it saves.',
+    title: 'Ask Lis what this is',
+    sub: 'Lis proposes a row. You confirm before it saves.',
     key: '⌘M',
   },
 ] as const;
@@ -289,7 +289,7 @@ export function leaveHrefFromPaletteKey(event: {
   const mod = event.metaKey || event.ctrlKey;
   if (!mod) return null;
   const key = event.key.toLowerCase();
-  if (key === 'n' && !event.shiftKey) return '/verify';
+  if (key === 'n' && !event.shiftKey) return '/foods';
   if (key === 'f' && event.shiftKey) return '/foods';
   if (key === 'm' && !event.shiftKey) return '/mus';
   return null;

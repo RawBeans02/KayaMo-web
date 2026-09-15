@@ -64,11 +64,26 @@ test('all five destinations and appearance remain usable at narrow widths', asyn
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/today');
     await expect(page.getByRole('heading', { name: 'Home', exact: true })).toBeVisible();
-    for (const name of ['Home', 'Goals', 'Life', 'Grove', 'Mus']) {
+    // Below 900px the desktop rail gives way to the floating tab bar, so each
+    // width asserts whichever navigation that width is supposed to show.
+    if (width >= 900) {
+      for (const name of ['Home', 'Life', 'Food', 'Movement', 'Goals', 'Grove', 'Lis']) {
+        await expect(
+          page
+            .getByRole('navigation', { name: 'Sections' })
+            .getByRole('link', { name, exact: true }),
+        ).toBeVisible();
+      }
+    } else {
+      for (const name of ['Home', 'Life', 'Lis', 'Profile']) {
+        await expect(
+          page
+            .getByRole('navigation', { name: 'Main' })
+            .getByRole('link', { name, exact: true }),
+        ).toBeVisible();
+      }
       await expect(
-        page
-          .getByRole('navigation', { name: 'Sections' })
-          .getByRole('link', { name, exact: true }),
+        page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: 'Log' }),
       ).toBeVisible();
     }
     expect(

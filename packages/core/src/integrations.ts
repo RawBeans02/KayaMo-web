@@ -58,7 +58,7 @@ export const INTEGRATION_CATALOG: readonly IntegrationDescriptor[] = [
     summary: 'Apple Health and Health Connect are not connected.',
     availability: 'native_required',
     restriction:
-      'Health and wearable reads need a native wrap. Weight and workouts you confirm in Physical Self still count. Kai will not invent steps or heart-rate.',
+      'Health and wearable reads need a native wrap. Weight and workouts you confirm in Physical Self still count. Lis will not invent steps or heart-rate.',
     defaultLevel: 'suggest',
   },
   {
@@ -114,7 +114,7 @@ export const INTEGRATION_CATALOG: readonly IntegrationDescriptor[] = [
   {
     id: 'web_research',
     title: 'Web research',
-    summary: 'Kai cannot browse the web yet.',
+    summary: 'Lis cannot browse the web yet.',
     availability: 'needs_provider',
     restriction: 'External research needs a real search tool and citations. This slice does not invent sources.',
     defaultLevel: 'suggest',

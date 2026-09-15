@@ -10,7 +10,7 @@ import {
   type LifeArea,
 } from '@kayamo/core';
 import {
-  createLocalGoal,
+  createLocalGoalPlan,
   completeLocalGoalMilestone,
   createLocalGoalMilestone,
   createLocalTask,
@@ -115,6 +115,7 @@ export function GoalFlow({
   const [viewId, setViewId] = useState<string | null>(initialGoalId);
   const [created, setCreated] = useState<LocalGoal | null>(null);
   const [title, setTitle] = useState('');
+  const [confirmationId, setConfirmationId] = useState<string>(() => crypto.randomUUID());
   const [why, setWhy] = useState('');
   const [doneLooks, setDoneLooks] = useState('');
   const [firstStep, setFirstStep] = useState('');
@@ -163,6 +164,11 @@ export function GoalFlow({
       const saved: unknown = raw ? JSON.parse(raw) : null;
       if (saved && typeof saved === 'object' && !initialGoalId) {
         const value = saved as Record<string, unknown>;
+        if (
+          typeof value.confirmationId === 'string' &&
+          /^[0-9a-f-]{36}$/i.test(value.confirmationId)
+        )
+          setConfirmationId(value.confirmationId);
         if (typeof value.title === 'string') setTitle(value.title);
         if (typeof value.why === 'string') setWhy(value.why);
         if (typeof value.doneLooks === 'string') setDoneLooks(value.doneLooks);
@@ -186,7 +192,15 @@ export function GoalFlow({
     try {
       sessionStorage.setItem(
         'kayamo:goal-draft:' + userId,
-        JSON.stringify({ title, why, doneLooks, firstStep, doneBy, lifeArea }),
+        JSON.stringify({
+          title,
+          why,
+          doneLooks,
+          firstStep,
+          doneBy,
+          lifeArea,
+          confirmationId,
+        }),
       );
     } catch {
       /* Saving the goal still uses IndexedDB. */
@@ -202,6 +216,7 @@ export function GoalFlow({
     firstStep,
     doneBy,
     lifeArea,
+    confirmationId,
   ]);
 
   const completed = milestones.filter((row) => row.completed_at);
@@ -238,6 +253,7 @@ export function GoalFlow({
   );
 
   function openDraft(seed = '') {
+    setConfirmationId(crypto.randomUUID());
     setTitle(seed);
     setWhy('');
     setDoneLooks('');
@@ -252,35 +268,18 @@ export function GoalFlow({
     if (!heading || busy) return;
     setBusy(true);
     try {
-      const row = await createLocalGoal({
+      const stepTitle = firstStep.trim();
+      const row = await createLocalGoalPlan({
+        id: confirmationId,
         userId,
         title: heading,
         description: why.trim() || null,
-        origin: 'user',
         lifeArea,
         targetDate: doneBy || null,
+        firstStep: stepTitle,
+        doneLooks,
+        logicalDate,
       });
-      let order = 0;
-      const stepTitle = firstStep.trim();
-      if (stepTitle) {
-        await createLocalGoalMilestone({
-          userId,
-          goalId: row.id,
-          title: stepTitle,
-          sortOrder: order,
-        });
-        order += 1;
-        await createLocalTask({ userId, title: stepTitle, scheduledFor: logicalDate });
-      }
-      const doneTitle = doneLooks.trim();
-      if (doneTitle) {
-        await createLocalGoalMilestone({
-          userId,
-          goalId: row.id,
-          title: doneTitle,
-          sortOrder: order,
-        });
-      }
       if (persistDraft) {
         try {
           sessionStorage.removeItem('kayamo:goal-draft:' + userId);
@@ -403,13 +402,13 @@ export function GoalFlow({
             ))}
           </div>
           <p className={styles.flowNote}>
-            These are examples, not a menu. Mus can work with anything you can say out
+            These are examples, not a menu. Lis can work with anything you can say out
             loud.
           </p>
         </div>
         <div className={styles.flowFooter}>
           <button className={styles.primaryButton} type="button" onClick={onChat}>
-            <ChatCircleDots size={20} /> Talk it through with Mus
+            <ChatCircleDots size={20} /> Talk it through with Lis
           </button>
           <button className={styles.ghostWide} type="button" onClick={() => openDraft()}>
             Write it myself
@@ -502,7 +501,7 @@ export function GoalFlow({
             <Info size={19} />
             <p>
               Steps land on Home as ordinary tasks. Confirming one is what moves the goal
-              — Mus never marks it for you.
+              Lis never marks it for you.
             </p>
           </div>
         </div>
@@ -603,7 +602,7 @@ export function GoalFlow({
           <p className={styles.muted}>
             {onToday
               ? 'Already on Home. Confirming it there is what moves this.'
-              : 'Mus will not mark this for you. Put it on Home, then confirm it there.'}
+              : 'Lis will not mark this for you. Put it on Home, then confirm it there.'}
           </p>
           {persistDraft && next && (
             <button
@@ -691,7 +690,7 @@ export function GoalFlow({
         <div className={styles.goalLinks}>
           <button type="button" onClick={onChat}>
             <ChatCircleDots size={19} />
-            <span>Check in with Mus</span>
+            <span>Check in with Lis</span>
             <CaretRight size={15} />
           </button>
           <button type="button" onClick={() => setSetdownOpen(true)}>

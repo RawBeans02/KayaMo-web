@@ -205,7 +205,7 @@ describe('governed Coco router', () => {
         config: { maxRetries: 0 },
       });
       const result = await route(request());
-      expect(result.response.message).toContain('could not reach Kai');
+      expect(result.response.message).toContain('could not reach Lis');
     });
 
     it('never calls the assistant Mus or Coco', async () => {

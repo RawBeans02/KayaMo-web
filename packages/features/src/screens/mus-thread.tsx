@@ -58,7 +58,7 @@ import styles from '../desk/mus-desk.module.css';
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_IMAGE_BYTES = 2_000_000;
 
-/** Kai never writes on its own; nothing here is saved until you confirm. */
+/** Lis never writes on its own; nothing here is saved until you confirm. */
 const CONFIRM_FOOT = 'Nothing is saved until you confirm.';
 
 const HIGH_RISK: ReadonlySet<CocoActionName> = new Set(['create_goal']);
@@ -83,7 +83,7 @@ function touchesFor(action: CocoActionName): string[] {
     return ['Gym'];
   }
   if (action === 'create_goal') return ['Goals', 'Todos'];
-  if (action === 'remember_this') return ['Kai'];
+  if (action === 'remember_this') return ['Lis'];
   return ['Todos'];
 }
 
@@ -114,7 +114,7 @@ async function fileToBase64(file: File): Promise<string> {
  * lines, then confirm or decline. The high-risk confirm word stays — a goal
  * target still needs the word typed before Save is enabled.
  */
-function KaiProposalCard({
+function LisProposalCard({
   proposal,
   userId,
   busy,
@@ -182,7 +182,7 @@ function KaiProposalCard({
         </li>
         <li className={styles.line}>
           <span>Source</span>
-          <span className={styles.lineValue}>Kai · this conversation</span>
+          <span className={styles.lineValue}>Lis · this conversation</span>
         </li>
       </ul>
       {risk === 'high' ? (
@@ -319,7 +319,7 @@ export function MusThread({
           writeActiveMusConversationId(userId, pick.id);
           return;
         }
-        const created = await createLocalCocoConversation({ userId, title: `Kai · ${logicalDate}` });
+        const created = await createLocalCocoConversation({ userId, title: `Lis · ${logicalDate}` });
         if (cancelled) return;
         setConversationId(created.id);
         setConversations([created]);
@@ -334,7 +334,7 @@ export function MusThread({
   }, [logicalDate, userId]);
 
   async function startNewConversation() {
-    const created = await createLocalCocoConversation({ userId, title: `Kai · ${logicalDate}` });
+    const created = await createLocalCocoConversation({ userId, title: `Lis · ${logicalDate}` });
     setMessages([]);
     setConversations((current) => [created, ...current]);
     selectConversation(created.id);
@@ -447,7 +447,7 @@ export function MusThread({
         : 'We can name one small next action together. Nothing is saved until you confirm it.';
       let source: LocalCocoMessage['response_source'] = 'fallback';
       let nextProposals: CocoActionProposal[] = [];
-      // A capability or reachability message is status, not something Kai
+      // A capability or reachability message is status, not something Lis
       // says. It renders once, as the muted note under the thread — never
       // also as a bubble, which is what used to happen.
       let statusOnly = false;
@@ -461,7 +461,7 @@ export function MusThread({
             message: outbound,
             logicalDate,
             // The tail of the thread this device already holds. Without it every
-            // turn was stateless and Kai could not resolve "that one" or "no,
+            // turn was stateless and Lis could not resolve "that one" or "no,
             // tomorrow" — the single largest reason it read as a machine. The
             // server clamps count and length; this is the UX input, not an
             // authority, and safety still reads only the newest message.
@@ -481,26 +481,26 @@ export function MusThread({
           setProposalNote(
             response.status === 429
               ? 'Your AI request allowance is used for today. Manual tracking still works.'
-              : 'Kai is temporarily unavailable. Please try again later; your message is saved locally.',
+              : 'Lis is temporarily unavailable. Please try again later; your message is saved locally.',
           );
         }
       } catch {
         statusOnly = true;
         setProposalNote(
           userId.startsWith('guest-')
-            ? 'Kai is not available in the local demo. Sign in to use it.'
-            : 'Could not reach Kai. Your message is saved locally; please try again when connected.',
+            ? 'Lis is not available in the local demo. Sign in to use it.'
+            : 'Could not reach Lis. Your message is saved locally; please try again when connected.',
         );
       }
       if (!statusOnly) {
-        const kai = await appendLocalCocoMessage({
+        const lis = await appendLocalCocoMessage({
           userId,
           conversationId,
           role: 'assistant',
           content: reply,
           responseSource: source,
         });
-        setMessages((current) => [...current, kai]);
+        setMessages((current) => [...current, lis]);
       }
       setProposals([...hintProposals, ...nextProposals]);
     } finally {
@@ -516,7 +516,7 @@ export function MusThread({
   async function confirmProposal(proposal: CocoActionProposal) {
     const module = permModuleForAction(proposal.action);
     if (module && !musMayWrite(readMusPermLevels(userId)[module])) {
-      setProposalNote('Kai cannot write this while that module is at read or never.');
+      setProposalNote('Lis cannot write this while that module is at read or never.');
       return;
     }
     setBusy(true);
@@ -552,7 +552,7 @@ export function MusThread({
       return module ? !musMayWrite(readMusPermLevels(userId)[module]) : false;
     });
     if (blocked) {
-      setProposalNote('Kai cannot write this while that module is at read or never.');
+      setProposalNote('Lis cannot write this while that module is at read or never.');
       return;
     }
     setBusy(true);
@@ -728,13 +728,13 @@ export function MusThread({
       {showPageList ? conversationList : null}
       {showHeader ? (
         <header className={styles.header}>
-          {/* Kai is a sparkle in an accent circle — never a character. */}
+          {/* Lis is a sparkle in an accent circle — never a character. */}
           <span className={styles.mark} aria-hidden="true">
-            <BotanicalIcon name="kai" size={18} weight="fill" />
+            <BotanicalIcon name="lis" size={18} weight="fill" />
           </span>
           <div className={styles.identity}>
             <Heading id="mus-chat-title" className={styles.name}>
-              Kai
+              Lis
             </Heading>
             <p className={styles.tagline}>{unavailableMessage ?? 'Proposes · you confirm'}</p>
           </div>
@@ -757,13 +757,13 @@ export function MusThread({
         </header>
       ) : (
         <h2 id="mus-chat-title" className={styles.srOnly}>
-          Kai
+          Lis
         </h2>
       )}
       {showHistoryOverlay ? conversationList : null}
       <div className={`${styles.log} kgSurface`} aria-live="polite">
         {messages.length === 0 ? (
-          <div className={styles.bubbleKai}>
+          <div className={styles.bubbleLis}>
             Tell me what you ate or did. I’ll propose an entry and wait for your yes.
           </div>
         ) : null}
@@ -774,7 +774,7 @@ export function MusThread({
             </div>
           ) : (
             <div key={message.id} className={`${styles.group} kgRise`}>
-              <div className={styles.bubbleKai}>{message.content}</div>
+              <div className={styles.bubbleLis}>{message.content}</div>
               {recommended ? (
                 <p className={styles.source}>
                   <Clock size={13} aria-hidden="true" /> From your confirmed plan for today.
@@ -813,7 +813,7 @@ export function MusThread({
               ) : null}
               <li className={styles.line}>
                 <span>Source</span>
-                <span className={styles.lineValue}>Kai · this conversation</span>
+                <span className={styles.lineValue}>Lis · this conversation</span>
               </li>
             </ul>
             <div className={styles.cardActions}>
@@ -835,7 +835,7 @@ export function MusThread({
         {proposals.length > 1 ? (
           <article className={`${styles.card} kgRise`} aria-label="Several proposals">
             <p className="kgEyebrow">Several changes</p>
-            <h3 className={styles.cardTitle}>Kai proposes {proposals.length} changes.</h3>
+            <h3 className={styles.cardTitle}>Lis proposes {proposals.length} changes.</h3>
             <div className={styles.cardActions}>
               <button
                 type="button"
@@ -850,7 +850,7 @@ export function MusThread({
           </article>
         ) : null}
         {proposals.map((proposal) => (
-          <KaiProposalCard
+          <LisProposalCard
             key={proposal.proposalId}
             proposal={proposal}
             userId={userId}
@@ -867,7 +867,7 @@ export function MusThread({
             {proposalNote}
           </p>
         ) : null}
-        {busy ? <div className={`${styles.bubbleKai} kgRise`}>Thinking…</div> : null}
+        {busy ? <div className={`${styles.bubbleLis} kgRise`}>Thinking…</div> : null}
       </div>
       <form className={`${styles.composer} kgPanelStrong`} onSubmit={send}>
         {pendingImage ? (
@@ -879,13 +879,13 @@ export function MusThread({
           </p>
         ) : null}
         <label className={styles.srOnly} htmlFor={composerId}>
-          Message Kai. Enter sends. Shift+Enter starts a new line.
+          Message Lis. Enter sends. Shift+Enter starts a new line.
         </label>
         <input
           ref={fileRef}
           className={styles.srOnly}
           type="file"
-          aria-label="Choose a photo for Kai"
+          aria-label="Choose a photo for Lis"
           accept="image/jpeg,image/png,image/webp"
           onChange={(event) => {
             const file = event.target.files?.[0] ?? null;
@@ -923,14 +923,14 @@ export function MusThread({
             event.preventDefault();
             event.currentTarget.form?.requestSubmit();
           }}
-          placeholder={unavailableMessage ?? 'Tell Kai what you ate or did…'}
+          placeholder={unavailableMessage ?? 'Tell Lis what you ate or did…'}
         />
         <button type="submit" className={styles.send} disabled={!canSend} aria-label="Send message">
           <BotanicalIcon name="send" size={18} weight="bold" />
         </button>
       </form>
       {layout === 'full' ? (
-        <p className={styles.privacy}>Kai proposes. You confirm every write.</p>
+        <p className={styles.privacy}>Lis proposes. You confirm every write.</p>
       ) : null}
     </div>
   );

@@ -9,7 +9,7 @@ import { baselineContext, recordingProvider } from './doubles';
  * Conversation history.
  *
  * Every turn used to be stateless — the router took a single `message` and the
- * thread was never replayed — which is the single largest reason Kai could not
+ * thread was never replayed — which is the single largest reason Lis could not
  * resolve "that one" or "no, tomorrow" and therefore read as a machine.
  *
  * These tests pin three things: history reaches the provider as dialogue, it is
@@ -79,7 +79,7 @@ describe('clampHistory', () => {
 
   /**
    * The same class of bug as the memories cap that used to 500 the request:
-   * a long conversation is normal and must never take Kai down.
+   * a long conversation is normal and must never take Lis down.
    */
   it('never lets a long conversation fail the request', async () => {
     const many = Array.from({ length: 40 }, (_, i) =>

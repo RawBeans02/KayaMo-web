@@ -5,9 +5,10 @@ import {
   Target,
   Leaf,
   Tree,
-  ChatCircleDots,
+  Sparkle,
   GearSix,
   ArrowRight,
+  ArrowUp,
   Plus,
   Barbell,
   ForkKnife,
@@ -18,16 +19,38 @@ import {
   Sun,
   Moon,
   Desktop,
+  UserCircle,
+  Play,
+  DotsThree,
+  Check,
+  CheckCircle,
+  Bell,
+  Waves,
+  Translate,
+  DownloadSimple,
+  ShieldCheck,
+  Trash,
+  LockSimple,
+  Plant,
 } from '@phosphor-icons/react';
 
+/**
+ * The rebrand's icon vocabulary. Phosphor regular by default; `weight="fill"`
+ * marks the selected nav item, matching the iOS tab-bar convention.
+ *
+ * `lis` is a sparkle, never a character — the assistant has no mascot.
+ */
 const icons = {
   home: House,
   goals: Target,
   life: Leaf,
-  grove: Tree,
-  mus: ChatCircleDots,
+  grove: Plant,
+  tree: Tree,
+  lis: Sparkle,
   settings: GearSix,
+  profile: UserCircle,
   arrow: ArrowRight,
+  send: ArrowUp,
   plus: Plus,
   workout: Barbell,
   food: ForkKnife,
@@ -38,14 +61,30 @@ const icons = {
   sun: Sun,
   moon: Moon,
   system: Desktop,
+  play: Play,
+  more: DotsThree,
+  check: Check,
+  checkCircle: CheckCircle,
+  bell: Bell,
+  motion: Waves,
+  language: Translate,
+  download: DownloadSimple,
+  privacy: ShieldCheck,
+  trash: Trash,
+  lock: LockSimple,
 };
+
+export type BotanicalIconName = keyof typeof icons;
+
 export function BotanicalIcon({
   name,
   size = 22,
+  weight = 'regular',
 }: {
-  name: keyof typeof icons;
+  name: BotanicalIconName;
   size?: number;
+  weight?: 'regular' | 'fill' | 'bold';
 }) {
   const Icon = icons[name];
-  return <Icon size={size} aria-hidden="true" />;
+  return <Icon size={size} weight={weight} aria-hidden="true" />;
 }

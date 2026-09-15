@@ -128,7 +128,7 @@ export function DeskHome({ userId }: { userId: string }) {
           </h1>
         </div>
         <p className={styles.headerAside}>
-          {today}. ⌘K logs food. Mus on the right can propose a todo or a goal — nothing
+          {today}. ⌘K logs food. Lis on the right can propose a todo or a goal. Nothing
           writes until you confirm.
         </p>
       </header>
@@ -184,7 +184,7 @@ export function DeskHome({ userId }: { userId: string }) {
                   ? openToday[0].title
                   : openTasks[0]
                     ? `Inbox: ${openTasks[0].title}`
-                    : 'Add one on Todos, or ask Mus.'}
+                    : 'Add one on Todos, or ask Lis.'}
               </p>
             </a>
             <a className={styles.dashCard} href="/gym">
@@ -206,7 +206,7 @@ export function DeskHome({ userId }: { userId: string }) {
             desktop for now.
           </p>
         </div>
-        <aside className={styles.dashMus} aria-label="Mus">
+        <aside className={styles.dashMus} aria-label="Lis">
           <MusThread
             userId={userId}
             logicalDate={today}

@@ -11,7 +11,7 @@ test.describe('desktop shell overflow', () => {
     'Local grid contract — not the hosted build.',
   );
 
-  test('main scrolls inside the shell; the Mus shortcut opens its dedicated destination', async ({
+  test('main scrolls inside the shell; the Lis shortcut opens its dedicated destination', async ({
     page,
   }) => {
     test.setTimeout(90_000);
@@ -80,7 +80,9 @@ test.describe('desktop shell overflow', () => {
     );
     await expect(page).toHaveURL(/\/mus$/);
     await expect(page.locator('[data-mus-desk]')).toBeVisible();
-    await expect(page.locator('[data-desk-shell]')).toHaveAttribute('data-rail', 'off');
+    // The shell no longer mounts its own assistant rail, so the Lis screen has
+    // exactly one — which is what the old data-rail="off" flag encoded.
+    await expect(page.locator('[data-mus-rail]')).toHaveCount(1);
   });
 });
 

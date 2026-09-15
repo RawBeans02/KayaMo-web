@@ -34,7 +34,7 @@ export const CONTEXT_LIMITS = {
    *
    * The two differ on purpose. A client with a long thread is normal, and
    * rejecting the request because turn nine exists would repeat exactly the bug
-   * the memories cap caused: an ordinary user state taking Kai down. So the
+   * the memories cap caused: an ordinary user state taking Lis down. So the
    * schema is generous enough to stop abuse and `clampHistory` decides what is
    * actually sent.
    */

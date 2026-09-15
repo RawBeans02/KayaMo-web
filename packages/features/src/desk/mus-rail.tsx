@@ -3,13 +3,7 @@
 import { defaultMusContextPermissions, type MusContextPermissionDomain, type MusContextPermissions, type MusEntry, type MusEntryModule } from '@kayamo/ai';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { loadMusContextPermissions, updateMusContextPermission } from '../mus/context-permissions';
-import {
-  MUS_FACE_RULES,
-  MUS_FACES,
-  musFaceFor,
-  musFaceSrc,
-  type MusFace,
-} from '../mus/mus-faces';
+import { BotanicalIcon } from '../botanical/icons';
 import { useMusBusy, useMusSelection } from '../mus/mus-selection';
 import { MusThread } from '../screens/mus-thread';
 import { useDeskClock } from './use-desk-clock';
@@ -22,7 +16,7 @@ const SCREEN_LABEL: Record<string, string> = {
   '/verify': 'Verify · PH core',
   '/gym': 'Gym',
   '/todos': 'Todos',
-  '/mus': 'Mus',
+  '/mus': 'Lis',
 };
 
 function moduleFromPath(pathname: string): MusEntryModule {
@@ -75,7 +69,7 @@ export function MusRail({
         const value = await loadMusContextPermissions();
         if (!cancelled) { setPermissions(value); setLoaded(true); setPermissionError(null); }
       } catch {
-        if (!cancelled) setPermissionError('Could not verify access. Retry before using Mus.');
+        if (!cancelled) setPermissionError('Could not verify access. Retry before using Lis.');
       }
     }
     void reload();
@@ -83,8 +77,6 @@ export function MusRail({
     return () => { cancelled = true; window.removeEventListener('kayamo:mus-permissions', reload); };
   }, [guest, userId]);
 
-  const face: MusFace = musFaceFor({ kind: busy ? 'thinking' : 'idle' });
-  const faceSrc = musFaceSrc(face);
   const screen = SCREEN_LABEL[pathname] ?? 'Desk';
   const selectedLabel = selection?.label?.trim() || '';
   const entry: MusEntry = useMemo(
@@ -118,13 +110,15 @@ export function MusRail({
 
   if (collapsed && variant === 'shell') {
     return (
-      <aside className={styles.railCollapsed} aria-label="Mus, collapsed" data-shell="rail" data-mus-rail="collapsed">
-        <button type="button" className={styles.expand} onClick={onToggle} aria-label="Expand Mus">
-          <img src="/mus-neutral.png" alt="" width={34} height={34} />
+      <aside className={styles.railCollapsed} aria-label="Lis, collapsed" data-shell="rail" data-mus-rail="collapsed">
+        <button type="button" className={styles.expand} onClick={onToggle} aria-label="Expand Lis">
+          <span className={styles.lisMark} aria-hidden="true">
+            <BotanicalIcon name="lis" size={17} weight="fill" />
+          </span>
         </button>
-        <span className={styles.spine}>Mus</span>
+        <span className={styles.spine}>Lis</span>
         <span />
-        <button type="button" className={styles.collapse} onClick={onToggle} aria-label="Expand Mus">
+        <button type="button" className={styles.collapse} onClick={onToggle} aria-label="Expand Lis">
           ‹
         </button>
       </aside>
@@ -136,22 +130,20 @@ export function MusRail({
   return (
     <aside
       className={variant === 'page' ? styles.page : styles.rail}
-      aria-label="Mus, the shared assistant"
+      aria-label="Lis, the shared assistant"
       data-shell="rail"
       data-mus-rail={variant}
     >
       <header className={variant === 'page' ? styles.pageHeader : styles.header}>
-        {faceSrc ? (
-          <img src={faceSrc} alt="" width={32} height={32} className={styles.avatar} />
-        ) : (
-          <span className={styles.slot}>mus-{face}</span>
-        )}
+        <span className={styles.lisMark} aria-hidden="true">
+          <BotanicalIcon name="lis" size={16} weight="fill" />
+        </span>
         <div className={styles.title}>
-          <p>Mus</p>
-          <p className={styles.mono}>state · {face}</p>
+          <p>Lis</p>
+          <p className={styles.mono}>{busy ? 'thinking' : 'proposes · you confirm'}</p>
         </div>
         {variant === 'shell' && onToggle ? (
-          <button type="button" className={styles.collapse} onClick={onToggle} aria-label="Collapse Mus">
+          <button type="button" className={styles.collapse} onClick={onToggle} aria-label="Collapse Lis">
             ›
           </button>
         ) : null}
@@ -167,12 +159,12 @@ export function MusRail({
           <div>
             <dt className={styles.mono}>this</dt>
             <dd style={{ color: selectedLabel ? 'var(--color-text)' : 'var(--color-muted-2)' }}>
-              {selectedLabel || 'nothing selected — say “this” after picking a row'}
+              {selectedLabel || 'nothing selected. Say “this” after picking a row'}
             </dd>
           </div>
         </dl>
         <p className={styles.note}>
-          {guest ? 'Online Mus is unavailable in the local demo. Sign in to use it.' : 'These controls govern stored context for Mus chat. Food and workouts share one access setting. Your messages and explicit tool requests are still sent when you submit them. Mus proposes changes; you confirm them.'}
+          {guest ? 'Online chat is unavailable in the demo. Sign in to use it.' : 'These controls govern stored context for Lis. Food and workouts share one access setting. Your messages and explicit tool requests are still sent when you submit them. Lis proposes changes; you confirm them.'}
         </p>
         <button
           type="button"
@@ -223,31 +215,11 @@ export function MusRail({
             entry={entry}
           />
         </div>
-      ) : (
-        <details className={styles.states}>
-          <summary>About Mus’s expressions</summary>
-          <div className={styles.stateGrid}>
-            {MUS_FACES.map((name) => {
-              const src = musFaceSrc(name);
-              return (
-                <article key={name} className={styles.stateCard} data-mus-face={name}>
-                  {src ? (
-                    <img src={src} alt="" width={48} height={48} />
-                  ) : (
-                    <span className={styles.stateSlot}>mus-{name}.png needed</span>
-                  )}
-                  <strong>{name}</strong>
-                  <p>{MUS_FACE_RULES[name]}</p>
-                </article>
-              );
-            })}
-          </div>
-        </details>
-      )}
+      ) : null}
 
       {variant === 'shell' ? (
         <p className={styles.foot} data-shell="rail-foot">
-          Same assistant as the Mus tab · proposes, never writes
+          Same assistant as the Lis tab · proposes, never writes
         </p>
       ) : null}
     </aside>

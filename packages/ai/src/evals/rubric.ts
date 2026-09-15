@@ -1,5 +1,5 @@
 /**
- * Scoring helpers for Kai's voice — the two cheap layers.
+ * Scoring helpers for Lis's voice — the two cheap layers.
  *
  * Layer 1 is a bank of robot tells: objective, free, and the things that
  * actually regress. Layer 2 is structural: sentence count, length, whether the

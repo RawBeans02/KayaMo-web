@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: 'Sign in to send a photo to Kai.' }, { status: 401 });
+    return NextResponse.json({ error: 'Sign in to send a photo to Lis.' }, { status: 401 });
   }
   const allowanceError = allowanceRejection(await reserveWebAiRequest(user.id));
   if (allowanceError) return allowanceError;

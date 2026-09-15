@@ -184,10 +184,10 @@ function fallbackOutput(
   const deniedDomain = deniedAction ? permissionDomainForAction(deniedAction) : null;
   const message =
     reason === 'budget'
-      ? `Kai's AI limit is resting for today. Your next grounded step is still: ${next.title}.`
+      ? `Lis's AI limit is resting for today. Your next grounded step is still: ${next.title}.`
       : deniedDomain
         ? `I would need access to ${PERMISSION_ASK[deniedDomain]} before I can do that. You can turn it on under Context access.`
-        : `I could not reach Kai right now. We can still take one clear step: ${next.title}.`;
+        : `I could not reach Lis right now. We can still take one clear step: ${next.title}.`;
   return {
     message,
     tone: request.mode === 'focus' || request.mode === 'workout' ? 'firm' : 'balanced',
@@ -253,7 +253,7 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, onTimeout:
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(
-      () => { onTimeout(); reject(new CocoRouterError('timeout', 'Kai provider timed out')); },
+      () => { onTimeout(); reject(new CocoRouterError('timeout', 'Lis provider timed out')); },
       timeoutMs,
     );
   });

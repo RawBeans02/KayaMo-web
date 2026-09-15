@@ -28,7 +28,7 @@ export async function GET(request: Request) {
   const { client, user } = await authenticatedClient(request);
   if (!user) {
     return NextResponse.json(
-      { error: 'Sign in to manage Kai permissions.' },
+      { error: 'Sign in to manage Lis permissions.' },
       { status: 401, headers: noStoreHeaders },
     );
   }
@@ -42,9 +42,9 @@ export async function GET(request: Request) {
     // Log the cause, never the rows. A bare `catch {}` here meant a missing
     // table looked identical to a transient failure, and the whole permission
     // system being absent took a manual REST probe to diagnose.
-    console.error(`Kai permission read failed (${describeCause(error)}).`);
+    console.error(`Lis permission read failed (${describeCause(error)}).`);
     return NextResponse.json(
-      { error: 'Kai permissions are unavailable.' },
+      { error: 'Lis permissions are unavailable.' },
       { status: 500, headers: noStoreHeaders },
     );
   }
@@ -54,7 +54,7 @@ export async function PUT(request: Request) {
   const { client, user } = await authenticatedClient(request);
   if (!user) {
     return NextResponse.json(
-      { error: 'Sign in to manage Kai permissions.' },
+      { error: 'Sign in to manage Lis permissions.' },
       { status: 401, headers: noStoreHeaders },
     );
   }
@@ -63,7 +63,7 @@ export async function PUT(request: Request) {
   );
   if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Invalid Kai permission.' },
+      { error: 'Invalid Lis permission.' },
       { status: 400, headers: noStoreHeaders },
     );
   }
@@ -80,7 +80,7 @@ export async function PUT(request: Request) {
     );
   } catch {
     return NextResponse.json(
-      { error: 'Kai permission could not be saved.' },
+      { error: 'Lis permission could not be saved.' },
       { status: 500, headers: noStoreHeaders },
     );
   }

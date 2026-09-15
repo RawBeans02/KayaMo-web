@@ -20,10 +20,10 @@ function configuredProvider(): CocoProvider {
     return createOpenAICocoProvider();
   } catch (error) {
     const detail = error instanceof Error ? error.name : 'unknown';
-    console.error(`Kai provider configuration failed (${detail}).`);
+    console.error(`Lis provider configuration failed (${detail}).`);
     return {
       generate: async () => {
-        throw new Error('Kai provider is unavailable');
+        throw new Error('Lis provider is unavailable');
       },
     };
   }
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: 'Sign in to talk with Kai.' }, { status: 401 });
+    return NextResponse.json({ error: 'Sign in to talk with Lis.' }, { status: 401 });
   }
 
   const result = await handleMusRespond({

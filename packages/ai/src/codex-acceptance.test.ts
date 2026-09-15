@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cocoActionNameSchema, cocoContextSnapshotSchema, musEntrySchema } from './contracts';
-import { renderKaiSystemPrompt } from './persona';
+import { renderLisSystemPrompt } from './persona';
 import { baselineContext } from './evals/doubles';
 
 /**
@@ -9,10 +9,10 @@ import { baselineContext } from './evals/doubles';
  * file was refactored while permitting any semantic change that kept those
  * substrings intact. It now asserts on what the model is actually sent.
  */
-describe('codex acceptance: prompt and shared Kai', () => {
+describe('codex acceptance: prompt and shared Lis', () => {
   it('keeps the non-negotiable clauses in the assembled prompt', () => {
-    const prompt = renderKaiSystemPrompt(baselineContext());
-    expect(prompt).toContain("You are Kai, KayaMo's supportive AI companion.");
+    const prompt = renderLisSystemPrompt(baselineContext());
+    expect(prompt).toContain("You are Lis, KayaMo's supportive AI companion.");
     expect(prompt).not.toMatch(/\b(?:Mus|Coco)\b/);
     expect(prompt).toContain('Propose at most three actions and set requiresConfirmation to true');
     expect(prompt).toContain('Do not claim an action was executed');

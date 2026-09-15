@@ -16,7 +16,7 @@ import { buildServerMusContext } from './server-context';
 import type { DbClient } from '@kayamo/db';
 
 /**
- * The Kai chat turn, lifted out of the Next route so the ordering below is a
+ * The Lis chat turn, lifted out of the Next route so the ordering below is a
  * testable sequence rather than something you have to read the route to know.
  *
  * The order is the whole point. It used to be:
@@ -24,7 +24,7 @@ import type { DbClient } from '@kayamo/db';
  *     auth → reserve allowance → parse → context → route
  *
  * which put two things behind a spend limit that have no business being there.
- * A malformed request burned one of five daily slots and came back "Invalid Kai
+ * A malformed request burned one of five daily slots and came back "Invalid Lis
  * request", and — far worse — `evaluateCocoSafety` lives inside `routeCoco`, so
  * a user in crisis on their sixth message of the day was told "Your AI request
  * allowance is used for today" instead of being shown a crisis line. The safety
@@ -81,7 +81,7 @@ export async function handleMusRespond(
 ): Promise<MusRespondResult> {
   const parsed = requestSchema.safeParse(deps.body);
   if (!parsed.success) {
-    return { status: 400, body: { error: 'Invalid Kai request.' } };
+    return { status: 400, body: { error: 'Invalid Lis request.' } };
   }
   const input = parsed.data;
 
@@ -141,7 +141,7 @@ export async function handleMusRespond(
   } catch (error) {
     // `routeCoco` parses the snapshot before its own try block, so a context
     // that violates the contract used to escape as an unhandled 500 and take
-    // Kai down for that user until the offending row changed. The clamp in
+    // Lis down for that user until the offending row changed. The clamp in
     // `buildAuthorizedCocoContext` should prevent it; this is the net.
     if (error instanceof z.ZodError) {
       return {

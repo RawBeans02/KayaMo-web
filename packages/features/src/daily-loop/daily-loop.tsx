@@ -145,7 +145,7 @@ export function DailyLoop({ userId, native }: { userId: string; native: NativePo
       return null;
     }
     if (current === preferences.morning_reminder_at.slice(0, 5)) {
-      return 'Kai’s morning check-in is ready here in KayaMo.';
+      return 'Lis’s morning check-in is ready here in KayaMo.';
     }
     if (current === preferences.evening_reminder_at.slice(0, 5)) {
       return 'Your evening reflection is ready here in KayaMo.';
@@ -193,7 +193,7 @@ export function DailyLoop({ userId, native }: { userId: string; native: NativePo
     });
     setPlan(row);
     setAction('');
-    setNotice('Today has one clear next action. Kai will not change it without you.');
+    setNotice('Today has one clear next action. Lis will not change it without you.');
   }
 
   async function startFocus() {
@@ -276,12 +276,12 @@ export function DailyLoop({ userId, native }: { userId: string; native: NativePo
           body: JSON.stringify(subscription.toJSON()),
         });
       }
-      await registration?.showNotification('Kai is ready', {
+      await registration?.showNotification('Lis is ready', {
         body: 'Notifications are on. Quiet hours will always be respected.',
         icon: '/icon.svg', tag: 'kayamo-permission-confirmed',
       });
     } else if (delivery.channel === 'in_app') {
-      setNudge('Browser notifications are unavailable. Kai’s reminders will stay inside KayaMo.');
+      setNudge('Browser notifications are unavailable. Lis’s reminders will stay inside KayaMo.');
     } else {
       setNudge('Quiet hours are active. No reminder was sent.');
     }
@@ -419,7 +419,7 @@ export function DailyLoop({ userId, native }: { userId: string; native: NativePo
           <textarea id="prayer" value={prayer} onChange={(event) => setPrayer(event.target.value)} rows={3} maxLength={5000}
             className="mt-2 w-full rounded-md border border-line bg-surface p-3 font-body text-body" />
           <Button className="mt-3" type="button" variant="secondary" size="md" onClick={() => void savePrayer()}>Save prayer</Button>
-          <p className="mt-3 font-data text-caption text-muted">Kai is a companion, not a theological authority. Generated text is never shown as a Bible quotation.</p>
+          <p className="mt-3 font-data text-caption text-muted">Lis is a companion, not a theological authority. Generated text is never shown as a Bible quotation.</p>
         </section>
       ) : null}
 

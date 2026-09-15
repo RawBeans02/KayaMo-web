@@ -43,7 +43,7 @@ async function withTelemetry<T>(params: {
       };
     }
     if (error instanceof AiConfigError) {
-      return { status: 503, body: { error: 'Kai planning is not configured.' } };
+      return { status: 503, body: { error: 'Lis planning is not configured.' } };
     }
     await insertAgentRunTelemetry(params.client, {
       id: crypto.randomUUID(),
@@ -61,7 +61,7 @@ async function withTelemetry<T>(params: {
       updatedAt: new Date().toISOString(),
       agent: params.trigger,
     }).catch(() => undefined);
-    return { status: 502, body: { error: 'Kai could not finish that plan.' } };
+    return { status: 502, body: { error: 'Lis could not finish that plan.' } };
   }
 }
 

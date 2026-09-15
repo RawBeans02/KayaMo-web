@@ -12,7 +12,7 @@ import {
 } from './rubric';
 
 /**
- * Tier 1b — every string a user can see that Kai did not generate.
+ * Tier 1b — every string a user can see that Lis did not generate.
  *
  * The deterministic replies are the ones nobody re-reads: fallbacks, budget
  * notices, local-only modes, the four crisis branches. They are also the ones
@@ -99,7 +99,7 @@ async function deterministicMessages(): Promise<{ label: string; text: string }[
 }
 
 describe('deterministic copy', () => {
-  it('calls the assistant Kai, and only Kai', async () => {
+  it('calls the assistant Lis, and only Lis', async () => {
     for (const { label, text } of await deterministicMessages()) {
       expect(text, label).toContain('');
       expect(text, `${label} used a former brand name`).not.toMatch(/\b(?:Mus|Coco)\b/);

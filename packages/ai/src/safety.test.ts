@@ -93,13 +93,13 @@ describe('evaluateCocoSafety', () => {
     });
   });
 
-  describe('the assistant is named Kai everywhere', () => {
+  describe('the assistant is named Lis everywhere', () => {
     it.each([
       ['i want to kill myself'],
       ['i cant breathe'],
     ] as const)('never says Mus or Coco for %s', (message) => {
       const result = evaluateCocoSafety(message, PH);
-      expect(result.message).toContain('Kai');
+      expect(result.message).toContain('Lis');
       expect(result.message).not.toMatch(/\b(?:Mus|Coco)\b/);
     });
   });

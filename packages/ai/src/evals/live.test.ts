@@ -4,9 +4,9 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
 import { InMemoryCocoBudgetStore } from '../budget';
 import { createCocoRouter, type CocoRouterResult } from '../coco-router';
-import { KAI_EVAL_CASES } from './cases';
+import { LIS_EVAL_CASES } from './cases';
 import { baselineContext } from './doubles';
-import { isKaiEvalConfigured, kaiEvalSkipReason } from './env';
+import { isLisEvalConfigured, lisEvalSkipReason } from './env';
 import { checkVoiceBounds, findRobotTells, measureVoice } from './rubric';
 import { readBaseline, writeBaseline } from './baselines';
 
@@ -20,20 +20,20 @@ import { readBaseline, writeBaseline } from './baselines';
  * new vitest project, no CI change, and no repository secret until someone
  * decides to add one.
  *
- * Set KAI_EVAL_RECORD=1 to write the replies to `baselines/` instead of
+ * Set LIS_EVAL_RECORD=1 to write the replies to `baselines/` instead of
  * asserting against them. Recording is a deliberate, reviewable act — there is
  * no snapshot `-u` here that can silently bless a worse reply.
  */
 
-const describeLive = isKaiEvalConfigured() ? describe : describe.skip;
-const RECORDING = Boolean(process.env.KAI_EVAL_RECORD?.trim());
+const describeLive = isLisEvalConfigured() ? describe : describe.skip;
+const RECORDING = Boolean(process.env.LIS_EVAL_RECORD?.trim());
 
-if (!isKaiEvalConfigured()) {
+if (!isLisEvalConfigured()) {
   // eslint-disable-next-line no-console -- the only useful thing a skip can say.
-  console.info(`[kai-eval] live tier skipped: ${kaiEvalSkipReason()}`);
+  console.info(`[lis-eval] live tier skipped: ${lisEvalSkipReason()}`);
 }
 
-describeLive('Kai live voice baseline', () => {
+describeLive('Lis live voice baseline', () => {
   // Built on first use, not at collection: `describe.skip` still runs this
   // callback, and constructing the provider without a key throws.
   let cached: ((request: Parameters<ReturnType<typeof createCocoRouter>>[0]) => Promise<CocoRouterResult>) | null =
@@ -51,7 +51,7 @@ describeLive('Kai live voice baseline', () => {
   }
 
   /** Cases the deterministic tier cannot answer: these need real generation. */
-  const liveCases = KAI_EVAL_CASES.filter((c) => c.expect.source !== 'safety');
+  const liveCases = LIS_EVAL_CASES.filter((c) => c.expect.source !== 'safety');
 
   it.each(liveCases.map((c) => [c.id, c] as const))(
     '%s',
@@ -59,7 +59,7 @@ describeLive('Kai live voice baseline', () => {
       const context = baselineContext(testCase.context);
       const result = await route({
         requestId: id,
-        userId: 'kai-eval',
+        userId: 'lis-eval',
         mode: testCase.mode,
         message: testCase.message,
         ...(testCase.history ? { history: testCase.history } : {}),
@@ -113,7 +113,7 @@ describeLive('Kai live voice baseline', () => {
    * maxOutputTokens is 700 on the Responses API, which counts reasoning tokens.
    * If a low-effort reasoning pass plus a long message is truncating the object,
    * an intermittent quality problem has been surfacing as "I could not reach
-   * Kai" — an outage message for a config bug.
+   * Lis" — an outage message for a config bug.
    */
   it('does not fall back on the longest realistic prompt', async () => {
     const heavy = baselineContext({
@@ -138,7 +138,7 @@ describeLive('Kai live voice baseline', () => {
 
     const result = await route({
       requestId: 'truncation-probe',
-      userId: 'kai-eval',
+      userId: 'lis-eval',
       mode: 'chat',
       message: 'given everything on my plate, what should i actually do first today',
       context: heavy,
@@ -160,7 +160,7 @@ describeLive('Kai live voice baseline', () => {
     }
     expect(
       missing,
-      `Run KAI_EVAL_RECORD=1 pnpm --filter @kayamo/ai eval:live to record: ${missing.join(', ')}`,
+      `Run LIS_EVAL_RECORD=1 pnpm --filter @kayamo/ai eval:live to record: ${missing.join(', ')}`,
     ).toEqual([]);
   });
 });

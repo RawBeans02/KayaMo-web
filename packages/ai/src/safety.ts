@@ -92,7 +92,7 @@ export function evaluateCocoSafety(
       allowModel: false,
       showEmergencyPrompt: true,
       message: withSupport(
-        "I'm really glad you told me. Please contact local emergency services or a crisis line now, and if you can, stay with someone you trust. Kai cannot provide emergency care.",
+        "I'm really glad you told me. Please contact local emergency services or a crisis line now, and if you can, stay with someone you trust. Lis cannot provide emergency care.",
       ),
     };
   }
@@ -103,7 +103,7 @@ export function evaluateCocoSafety(
       allowModel: false,
       showEmergencyPrompt: true,
       message: withSupport(
-        'This may need urgent medical help. Contact local emergency services now. Kai cannot diagnose or provide emergency care.',
+        'This may need urgent medical help. Contact local emergency services now. Lis cannot diagnose or provide emergency care.',
       ),
     };
   }

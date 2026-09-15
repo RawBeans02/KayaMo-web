@@ -17,6 +17,13 @@ import { useRecords } from './use-records';
 import { TaskEditor } from './task-editor';
 import styles from './botanical.module.css';
 
+/** The last seven logical days ending on `date`, inclusive. */
+function windowStart(date: string) {
+  const start = new Date(date + 'T12:00:00Z');
+  start.setUTCDate(start.getUTCDate() - 6);
+  return start.toISOString().slice(0, 10);
+}
+
 export function BotanicalHome({ userId }: { userId: string }) {
   const { clock, today } = useDeskClock(userId);
   const [selected, setSelected] = useState<string | null>(null);
@@ -74,6 +81,37 @@ export function BotanicalHome({ userId }: { userId: string }) {
     data?.workouts.filter(
       (workout) => workout.logical_date === date && workout.status === 'completed',
     ).length ?? 0;
+
+  /* ── Next up: the one step the day is asking for right now ───────── */
+  const leadBlock = blocks[0] ?? null;
+  const leadTask = leadBlock
+    ? leadBlock.source_table === 'tasks'
+      ? (tasks.find((task) => task.id === leadBlock.source_id) ?? null)
+      : null
+    : (unscheduled[0] ?? null);
+  const nextTitle = leadBlock ? leadBlock.title : (unscheduled[0]?.title ?? null);
+  const nextTime = leadBlock ? minutesToLabel(leadBlock.start_min) : null;
+  const nextMeta = leadBlock
+    ? leadBlock.end_min - leadBlock.start_min + ' min · Scheduled'
+    : 'No time set · Your daily plan';
+  const nextIsWorkout = leadBlock?.source_table === 'workouts';
+  const doneCount = tasks.filter((task) => task.completed_at).length;
+
+  /* ── Glance figures, read straight from confirmed records ────────── */
+  const kcal = Math.round(entries.reduce((sum, row) => sum + (Number(row.kcal) || 0), 0));
+  const mealsLogged = new Set(entries.map((row) => row.meal_slot)).size;
+  const from = windowStart(date);
+  const activeDays = new Set(
+    (data?.workouts ?? [])
+      .filter(
+        (workout) =>
+          workout.status === 'completed' &&
+          workout.logical_date >= from &&
+          workout.logical_date <= date,
+      )
+      .map((workout) => workout.logical_date),
+  ).size;
+
   async function capture(event: FormEvent) {
     event.preventDefault();
     if (!draft.trim() || mutation.current) return;
@@ -91,7 +129,7 @@ export function BotanicalHome({ userId }: { userId: string }) {
       await refresh();
       input.current?.focus();
     } catch {
-      setNotice('Could not save this task. Your draft is still here—please retry.');
+      setNotice('Could not save this task. Your draft is still here, please retry.');
     } finally {
       mutation.current = false;
       setBusy(false);
@@ -124,9 +162,8 @@ export function BotanicalHome({ userId }: { userId: string }) {
   }
   return (
     <section className={styles.page} aria-labelledby="home-title">
-      <header className={styles.header + ' ' + styles.homeHeader}>
+      <header className={styles.header}>
         <div>
-          <h1 id="home-title">Home</h1>
           <p className={styles.homeDate}>
             {new Date(date + 'T12:00:00Z').toLocaleDateString('en-PH', {
               weekday: 'long',
@@ -136,14 +173,18 @@ export function BotanicalHome({ userId }: { userId: string }) {
               timeZone: 'UTC',
             })}
           </p>
-          <p>{clock.timeZone.split('/').pop()?.replaceAll('_', ' ')}</p>
+          <h1 id="home-title" className="kgTitle">
+            Home
+          </h1>
         </div>
-        <a className={styles.ask} href="/mus">
-          <img src="/botanical/mus-neutral.webp" width="52" height="52" alt="" />
-          Ask Mus
+        <a className={`${styles.ask} kgGhost`} href="/mus">
+          <span className={styles.askMark} aria-hidden="true">
+            <BotanicalIcon name="lis" size={18} weight="fill" />
+          </span>
+          Ask Lis
         </a>
       </header>
-      <div className={styles.week} role="group" aria-label="Choose a day">
+      <div className={`${styles.week} kgSurface`} role="group" aria-label="Choose a day">
         {weekDates(date).map((day) => (
           <button
             key={day}
@@ -202,13 +243,19 @@ export function BotanicalHome({ userId }: { userId: string }) {
       )}
       <div className={styles.grid}>
         <section
-          className={styles.panel + ' ' + styles.plan}
+          className={`${styles.panel} kgSurface`}
           aria-labelledby="plan-title"
         >
-          <h2 id="plan-title">{date === today ? "Today's plan" : 'Your plan'}</h2>
-          <p className={styles.muted}>A few meaningful steps for a better day.</p>
+          <div className={styles.panelHead}>
+            <h2 id="plan-title">{date === today ? "Today's plan" : 'Your plan'}</h2>
+            {tasks.length > 0 && (
+              <p className={styles.muted}>
+                {doneCount} of {tasks.length} done
+              </p>
+            )}
+          </div>
           {!data && !error ? (
-            <p role="status" className={styles.empty}>
+            <p role="status" className={styles.muted}>
               Loading your plan…
             </p>
           ) : blocks.length + unscheduled.length === 0 ? (
@@ -223,42 +270,91 @@ export function BotanicalHome({ userId }: { userId: string }) {
                   ? 'Your scheduled tasks are complete. You can leave it here, or add something new.'
                   : 'Capture something that matters to you. Set a time in the full planner when you need one.'}
               </p>
-              <a href="/todos" className={styles.secondary}>
+              <a href="/todos" className="kgGhost">
                 Open planner
                 <BotanicalIcon name="arrow" size={18} />
               </a>
             </div>
           ) : (
-            <ol className={styles.timeline}>
-              {blocks.map((block, index) => (
-                <li key={block.id}>
-                  <span className={styles.time}>{minutesToLabel(block.start_min)}</span>
-                  <div className={styles.activity}>
-                    <span className={styles.activityIcon}>
-                      <BotanicalIcon
-                        name={block.source_table === 'workouts' ? 'workout' : 'book'}
-                      />
-                    </span>
-                    <div className={styles.activityText}>
-                      <strong>{block.title}</strong>
-                      <small>{block.end_min - block.start_min} min · Scheduled</small>
+            <>
+              {nextTitle && (
+                <div className={`${styles.nextUp} kgSheen`}>
+                  <div className={styles.nextUpBody}>
+                    <div className={styles.nextUpText}>
+                      <p className="kgEyebrow">
+                        {nextTime ? 'Next up · ' + nextTime : 'Next up'}
+                      </p>
+                      <p className={styles.nextUpTitle}>{nextTitle}</p>
+                      <p className={styles.nextUpMeta}>{nextMeta}</p>
                     </div>
+                    <div className={styles.nextUpActions}>
+                      {nextIsWorkout ? (
+                        <a
+                          className="kgAccent"
+                          href="/gym"
+                          aria-label={'Start next step: ' + nextTitle}
+                        >
+                          Start
+                          <BotanicalIcon name="play" size={14} weight="fill" />
+                        </a>
+                      ) : leadTask ? (
+                        <button
+                          className="kgAccent"
+                          type="button"
+                          aria-label={'Start next step: ' + nextTitle}
+                          onClick={(event) => {
+                            event.currentTarget.focus();
+                            setEditing(leadTask);
+                          }}
+                        >
+                          Start
+                          <BotanicalIcon name="play" size={14} weight="fill" />
+                        </button>
+                      ) : (
+                        <a
+                          className="kgAccent"
+                          href="/todos"
+                          aria-label={'Start next step: ' + nextTitle}
+                        >
+                          Start
+                          <BotanicalIcon name="play" size={14} weight="fill" />
+                        </a>
+                      )}
+                      <a
+                        className={`${styles.overflow} kgGhost`}
+                        href="/todos"
+                        aria-label="Open the full planner"
+                      >
+                        <BotanicalIcon name="more" size={20} />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <ol className={styles.planList}>
+                {blocks.map((block) => (
+                  <li key={block.id} className={styles.planRow}>
+                    <div className={styles.planText}>
+                      <p className={styles.planTitle}>{block.title}</p>
+                      <p className={styles.planMeta}>
+                        {block.end_min - block.start_min} min · Scheduled
+                      </p>
+                    </div>
+                    <span className={styles.planTime}>
+                      {minutesToLabel(block.start_min)}
+                    </span>
                     {block.source_table === 'tasks' &&
                     tasks.some((task) => task.id === block.source_id) ? (
                       <button
-                        className={index === 0 ? styles.primary : styles.iconButton}
-                        onClick={() =>
+                        className={styles.iconButton}
+                        onClick={(event) => {
+                          event.currentTarget.focus();
                           setEditing(
                             tasks.find((task) => task.id === block.source_id) ?? null,
-                          )
-                        }
-                        aria-label={
-                          index === 0
-                            ? 'Start next step: ' + block.title
-                            : 'Open ' + block.title
-                        }
+                          );
+                        }}
+                        aria-label={'Edit ' + block.title}
                       >
-                        {index === 0 ? 'Start next step' : null}
                         <BotanicalIcon name="next" size={18} />
                       </button>
                     ) : (
@@ -267,37 +363,35 @@ export function BotanicalHome({ userId }: { userId: string }) {
                         className={styles.iconButton}
                         aria-label={'Open ' + block.title}
                       >
-                        <BotanicalIcon name="next" />
+                        <BotanicalIcon name="next" size={18} />
                       </a>
                     )}
-                  </div>
-                </li>
-              ))}
-              {unscheduled.map((task, index) => (
-                <li key={task.id}>
-                  <span className={styles.time}>{index === 0 ? 'Anytime' : ''}</span>
-                  <div className={styles.activity}>
-                    <span className={styles.activityIcon}>
-                      <BotanicalIcon name="tasks" />
-                    </span>
-                    <div className={styles.activityText}>
-                      <strong>{task.title}</strong>
-                      <small>No time set · Your daily plan</small>
+                  </li>
+                ))}
+                {unscheduled.map((task) => (
+                  <li key={task.id} className={styles.planRow}>
+                    <div className={styles.planText}>
+                      <p className={styles.planTitle}>{task.title}</p>
+                      <p className={styles.planMeta}>No time set · Your daily plan</p>
                     </div>
+                    <span className={styles.planTime}>Anytime</span>
                     <button
-                      onClick={() => setEditing(task)}
+                      onClick={(event) => {
+                        event.currentTarget.focus();
+                        setEditing(task);
+                      }}
                       className={styles.iconButton}
                       aria-label={'Edit ' + task.title}
                     >
-                      <BotanicalIcon name="next" />
+                      <BotanicalIcon name="next" size={18} />
                     </button>
-                  </div>
-                </li>
-              ))}
-            </ol>
+                  </li>
+                ))}
+              </ol>
+            </>
           )}
           <form className={styles.capture} onSubmit={capture}>
-            <BotanicalIcon name="plus" />
+            <BotanicalIcon name="plus" size={20} />
             <input
               ref={input}
               aria-label="Capture a thought or task"
@@ -313,36 +407,43 @@ export function BotanicalHome({ userId }: { userId: string }) {
               aria-label="Add task"
               disabled={!draft.trim() || busy}
             >
-              <BotanicalIcon name="arrow" />
+              <BotanicalIcon name="send" size={20} />
             </button>
           </form>
-          <div className={styles.actions}>
-            <a href="/todos" className={styles.muted}>
-              Open full planner
-            </a>
-          </div>
         </section>
         <div className={styles.side}>
-          <section className={styles.panel} aria-labelledby="priorities-title">
-            <h2 id="priorities-title">Priorities</h2>
-            <p className={styles.muted}>
-              Focus on what matters {date === today ? 'today' : 'that day'}.
-            </p>
+          <section
+            className={`${styles.panel} kgSurface`}
+            aria-labelledby="priorities-title"
+          >
+            <div className={styles.panelHead}>
+              <h2 id="priorities-title">Priorities</h2>
+              <p className={styles.muted}>{date === today ? 'Today' : 'That day'}</p>
+            </div>
             <ul className={styles.priorities}>
               {tasks.slice(0, 5).map((task) => (
                 <li key={task.id} className={task.completed_at ? styles.done : undefined}>
-                  <input
-                    type="checkbox"
-                    aria-label={'Complete ' + task.title}
-                    checked={
-                      pendingCompletion?.id === task.id
-                        ? pendingCompletion.completed
-                        : Boolean(task.completed_at)
-                    }
-                    disabled={busy}
-                    onChange={() => void complete(task)}
-                  />
-                  <button className={styles.taskTitle} onClick={() => setEditing(task)}>
+                  <label className={styles.checkBox}>
+                    <input
+                      className={styles.check}
+                      type="checkbox"
+                      aria-label={'Complete ' + task.title}
+                      checked={
+                        pendingCompletion?.id === task.id
+                          ? pendingCompletion.completed
+                          : Boolean(task.completed_at)
+                      }
+                      disabled={busy}
+                      onChange={() => void complete(task)}
+                    />
+                  </label>
+                  <button
+                    className={styles.taskTitle}
+                    onClick={(event) => {
+                      event.currentTarget.focus();
+                      setEditing(task);
+                    }}
+                  >
                     {task.title}
                   </button>
                 </li>
@@ -353,57 +454,73 @@ export function BotanicalHome({ userId }: { userId: string }) {
             )}
             {tasks.length > 5 && (
               <a href="/todos" className={styles.tool}>
-                View all {tasks.length} tasks
-                <BotanicalIcon name="next" />
+                <span>
+                  <strong>View all {tasks.length} tasks</strong>
+                </span>
+                <BotanicalIcon name="next" size={18} />
               </a>
             )}
-            <button
-              className={styles.secondary}
-              style={{ width: '100%', marginTop: 12 }}
-              onClick={() => input.current?.focus()}
-            >
-              <BotanicalIcon name="plus" size={18} />
-              Add a task…
-            </button>
-          </section>
-          <section className={styles.panel} aria-labelledby="tools-title">
-            <h2 id="tools-title">Other tools</h2>
-            <p className={styles.muted}>Quick access, no extra noise.</p>
-            <a href="/calories" className={styles.tool}>
-              <BotanicalIcon name="food" />
-              <span>
-                Food diary
-                <small className={styles.muted} style={{ display: 'block' }}>
-                  {entries.length
-                    ? entries.length + ' items logged'
-                    : 'Nothing logged yet'}
-                </small>
-              </span>
-              <BotanicalIcon name="next" size={18} />
-            </a>
-            <a href="/gym" className={styles.tool}>
-              <BotanicalIcon name="workout" />
-              <span>
-                {activeWorkout ? 'Continue workout' : 'Workout log'}
-                <small className={styles.muted} style={{ display: 'block' }}>
-                  {activeWorkout
-                    ? 'Session in progress'
-                    : completedWorkouts
-                      ? completedWorkouts + ' completed'
-                      : 'Ready when you are'}
-                </small>
-              </span>
-              <BotanicalIcon name="next" size={18} />
-            </a>
-            <div className={styles.encouragement}>
-              <img src="/botanical/seed-mark.webp" width="40" height="40" alt="" />
-              <p>
-                Small steps.
-                <br />
-                Room to grow at your pace.
-              </p>
+            <div className={styles.actions}>
+              <button
+                className="kgGhost"
+                style={{ width: '100%' }}
+                onClick={() => input.current?.focus()}
+              >
+                <BotanicalIcon name="plus" size={18} />
+                Add a task…
+              </button>
             </div>
           </section>
+          <a className={`${styles.glance} kgSurface`} href="/calories">
+            <span className={styles.glanceHead}>
+              <BotanicalIcon name="food" size={20} />
+              Energy
+              <span className={styles.caret}>
+                <BotanicalIcon name="next" size={18} />
+              </span>
+            </span>
+            <span className={`${styles.glanceNum} kgNum`}>
+              {kcal.toLocaleString('en-PH')}
+              <span className={styles.glanceUnit}>kcal logged</span>
+            </span>
+            <span className={styles.bar} aria-hidden="true">
+              <span
+                className={styles.barFill}
+                style={{ width: Math.min(100, (mealsLogged / 4) * 100) + '%' }}
+              />
+            </span>
+            <span className={styles.glanceMeta}>
+              {entries.length
+                ? mealsLogged + ' of 4 meals logged'
+                : 'Nothing logged yet'}
+            </span>
+          </a>
+          <a className={`${styles.glance} kgSurface`} href="/gym">
+            <span className={styles.glanceHead}>
+              <BotanicalIcon name="workout" size={20} />
+              Movement
+              <span className={styles.caret}>
+                <BotanicalIcon name="next" size={18} />
+              </span>
+            </span>
+            <span className={`${styles.glanceNum} kgNum`}>
+              {activeDays}
+              <span className={styles.glanceUnit}>of the last 7 days</span>
+            </span>
+            <span className={styles.bar} aria-hidden="true">
+              <span
+                className={styles.barFill}
+                style={{ width: (activeDays / 7) * 100 + '%' }}
+              />
+            </span>
+            <span className={styles.glanceMeta}>
+              {activeWorkout
+                ? 'Session in progress'
+                : completedWorkouts
+                  ? completedWorkouts + ' completed today'
+                  : 'Ready when you are'}
+            </span>
+          </a>
         </div>
       </div>
       {editing && (

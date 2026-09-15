@@ -93,7 +93,7 @@ export type ArchiveGoal = {
 
 export type PersonalArchive = {
   product: 'KayaMo';
-  companion: 'Kai';
+  companion: 'Lis';
   exportedAt: string;
   futureSelf: string | null;
   compass: { mattersNow: string | null; protect: string | null } | null;
@@ -112,7 +112,7 @@ export function buildPersonalArchive(input: {
 }): PersonalArchive {
   return {
     product: 'KayaMo',
-    companion: 'Kai',
+    companion: 'Lis',
     exportedAt: input.exportedAt,
     futureSelf: input.futureSelf,
     compass: input.compass,
@@ -136,7 +136,7 @@ export function renderArchiveMarkdown(archive: PersonalArchive): string {
   return [
     '# KayaMo · Personal Life Archive',
     '',
-    `Companion: Kai`,
+    `Companion: Lis`,
     `Exported: ${archive.exportedAt}`,
     `Grove: ${archive.grove.totalPoints} points · ${archive.grove.stageKey}`,
     '',

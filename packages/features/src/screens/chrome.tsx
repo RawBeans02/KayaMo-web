@@ -7,7 +7,7 @@ import styles from './kayamo-app.module.css';
 
 export function CompanionButton({ onClick }: { onClick: () => void }) {
   return (
-    <button className={styles.companionButton} type="button" onClick={onClick} aria-label="Talk to Kai">
+    <button className={styles.companionButton} type="button" onClick={onClick} aria-label="Talk to Lis">
       <img src="/coco-seed.webp" alt="" width={44} height={44} />
     </button>
   );
