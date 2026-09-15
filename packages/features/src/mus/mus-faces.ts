@@ -12,7 +12,7 @@ export type MusFaceTrigger =
 
 export const MUS_FACE_RULES: Record<MusFace, string> = {
   neutral: 'Default. Waiting, or anything that is not a chosen milestone or a wellbeing concern.',
-  thinking: 'Mus is working on a reply.',
+  thinking: 'Kai is working on a reply.',
   happy: 'A milestone the user chose. Never for compliance.',
   concerned:
     'Concern for the user, not disappointment at the user. Never a missed log, an over-target day, or a gap.',

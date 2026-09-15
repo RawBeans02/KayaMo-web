@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CONTEXT_LIMITS } from './context-limits';
 import { musContextPermissionsSchema } from './context-permissions';
 
 export const cocoModeSchema = z.enum([
@@ -500,7 +501,7 @@ export const cocoContextSnapshotSchema = z
           })
           .strict(),
       )
-      .max(50),
+      .max(CONTEXT_LIMITS.tasks),
     routines: z
       .array(
         z
@@ -511,7 +512,7 @@ export const cocoContextSnapshotSchema = z
           })
           .strict(),
       )
-      .max(30),
+      .max(CONTEXT_LIMITS.routines),
     health: z
       .object({
         mealsLogged: z.number().int().nonnegative(),
@@ -532,7 +533,7 @@ export const cocoContextSnapshotSchema = z
               })
               .strict(),
           )
-          .max(10)
+          .max(CONTEXT_LIMITS.confirmedWorkouts)
           .optional(),
         nutritionGuidance: z
           .object({
@@ -561,7 +562,7 @@ export const cocoContextSnapshotSchema = z
           })
           .strict(),
       )
-      .max(20),
+      .max(CONTEXT_LIMITS.goals),
     companion: z
       .object({
         totalPoints: z.number().int().nonnegative(),
@@ -605,7 +606,7 @@ export const cocoContextSnapshotSchema = z
           })
           .strict(),
       )
-      .max(20),
+      .max(CONTEXT_LIMITS.memories),
     permissions: musContextPermissionsSchema,
   })
   .strict();
@@ -626,6 +627,26 @@ export const cocoResponseSchema = cocoModelOutputSchema
   .strict();
 export type CocoResponse = z.infer<typeof cocoResponseSchema>;
 
+/**
+ * A prior turn in this conversation.
+ *
+ * History is a UX INPUT, NEVER AN AUTHORITY. The client sends it, so a client
+ * could forge an assistant turn — but it could forge one through the sync path
+ * too, so reading it server-side would buy nothing. Enforcement stays where it
+ * already lives: the system prompt outranks history, `generateObject`
+ * constrains the shape, and `authorizeOutput`, the nutrition guard and
+ * `evaluateCocoSafety` are all deterministic and run regardless.
+ *
+ * Safety deliberately still evaluates only the newest user message.
+ */
+export const cocoHistoryTurnSchema = z
+  .object({
+    role: z.enum(['user', 'assistant']),
+    content: z.string().trim().min(1).max(CONTEXT_LIMITS.historyTurnCharsAccepted),
+  })
+  .strict();
+export type CocoHistoryTurn = z.infer<typeof cocoHistoryTurnSchema>;
+
 export const cocoRequestSchema = z
   .object({
     requestId: z.string().min(1).max(100),
@@ -634,6 +655,7 @@ export const cocoRequestSchema = z
     message: z.string().max(5000),
     context: cocoContextSnapshotSchema,
     allowedActions: z.array(cocoActionNameSchema),
+    history: z.array(cocoHistoryTurnSchema).max(CONTEXT_LIMITS.historyTurnsAccepted).optional(),
   })
   .strict();
 

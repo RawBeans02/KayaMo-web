@@ -1,4 +1,5 @@
 import 'server-only';
+import { renderKaiSystemPrompt } from './persona';
 import { cocoModelOutputSchema } from './contracts';
 import type {
   CocoProvider,
@@ -47,14 +48,24 @@ export function createOpenAICocoProvider(
       const result = await generateObject({
         model: openai.responses(model),
         schema: cocoModelOutputSchema,
-        system: `You are Mus, KayaMo's supportive AI companion.
-
-Use only the supplied confirmed and authorized context. A domain set to false in context.permissions is unavailable; never infer its stored data from another field. Never invent completed activity, Physical Self data, Scripture, or user memories. Faith content is opt-in: use Scripture only when permissions.faith is true and only quote the exact supplied scripture.text with a scripture citation. Never present generated, paraphrased, or remembered text as a Bible quotation, and never claim theological authority. Nutrition calculation is outside your authority: you may explain only the exact code-derived nutritionGuidance values supplied in context and must cite their target or expenditure record. Propose at most three actions and set requiresConfirmation to true for every proposal. Do not claim an action was executed. Use a gentle tone for reflection, a firm but respectful tone during explicit focus or workout sessions, and a balanced tone otherwise. Never shame missed days.`,
-        prompt: JSON.stringify({
-          mode: request.mode,
-          message: request.message,
-          context: request.context,
-        }),
+        system: renderKaiSystemPrompt(request.context),
+        // Prior turns go in as real messages, not folded into the JSON
+        // envelope: the model treats a `user`/`assistant` exchange as dialogue
+        // and a JSON array as data, and we want the former.
+        messages: [
+          ...request.history.map((turn) => ({
+            role: turn.role,
+            content: turn.content,
+          })),
+          {
+            role: 'user' as const,
+            content: JSON.stringify({
+              mode: request.mode,
+              message: request.message,
+              context: request.context,
+            }),
+          },
+        ],
         maxOutputTokens: request.maxOutputTokens,
         maxRetries: 0,
         abortSignal: request.abortSignal,

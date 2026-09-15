@@ -129,6 +129,99 @@ describe('governed Coco router', () => {
     ).toBe('fallback');
   });
 
+  /**
+   * The 2026-09-15 QA found a permission refusal reported as a network outage
+   * ("I couldn't reach Mus's AI right now"), which sent users looking for a
+   * problem that did not exist while the remedy was one toggle away.
+   */
+  describe('a refusal explains itself', () => {
+    const PROPOSALS = {
+      log_food: {
+        proposalId: 'p-1',
+        action: 'log_food',
+        summary: 'Log adobo',
+        requiresConfirmation: true,
+        arguments: { inputHint: 'adobo' },
+      },
+      start_workout: {
+        proposalId: 'p-1',
+        action: 'start_workout',
+        summary: 'Start push day',
+        requiresConfirmation: true,
+        arguments: { notes: null },
+      },
+      create_goal: {
+        proposalId: 'p-1',
+        action: 'create_goal',
+        summary: 'Create a writing goal',
+        requiresConfirmation: true,
+        arguments: {
+          title: 'Write daily',
+          description: null,
+          kind: 'goal',
+          targetDate: null,
+        },
+      },
+      remember_this: {
+        proposalId: 'p-1',
+        action: 'remember_this',
+        summary: 'Remember the morning preference',
+        requiresConfirmation: true,
+        arguments: { kind: 'preference', content: 'Prefers mornings' },
+      },
+    } as const;
+
+    async function refuse(action: keyof typeof PROPOSALS) {
+      const route = createCocoRouter({
+        provider: provider({
+          message: 'Proposing that now.',
+          tone: 'balanced',
+          proposals: [PROPOSALS[action]],
+          citations: [],
+        }),
+        budget: new InMemoryCocoBudgetStore(),
+        config: { maxRetries: 0 },
+      });
+      return route(request({ allowedActions: ['create_task'] }));
+    }
+
+    it.each([
+      ['log_food', 'food, nutrition and workouts'],
+      ['start_workout', 'food, nutrition and workouts'],
+      ['create_goal', 'goals and planning'],
+      ['remember_this', 'saved memories'],
+    ] as const)('names the permission %s needed', async (action, phrase) => {
+      const result = await refuse(action);
+      expect(result.source).toBe('fallback');
+      expect(result.response.message).toContain(phrase);
+      expect(result.response.message).toContain('Context access');
+      expect(result.response.message).not.toMatch(/could not reach|couldn't reach/i);
+    });
+
+    it('still blames nothing in particular when the provider genuinely fails', async () => {
+      const route = createCocoRouter({
+        provider: { generate: async () => { throw new Error('network down'); } },
+        budget: new InMemoryCocoBudgetStore(),
+        config: { maxRetries: 0 },
+      });
+      const result = await route(request());
+      expect(result.response.message).toContain('could not reach Kai');
+    });
+
+    it('never calls the assistant Mus or Coco', async () => {
+      const denied = await refuse('log_food');
+      const failed = createCocoRouter({
+        provider: { generate: async () => { throw new Error('network down'); } },
+        budget: new InMemoryCocoBudgetStore(),
+        config: { maxRetries: 0 },
+      });
+      const outage = await failed(request());
+      for (const message of [denied.response.message, outage.response.message]) {
+        expect(message).not.toMatch(/\b(?:Mus|Coco)\b/);
+      }
+    });
+  });
+
   it('rejects citations to records outside the permitted snapshot', async () => {
     const invented = structuredClone(validOutput);
     invented.citations[0]!.recordId = 'task-from-another-user';

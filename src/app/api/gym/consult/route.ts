@@ -1,4 +1,4 @@
-import { reserveWebAiRequest } from '@/lib/server-ai-allowance';
+import { allowanceRejection, reserveWebAiRequest } from '@/lib/server-ai-allowance';
 import { NextResponse } from 'next/server';
 import { AiBudgetError, AiConfigError, completeObject } from '@kayamo/ai';
 import { getAgentSpendUsd, insertAgentRunTelemetry } from '@kayamo/db';
@@ -27,7 +27,7 @@ function gymModelId(): string {
   return process.env.MODEL_GYM?.trim() || process.env.MUS_ORCHESTRATOR_MODEL?.trim() || process.env.MODEL_SMALL?.trim() || 'gpt-5.6-luna';
 }
 
-const GYM_CONSULT_SYSTEM = `You assemble one gym session for a Philippine commercial gym.
+const GYM_CONSULT_SYSTEM = `You assemble one gym session using the supplied exercise catalog and the user's stated equipment. Do not assume a country or gym type.
 
 Pick 4 to 6 lifts. slug is the only identifier you may output — copy it exactly from the catalog.
 Never invent a slug, name, or machine. Prefer compounds first, then isolation. Cover one split (push, pull, legs, or a short full-body if the note asks).
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Sign in to consult a session.' }, { status: 401 });
   }
 
-  const allowanceError = await reserveWebAiRequest(user.id);
+  const allowanceError = allowanceRejection(await reserveWebAiRequest(user.id));
   if (allowanceError) return allowanceError;
 
   const parsed = requestSchema.safeParse(await request.json().catch(() => null));

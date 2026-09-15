@@ -43,7 +43,7 @@ async function withTelemetry<T>(params: {
       };
     }
     if (error instanceof AiConfigError) {
-      return { status: 503, body: { error: 'Mus planning is not configured.' } };
+      return { status: 503, body: { error: 'Kai planning is not configured.' } };
     }
     await insertAgentRunTelemetry(params.client, {
       id: crypto.randomUUID(),
@@ -61,7 +61,7 @@ async function withTelemetry<T>(params: {
       updatedAt: new Date().toISOString(),
       agent: params.trigger,
     }).catch(() => undefined);
-    return { status: 502, body: { error: 'Mus could not finish that plan.' } };
+    return { status: 502, body: { error: 'Kai could not finish that plan.' } };
   }
 }
 
@@ -115,7 +115,7 @@ const WHAT_NOW_SYSTEM = `You rank 1 to 5 things the user can do in the current o
 Only use supplied tasks. Prefer unblocked work that fits availableMinutes.
 Match location and energy when those fields are present. No nutrition numbers. No shame.`;
 
-const CAPTURE_SYSTEM = `Parse a brain dump into capture items. Philippine English and Taglish are normal.
+const CAPTURE_SYSTEM = `Parse a brain dump into capture items. Understand everyday and mixed-language messages without assuming the user's country or culture.
 
 Kinds: TASK, EVENT, ROUTINE, HABIT, INBOX, PROJECT.
 Do not invent dates or clock times. If the user did not name a calendar date, leave scheduledFor and horizon null.

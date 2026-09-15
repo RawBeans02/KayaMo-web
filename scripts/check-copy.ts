@@ -13,6 +13,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 const SCAN_ROOTS = [
   'src',
   'packages/ai/src',
+  'packages/features/src',
   'packages/ui/src',
   'packages/core/src',
 ];

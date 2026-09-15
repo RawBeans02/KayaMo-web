@@ -22,7 +22,7 @@ export class AiBudgetError extends Error {
 }
 
 export class AiTimeoutError extends Error {
-  constructor(message = 'Mus took too long to reply. Try again.') {
+  constructor(message = 'Kai took too long to reply. Try again.') {
     super(message);
     this.name = 'AiTimeoutError';
   }

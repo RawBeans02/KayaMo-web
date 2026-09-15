@@ -1,5 +1,8 @@
 import type { CocoActionName, CocoMode, MusEntryModule } from './contracts';
-import type { MusContextPermissions } from './context-permissions';
+import type {
+  MusContextPermissionDomain,
+  MusContextPermissions,
+} from './context-permissions';
 
 const TASK_ACTIONS: CocoActionName[] = [
   'create_task',
@@ -70,4 +73,20 @@ export function allowedMusActions(input: {
 
   if (permissions.memory) addAll(allowed, MEMORY_ACTIONS);
   return [...allowed];
+}
+
+/**
+ * Inverse of the tables above: which permission domain a denied action needed.
+ * Used to explain a refusal in the user's terms instead of blaming the network.
+ * Task and focus actions are ungated, so they return null.
+ */
+export function permissionDomainForAction(
+  action: CocoActionName,
+): MusContextPermissionDomain | null {
+  if (FOOD_ACTIONS.includes(action) || GYM_ACTIONS.includes(action)) {
+    return 'physical_self';
+  }
+  if (GOAL_ACTIONS.includes(action)) return 'goals_planning';
+  if (MEMORY_ACTIONS.includes(action)) return 'memory';
+  return null;
 }

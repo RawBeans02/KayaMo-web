@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 /**
  * Per-section counts for the sidebar rail.
  *
- * The design puts a count on Foods, Verify and Todos only — Today, Gym and Mus
+ * The design puts a count on Foods, Verify and Todos only — Today, Gym and Kai
  * carry an empty string, so their track collapses. Anything that cannot be read
  * yet stays null and renders nothing rather than a misleading zero.
  */

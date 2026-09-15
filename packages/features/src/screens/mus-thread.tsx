@@ -5,13 +5,13 @@ import {
   Clock,
   Image as ImageIcon,
   MagnifyingGlass,
-  PaperPlaneTilt,
   PencilSimple,
   Plus,
   PushPin,
   X,
 } from '@phosphor-icons/react';
-import type { CocoActionProposal, MusEntry } from '@kayamo/ai';
+import { CONTEXT_LIMITS } from '@kayamo/ai';
+import type { CocoActionName, CocoActionProposal, MusEntry } from '@kayamo/ai';
 import { createBrowserSupabase } from '@kayamo/db';
 import {
   appendLocalCocoMessage,
@@ -25,15 +25,21 @@ import {
   type LocalCocoConversation,
   type LocalCocoMessage,
 } from '@kayamo/offline';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  HIGH_RISK_CONFIRM_WORD,
+  proposalApplyEnabled,
+  proposalRiskLabel,
+  type ProposalRisk,
+} from '@kayamo/ui';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { apiFetch } from '../api/api-origin';
+import { BotanicalIcon } from '../botanical/icons';
 import { hydrateFoodHistory } from '../food/hydrate-food-history';
 import { applyMusProposal } from '../mus/apply-proposal';
 import {
   readActiveMusConversationId,
   writeActiveMusConversationId,
 } from '../mus/conversation-session';
-import { MusProposalCard } from '../mus/mus-proposal-card';
 import { musReplyFromApi } from '../mus/mus-reply';
 import { setMusBusy } from '../mus/mus-selection';
 import {
@@ -41,16 +47,45 @@ import {
   permModuleForAction,
   readMusPermLevels,
 } from '../mus/perm-levels';
+import { previewMusProposal } from '../mus/proposal-preview';
 import { applyCaptureItems } from '../todo/apply-plan';
 import {
   imageObservationSchema,
   type CaptureProposal,
 } from '../todo/planner-schema';
-import styles from './kayamo-app.module.css';
+import styles from '../desk/mus-desk.module.css';
 
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_IMAGE_BYTES = 2_000_000;
-const MUS_SEED_SRC = '/mus-neutral.png';
+
+/** Kai never writes on its own; nothing here is saved until you confirm. */
+const CONFIRM_FOOT = 'Nothing is saved until you confirm.';
+
+const HIGH_RISK: ReadonlySet<CocoActionName> = new Set(['create_goal']);
+const LOW_RISK: ReadonlySet<CocoActionName> = new Set(['remember_this']);
+
+function riskFor(action: CocoActionName): ProposalRisk {
+  if (HIGH_RISK.has(action)) return 'high';
+  if (LOW_RISK.has(action)) return 'low';
+  return 'medium';
+}
+
+function touchesFor(action: CocoActionName): string[] {
+  if (action === 'log_food') return ['Today'];
+  if (
+    action === 'start_workout' ||
+    action === 'add_session_exercise' ||
+    action === 'replace_session_exercise' ||
+    action === 'skip_session_exercise' ||
+    action === 'edit_planned_set' ||
+    action === 'schedule_workout'
+  ) {
+    return ['Gym'];
+  }
+  if (action === 'create_goal') return ['Goals', 'Todos'];
+  if (action === 'remember_this') return ['Kai'];
+  return ['Todos'];
+}
 
 function foodHintProposals(
   hints: { name: string; portionHint: string | null }[],
@@ -74,6 +109,142 @@ async function fileToBase64(file: File): Promise<string> {
   return btoa(binary);
 }
 
+/**
+ * One proposal, in the rebrand's card language: eyebrow, title, key/value
+ * lines, then confirm or decline. The high-risk confirm word stays — a goal
+ * target still needs the word typed before Save is enabled.
+ */
+function KaiProposalCard({
+  proposal,
+  userId,
+  busy,
+  primary,
+  onConfirm,
+  onDismiss,
+}: {
+  proposal: CocoActionProposal;
+  userId: string;
+  busy: boolean;
+  primary: boolean;
+  onConfirm: () => void;
+  onDismiss: () => void;
+}) {
+  const inputId = useId();
+  const [diff, setDiff] = useState<{ before: string; after: string } | undefined>();
+  const [typed, setTyped] = useState('');
+
+  useEffect(() => {
+    void previewMusProposal(userId, proposal).then((next) => {
+      if (!next.before && !next.after) {
+        setDiff(undefined);
+        return;
+      }
+      setDiff({ before: next.before ?? '—', after: next.after ?? '—' });
+    });
+  }, [proposal, userId]);
+
+  const risk = riskFor(proposal.action);
+  const canApply = proposalApplyEnabled(risk, typed) && !busy;
+  const saveLabel = proposal.action === 'log_food' ? 'Save to diary' : 'Save to plan';
+
+  return (
+    <article
+      className={`${styles.card} kgRise`}
+      data-risk={risk}
+      aria-label={`${proposalRiskLabel(risk)}: ${proposal.summary}`}
+    >
+      <p className="kgEyebrow">Proposal</p>
+      <h3 className={styles.cardTitle}>{proposal.summary}</h3>
+      <ul className={styles.lines}>
+        <li className={styles.line}>
+          <span>Action</span>
+          <span className={styles.lineValue}>{proposal.action.replaceAll('_', ' ')}</span>
+        </li>
+        <li className={styles.line}>
+          <span>Touches</span>
+          <span className={styles.lineValue}>{touchesFor(proposal.action).join(' · ')}</span>
+        </li>
+        {diff ? (
+          <>
+            <li className={styles.line}>
+              <span>Now</span>
+              <span className={styles.lineValue}>{diff.before}</span>
+            </li>
+            <li className={styles.line}>
+              <span>After</span>
+              <span className={styles.lineValue}>{diff.after}</span>
+            </li>
+          </>
+        ) : null}
+        <li className={styles.line}>
+          <span>Risk</span>
+          <span className={styles.lineValue}>{proposalRiskLabel(risk)}</span>
+        </li>
+        <li className={styles.line}>
+          <span>Source</span>
+          <span className={styles.lineValue}>Kai · this conversation</span>
+        </li>
+      </ul>
+      {risk === 'high' ? (
+        <div className={styles.confirm}>
+          <label className={styles.confirmLabel} htmlFor={inputId}>
+            This one changes a target, so it needs the word. Type{' '}
+            <span className={styles.confirmWord}>{HIGH_RISK_CONFIRM_WORD}</span>.
+          </label>
+          <input
+            id={inputId}
+            className={`${styles.confirmInput} kgField`}
+            value={typed}
+            onChange={(event) => setTyped(event.target.value)}
+            placeholder={HIGH_RISK_CONFIRM_WORD}
+            autoComplete="off"
+            spellCheck={false}
+          />
+        </div>
+      ) : null}
+      <div className={styles.cardActions}>
+        <button
+          type="button"
+          className={`${styles.apply} ${primary ? 'kgAccent' : 'kgGhost'}`}
+          disabled={!canApply}
+          onClick={onConfirm}
+        >
+          {saveLabel}
+        </button>
+        <button type="button" className="kgGhost" disabled={busy} onClick={onDismiss}>
+          Not now
+        </button>
+      </div>
+      <p className={styles.cardFoot}>{CONFIRM_FOOT}</p>
+    </article>
+  );
+}
+
+/** Mirrors CONTEXT_LIMITS on the server; the server clamps again regardless. */
+const HISTORY_TURNS = CONTEXT_LIMITS.historyTurns;
+const HISTORY_TURN_CHARS = CONTEXT_LIMITS.historyTurnChars;
+
+/**
+ * The last few turns, oldest first, as the API expects them. Trimmed here as
+ * well as on the server so a long thread does not put a megabyte on the wire
+ * for the server to throw away.
+ */
+function recentHistory(
+  messages: readonly { role: string; content: string }[],
+): { role: 'user' | 'assistant'; content: string }[] {
+  return messages
+    .filter(
+      (message): message is { role: 'user' | 'assistant'; content: string } =>
+        (message.role === 'user' || message.role === 'assistant') &&
+        message.content.trim().length > 0,
+    )
+    .slice(-HISTORY_TURNS)
+    .map((message) => ({
+      role: message.role,
+      content: message.content.trim().slice(0, HISTORY_TURN_CHARS),
+    }));
+}
+
 export function MusThread({
   userId,
   logicalDate,
@@ -82,6 +253,7 @@ export function MusThread({
   chrome,
   entry,
   unavailableMessage,
+  headingLevel = 2,
 }: {
   userId: string;
   logicalDate: string;
@@ -90,7 +262,9 @@ export function MusThread({
   chrome?: 'full' | 'rail' | 'page';
   entry?: MusEntry;
   unavailableMessage?: string;
+  headingLevel?: 1 | 2;
 }) {
+  const Heading = headingLevel === 1 ? 'h1' : 'h2';
   const layout = chrome ?? (compact ? 'rail' : 'full');
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<LocalCocoConversation[]>([]);
@@ -113,7 +287,7 @@ export function MusThread({
     const el = composerRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight, 136)}px`;
+    el.style.height = `${Math.min(el.scrollHeight, 108)}px`;
   }, [text]);
 
   async function reloadConversations() {
@@ -145,7 +319,7 @@ export function MusThread({
           writeActiveMusConversationId(userId, pick.id);
           return;
         }
-        const created = await createLocalCocoConversation({ userId, title: `Mus · ${logicalDate}` });
+        const created = await createLocalCocoConversation({ userId, title: `Kai · ${logicalDate}` });
         if (cancelled) return;
         setConversationId(created.id);
         setConversations([created]);
@@ -160,7 +334,7 @@ export function MusThread({
   }, [logicalDate, userId]);
 
   async function startNewConversation() {
-    const created = await createLocalCocoConversation({ userId, title: `Mus · ${logicalDate}` });
+    const created = await createLocalCocoConversation({ userId, title: `Kai · ${logicalDate}` });
     setMessages([]);
     setConversations((current) => [created, ...current]);
     selectConversation(created.id);
@@ -269,10 +443,14 @@ export function MusThread({
       }
 
       let reply = recommended
-        ? `I’m here. Your confirmed next action is “${recommended}.” We can make it smaller, but I won’t change it without you.`
-        : 'I’m here. We can name one small next action together, and nothing will be saved until you confirm it.';
+        ? `Your confirmed next action is “${recommended}.” We can make it smaller. I won’t change it without you.`
+        : 'We can name one small next action together. Nothing is saved until you confirm it.';
       let source: LocalCocoMessage['response_source'] = 'fallback';
       let nextProposals: CocoActionProposal[] = [];
+      // A capability or reachability message is status, not something Kai
+      // says. It renders once, as the muted note under the thread — never
+      // also as a bubble, which is what used to happen.
+      let statusOnly = false;
       try {
         const response = await apiFetch('/api/mus/respond', {
           method: 'POST',
@@ -282,6 +460,12 @@ export function MusThread({
             mode: 'chat',
             message: outbound,
             logicalDate,
+            // The tail of the thread this device already holds. Without it every
+            // turn was stateless and Kai could not resolve "that one" or "no,
+            // tomorrow" — the single largest reason it read as a machine. The
+            // server clamps count and length; this is the UX input, not an
+            // authority, and safety still reads only the newest message.
+            history: recentHistory(messages),
             ...(entry ? { entry } : {}),
           }),
         });
@@ -293,25 +477,31 @@ export function MusThread({
             nextProposals = parsed.proposals;
           }
         } else {
-          reply = response.status === 429
-            ? 'Your AI request allowance is used for today. Manual tracking still works.'
-            : 'Online Mus is temporarily unavailable. Please try again later; your message is saved locally.';
-          setProposalNote(reply);
+          statusOnly = true;
+          setProposalNote(
+            response.status === 429
+              ? 'Your AI request allowance is used for today. Manual tracking still works.'
+              : 'Kai is temporarily unavailable. Please try again later; your message is saved locally.',
+          );
         }
       } catch {
-        reply = userId.startsWith('guest-')
-          ? 'Online Mus is not available in the local demo. Sign in to use it.'
-          : 'Could not reach online Mus. Your message is saved locally; please try again when connected.';
-        setProposalNote(reply);
+        statusOnly = true;
+        setProposalNote(
+          userId.startsWith('guest-')
+            ? 'Kai is not available in the local demo. Sign in to use it.'
+            : 'Could not reach Kai. Your message is saved locally; please try again when connected.',
+        );
       }
-      const mus = await appendLocalCocoMessage({
-        userId,
-        conversationId,
-        role: 'assistant',
-        content: reply,
-        responseSource: source,
-      });
-      setMessages((current) => [...current, mus]);
+      if (!statusOnly) {
+        const kai = await appendLocalCocoMessage({
+          userId,
+          conversationId,
+          role: 'assistant',
+          content: reply,
+          responseSource: source,
+        });
+        setMessages((current) => [...current, kai]);
+      }
       setProposals([...hintProposals, ...nextProposals]);
     } finally {
       setBusy(false);
@@ -326,7 +516,7 @@ export function MusThread({
   async function confirmProposal(proposal: CocoActionProposal) {
     const module = permModuleForAction(proposal.action);
     if (module && !musMayWrite(readMusPermLevels(userId)[module])) {
-      setProposalNote('Mus cannot write this while that module is at read or never.');
+      setProposalNote('Kai cannot write this while that module is at read or never.');
       return;
     }
     setBusy(true);
@@ -362,7 +552,7 @@ export function MusThread({
       return module ? !musMayWrite(readMusPermLevels(userId)[module]) : false;
     });
     if (blocked) {
-      setProposalNote('Mus cannot write this while that module is at read or never.');
+      setProposalNote('Kai cannot write this while that module is at read or never.');
       return;
     }
     setBusy(true);
@@ -429,7 +619,15 @@ export function MusThread({
       .catch(() => undefined);
   }, [conversationId, userId]);
 
-  const canSend = Boolean(text.trim() || pendingImage) && !busy && Boolean(conversationId);
+  // A composer that accepts keystrokes it intends to throw away is the worst of
+  // both: in the demo, typing and pressing Enter cleared the field and gave no
+  // sign anything had happened.
+  const composerUnavailable = Boolean(unavailableMessage);
+  const canSend =
+    Boolean(text.trim() || pendingImage) &&
+    !busy &&
+    !composerUnavailable &&
+    Boolean(conversationId);
   const filteredConversations = conversations.filter((row) => {
     const q = historyQuery.trim().toLowerCase();
     if (!q) return true;
@@ -440,14 +638,19 @@ export function MusThread({
   const showHeader = layout !== 'rail';
   const showHistoryOverlay = layout !== 'page' && layout !== 'rail' && historyOpen;
   const showPageList = layout === 'page';
+  const singleProposal = proposals.length === 1;
 
   const conversationList = (
-    <div className={showPageList ? styles.musPageList : styles.historyPanel} role={showPageList ? 'navigation' : 'dialog'} aria-label="Conversations">
-      <div className={showPageList ? styles.musPageListHead : styles.historyToolbar}>
-        {showPageList ? <p className={styles.musPageEyebrow}>Conversations</p> : null}
+    <div
+      className={showPageList ? styles.list : `${styles.panel} kgSurface`}
+      role={showPageList ? 'navigation' : 'dialog'}
+      aria-label="Conversations"
+    >
+      <div className={styles.listHead}>
+        {showPageList ? <p className={`${styles.listEyebrow} kgEyebrow`}>Conversations</p> : null}
         {showPageList ? null : (
-          <label className={styles.historySearch}>
-            <MagnifyingGlass size={15} />
+          <label className={styles.search}>
+            <MagnifyingGlass size={16} aria-hidden="true" />
             <input
               value={historyQuery}
               onChange={(event) => setHistoryQuery(event.target.value)}
@@ -456,24 +659,24 @@ export function MusThread({
             />
           </label>
         )}
-        <button type="button" className={showPageList ? styles.musPageNew : styles.historyGhost} onClick={() => void startNewConversation()}>
-          {showPageList ? 'New conversation' : <><Plus size={15} /> New</>}
+        <button type="button" className={styles.listNew} onClick={() => void startNewConversation()}>
+          {showPageList ? 'New conversation' : <><Plus size={15} aria-hidden="true" /> New</>}
         </button>
         {showPageList ? null : (
-          <button type="button" className={styles.historyGhost} onClick={() => setHistoryOpen(false)} aria-label="Close history">
-            <X size={15} />
+          <button type="button" className={styles.rowGhost} onClick={() => setHistoryOpen(false)} aria-label="Close history">
+            <X size={15} aria-hidden="true" />
           </button>
         )}
       </div>
-      <ul className={styles.historyList}>
+      <ul className={styles.rows}>
         {filteredConversations.length === 0 ? (
-          <li className={styles.mutedNote}>No conversations yet.</li>
+          <li className={styles.empty}>No conversations yet.</li>
         ) : (
           filteredConversations.map((row) => (
-            <li key={row.id} className={styles.historyRow} data-active={row.id === conversationId ? 'true' : undefined}>
+            <li key={row.id} className={styles.row} data-active={row.id === conversationId ? 'true' : undefined}>
               {renamingId === row.id ? (
                 <input
-                  className={styles.historyRename}
+                  className={styles.rename}
                   value={renameDraft}
                   onChange={(event) => setRenameDraft(event.target.value)}
                   onKeyDown={(event) => {
@@ -486,25 +689,25 @@ export function MusThread({
                   aria-label="Conversation title"
                 />
               ) : (
-                <button type="button" className={styles.historyOpen} onClick={() => selectConversation(row.id)}>
+                <button type="button" className={styles.open} onClick={() => selectConversation(row.id)}>
                   <strong>{row.title?.trim() || 'Untitled'}</strong>
                   <small>{row.updated_at.slice(0, 10)}</small>
                 </button>
               )}
               <button
                 type="button"
-                className={styles.historyGhost}
+                className={styles.rowGhost}
                 aria-label="Rename conversation"
                 onClick={() => {
                   setRenamingId(row.id);
                   setRenameDraft(row.title ?? '');
                 }}
               >
-                <PencilSimple size={14} />
+                <PencilSimple size={15} aria-hidden="true" />
               </button>
               <button
                 type="button"
-                className={styles.historyGhost}
+                className={styles.rowGhost}
                 onClick={() => void archiveConversation(row.id)}
               >
                 Archive
@@ -518,23 +721,28 @@ export function MusThread({
 
   return (
     <div
-      className={`${styles.screen} ${styles.musScreen} ${layout === 'rail' ? styles.musRailThread : ''} ${layout === 'page' ? styles.musPage : ''} ${compact || layout === 'rail' ? styles.musCompact : ''}`}
+      className={styles.thread}
       aria-labelledby="mus-chat-title"
       data-mus-thread={layout}
     >
       {showPageList ? conversationList : null}
       {showHeader ? (
-        <header className={styles.chatHeader}>
-          <img src={MUS_SEED_SRC} alt="" width={48} height={48} />
-          <div>
-            <h2 id="mus-chat-title">Mus</h2>
-            <p>{unavailableMessage ?? 'tone · balanced · adapts to the moment'}</p>
+        <header className={styles.header}>
+          {/* Kai is a sparkle in an accent circle — never a character. */}
+          <span className={styles.mark} aria-hidden="true">
+            <BotanicalIcon name="kai" size={18} weight="fill" />
+          </span>
+          <div className={styles.identity}>
+            <Heading id="mus-chat-title" className={styles.name}>
+              Kai
+            </Heading>
+            <p className={styles.tagline}>{unavailableMessage ?? 'Proposes · you confirm'}</p>
           </div>
           {layout === 'page' ? (
-            <span className={styles.musPageMeta}>state · {busy ? 'thinking' : 'neutral'}</span>
+            <span className={styles.headState}>{busy ? 'Thinking…' : 'Ready'}</span>
           ) : (
             <button
-              className={styles.chatHistoryButton}
+              className={styles.iconButton}
               type="button"
               aria-label="Conversation history"
               aria-expanded={historyOpen}
@@ -543,101 +751,127 @@ export function MusThread({
                 void reloadConversations();
               }}
             >
-              <Clock size={19} />
+              <Clock size={19} aria-hidden="true" />
             </button>
           )}
         </header>
       ) : (
         <h2 id="mus-chat-title" className={styles.srOnly}>
-          Mus
+          Kai
         </h2>
       )}
       {showHistoryOverlay ? conversationList : null}
-      <div className={styles.chatMessages} aria-live="polite">
+      <div className={`${styles.log} kgSurface`} aria-live="polite">
         {messages.length === 0 ? (
-          <div className={styles.cocoBubble}>I’m with you. We can talk, reflect, or choose one realistic next step.</div>
+          <div className={styles.bubbleKai}>
+            Tell me what you ate or did. I’ll propose an entry and wait for your yes.
+          </div>
         ) : null}
         {messages.map((message) =>
           message.role === 'user' ? (
-            <div key={message.id} className={styles.userBubble}>
+            <div key={message.id} className={`${styles.bubbleUser} kgRise`}>
               {message.content}
             </div>
           ) : (
-            <div key={message.id} className={styles.cocoMessageGroup}>
-              <div className={styles.cocoBubble}>{message.content}</div>
+            <div key={message.id} className={`${styles.group} kgRise`}>
+              <div className={styles.bubbleKai}>{message.content}</div>
               {recommended ? (
-                <p className={styles.chatSource}>
-                  <Clock size={13} /> From your confirmed plan for today.
+                <p className={styles.source}>
+                  <Clock size={13} aria-hidden="true" /> From your confirmed plan for today.
                 </p>
               ) : null}
               <button
-                className={styles.rememberButton}
+                className={styles.remember}
                 type="button"
                 onClick={() => void rememberMessage(message)}
                 disabled={rememberedMessageId === message.id}
               >
-                {rememberedMessageId === message.id ? <Check size={15} /> : <PushPin size={15} />}{' '}
+                {rememberedMessageId === message.id ? (
+                  <Check size={15} aria-hidden="true" />
+                ) : (
+                  <PushPin size={15} aria-hidden="true" />
+                )}{' '}
                 {rememberedMessageId === message.id ? 'Remembered' : 'Remember this'}
               </button>
             </div>
           ),
         )}
         {capture ? (
-          <div className={styles.cocoMessageGroup}>
-            <div className={styles.workingToward}>
-              <span>
-                <b>brain dump</b>
-                <strong>{capture.items.map((item) => item.title).join(', ')}</strong>
-                <small>Nothing is saved until you confirm.</small>
-                {capture.questions.length > 0 ? <small>{capture.questions.join(' ')}</small> : null}
-              </span>
-              <button type="button" className={styles.primaryButton} disabled={busy} onClick={() => void confirmCapture()}>
-                Confirm
+          <article className={`${styles.card} kgRise`} aria-label="Brain dump proposal">
+            <p className="kgEyebrow">Brain dump</p>
+            <h3 className={styles.cardTitle}>{capture.items.map((item) => item.title).join(', ')}</h3>
+            <ul className={styles.lines}>
+              <li className={styles.line}>
+                <span>Items</span>
+                <span className={styles.lineValue}>{capture.items.length}</span>
+              </li>
+              {capture.questions.length > 0 ? (
+                <li className={styles.line}>
+                  <span>Open questions</span>
+                  <span className={styles.lineValue}>{capture.questions.join(' ')}</span>
+                </li>
+              ) : null}
+              <li className={styles.line}>
+                <span>Source</span>
+                <span className={styles.lineValue}>Kai · this conversation</span>
+              </li>
+            </ul>
+            <div className={styles.cardActions}>
+              <button
+                type="button"
+                className={`${styles.apply} kgAccent`}
+                disabled={busy}
+                onClick={() => void confirmCapture()}
+              >
+                Save to plan
               </button>
-              <button type="button" className={styles.secondaryButton} disabled={busy} onClick={() => setCapture(null)}>
-                Dismiss
+              <button type="button" className="kgGhost" disabled={busy} onClick={() => setCapture(null)}>
+                Not now
               </button>
             </div>
-          </div>
+            <p className={styles.cardFoot}>{CONFIRM_FOOT}</p>
+          </article>
         ) : null}
-        {proposals.length > 0 ? (
-          <div className={styles.cocoMessageGroup}>
-            {proposals.length > 1 ? (
-              <div className={styles.workingToward}>
-                <span>
-                  <b>several changes</b>
-                  <strong>Mus wants to make {proposals.length} changes.</strong>
-                  <small>Review the diffs below. Nothing is saved until you confirm.</small>
-                </span>
-                <button
-                  type="button"
-                  className={styles.primaryButton}
-                  disabled={busy}
-                  onClick={() => void confirmAllProposals()}
-                >
-                  Confirm all
-                </button>
-              </div>
-            ) : null}
-            {proposals.map((proposal) => (
-              <MusProposalCard
-                key={proposal.proposalId}
-                proposal={proposal}
-                userId={userId}
-                onConfirm={() => void confirmProposal(proposal)}
-                onDismiss={() =>
-                  setProposals((current) => current.filter((row) => row.proposalId !== proposal.proposalId))
-                }
-              />
-            ))}
-          </div>
+        {proposals.length > 1 ? (
+          <article className={`${styles.card} kgRise`} aria-label="Several proposals">
+            <p className="kgEyebrow">Several changes</p>
+            <h3 className={styles.cardTitle}>Kai proposes {proposals.length} changes.</h3>
+            <div className={styles.cardActions}>
+              <button
+                type="button"
+                className={`${styles.apply} kgAccent`}
+                disabled={busy}
+                onClick={() => void confirmAllProposals()}
+              >
+                Save all
+              </button>
+            </div>
+            <p className={styles.cardFoot}>Review each one below. {CONFIRM_FOOT}</p>
+          </article>
         ) : null}
-        {proposalNote ? <p className={styles.mutedNote}>{proposalNote}</p> : null}
-        {busy ? <div className={styles.cocoBubble}>Thinking carefully…</div> : null}
+        {proposals.map((proposal) => (
+          <KaiProposalCard
+            key={proposal.proposalId}
+            proposal={proposal}
+            userId={userId}
+            busy={busy}
+            primary={singleProposal}
+            onConfirm={() => void confirmProposal(proposal)}
+            onDismiss={() =>
+              setProposals((current) => current.filter((row) => row.proposalId !== proposal.proposalId))
+            }
+          />
+        ))}
+        {proposalNote ? (
+          <p className={styles.note} role="status">
+            {proposalNote}
+          </p>
+        ) : null}
+        {busy ? <div className={`${styles.bubbleKai} kgRise`}>Thinking…</div> : null}
       </div>
-      <form className={styles.chatComposer} onSubmit={send}>
+      <form className={`${styles.composer} kgPanelStrong`} onSubmit={send}>
         {pendingImage ? (
-          <p className={styles.chatPendingImage}>
+          <p className={styles.pending}>
             {pendingImage.name}
             <button type="button" onClick={() => setPendingImage(null)}>
               Remove
@@ -645,12 +879,13 @@ export function MusThread({
           </p>
         ) : null}
         <label className={styles.srOnly} htmlFor={composerId}>
-          Message Mus. Enter sends. Shift+Enter starts a new line.
+          Message Kai. Enter sends. Shift+Enter starts a new line.
         </label>
         <input
           ref={fileRef}
           className={styles.srOnly}
           type="file"
+          aria-label="Choose a photo for Kai"
           accept="image/jpeg,image/png,image/webp"
           onChange={(event) => {
             const file = event.target.files?.[0] ?? null;
@@ -666,31 +901,37 @@ export function MusThread({
         />
         <button
           type="button"
-          className={styles.chatAttach}
-          disabled={busy}
+          className={styles.attach}
+          disabled={busy || composerUnavailable}
           aria-label="Attach a photo"
           onClick={() => fileRef.current?.click()}
         >
-          <ImageIcon size={20} />
+          <ImageIcon size={20} aria-hidden="true" />
         </button>
         <textarea
           id={composerId}
           ref={composerRef}
-          rows={2}
+          rows={1}
           value={text}
+          disabled={composerUnavailable}
+          // The server rejects anything longer; stop it at the field rather
+          // than spending one of five daily requests on a 400.
+          maxLength={5000}
           onChange={(event) => setText(event.target.value)}
           onKeyDown={(event) => {
             if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return;
             event.preventDefault();
             event.currentTarget.form?.requestSubmit();
           }}
-          placeholder="Say what’s actually going on…"
+          placeholder={unavailableMessage ?? 'Tell Kai what you ate or did…'}
         />
-        <button type="submit" className={styles.chatSend} disabled={!canSend} aria-label="Send message">
-          <PaperPlaneTilt size={21} weight="fill" />
+        <button type="submit" className={styles.send} disabled={!canSend} aria-label="Send message">
+          <BotanicalIcon name="send" size={18} weight="bold" />
         </button>
       </form>
-      {layout === 'full' ? <p className={styles.chatPrivacy}>Mus proposes. You confirm every write.</p> : null}
+      {layout === 'full' ? (
+        <p className={styles.privacy}>Kai proposes. You confirm every write.</p>
+      ) : null}
     </div>
   );
 }

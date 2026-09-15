@@ -125,7 +125,7 @@ export function HomeScreen({
           {welcomeBack
             ? 'Welcome back. Nothing was taken away.'
             : recommended
-              ? 'One thing matters now. Mus is holding the rest.'
+              ? 'One thing matters now. Kai is holding the rest.'
               : 'Nothing is planned yet. That is allowed.'}
         </p>
       </header>
@@ -178,13 +178,13 @@ export function HomeScreen({
           {recommended ? <span>confirmed</span> : null}
         </div>
         <h3>{recommended ?? 'Want to put one thing on today?'}</h3>
-        <p className={styles.muted}>{recommended ? 'Mus is reminding you, not changing your plan.' : 'Mus will not fill your day without you.'}</p>
+        <p className={styles.muted}>{recommended ? 'Kai is reminding you, not changing your plan.' : 'Kai will not fill your day without you.'}</p>
         <div className={styles.buttonRow}>
           <button className={styles.primaryButton} type="button" onClick={recommended ? onStart : onPlan}>
             {recommended ? 'Start' : 'Plan today'}
           </button>
           <button className={styles.secondaryButton} type="button" onClick={recommended ? onPlan : onChat}>
-            {recommended ? 'Change' : 'Ask Mus'}
+            {recommended ? 'Change' : 'Ask Kai'}
           </button>
         </div>
       </section>
@@ -211,7 +211,7 @@ export function HomeScreen({
       <section className={styles.inboxCapture}>
         <p className={styles.eyebrow}>Life Inbox</p>
         <h3>Park it here</h3>
-        <p className={styles.muted}>Private by default. Mus cannot read this until you allow it.</p>
+        <p className={styles.muted}>Private by default. Kai cannot read this until you allow it.</p>
         <form onSubmit={onCaptureInbox}>
           <label className={styles.srOnly} htmlFor="life-inbox">Life Inbox</label>
           <textarea
@@ -347,7 +347,7 @@ export function TodayScreen({
 
       <section className={styles.focusSuggestion}>
         <p className={styles.eyebrow}>Focus</p>
-        <h3>{plan ? `A 25-minute session on “${plan.selected_label_snapshot}” is the one Mus keeps suggesting.` : 'Choose one action and Mus can hold a quiet timer for it.'}</h3>
+        <h3>{plan ? `A 25-minute session on “${plan.selected_label_snapshot}” is the one Kai keeps suggesting.` : 'Choose one action and Kai can hold a quiet timer for it.'}</h3>
         <p>Timer and nudges only. KayaMo in the browser cannot block other apps.</p>
         {plan ? <button type="button" onClick={onFocus}><Clock size={17} /> Set up focus</button> : null}
         {sessions.filter((session) => session.status === 'completed').length > 0 ? <span className={styles.successLine}><CheckCircle weight="fill" /> {sessions.filter((session) => session.status === 'completed').length} completed</span> : null}
@@ -510,7 +510,7 @@ export function HealthScreen({
     <div className={`${styles.screen} ${styles.listScreen}`}>
       <AppScreenHeader
         title="Physical Self"
-        subtitle={viewLogicalDate === todayLogical ? 'Food and gym live here. Numbers come from your records, not from Mus.' : 'You are looking at a past day.'}
+        subtitle={viewLogicalDate === todayLogical ? 'Food and gym live here. Numbers come from your records, not from Kai.' : 'You are looking at a past day.'}
         onChat={onChat}
         onBack={onBack}
       />
@@ -584,7 +584,7 @@ export function HealthScreen({
             )}
           </div>
           {fiberG > 0 ? (
-            <p className={styles.mutedNote}>{Math.round(fiberG)}g fiber logged. No fiber target — we do not invent one.</p>
+            <p className={styles.mutedNote}>{Math.round(fiberG)}g fiber logged. No fiber target, and we do not invent one.</p>
           ) : null}
         </div>
         {kcalProgress.targetKcal === null ? (
@@ -753,7 +753,7 @@ export function TargetsDialog({
       open={open}
       onClose={onClose}
       title="Your daily targets"
-      description="Generated in code from your confirmed records. Mus never sets these numbers."
+      description="Generated in code from your confirmed records. Kai never sets these numbers."
     >
       <div className={styles.readingStack}>
         {targets.length === 0 ? (
@@ -790,7 +790,7 @@ export function TargetsDialog({
                 </ul>
                 <p className={styles.mutedNote}>
                   Floors and the deficit ceiling are enforced in code. They cannot be lowered by
-                  asking Mus.
+                  asking Kai.
                 </p>
               </div>
             ) : null}
@@ -1043,7 +1043,7 @@ export function JourneyScreen({ mode, goals, tasks, routines, routineCompletions
         <section className={styles.faithCard}>
           <p className={styles.eyebrow}>Faith mode · reviewed Scripture</p>
           {scripture[0] ? <><blockquote>“{scripture[0].text}”</blockquote><cite>{scripture[0].reference} · World English Bible</cite></> : <p>Reviewed passages will appear here when available.</p>}
-          <p className={styles.muted}>Mus can support reflection, but is not a theological authority.</p>
+          <p className={styles.muted}>Kai can support reflection, but is not a theological authority.</p>
         </section>
       ) : (
         <button className={styles.faithInvite} type="button" onClick={onOpenSettings}>

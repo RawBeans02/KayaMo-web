@@ -6,13 +6,18 @@ import {
   cocoModelOutputSchema,
   cocoModeSchema,
   cocoSafetyResultSchema,
+  cocoHistoryTurnSchema,
   type CocoActionName,
+  type CocoHistoryTurn,
   type CocoContextSnapshot,
   type CocoMode,
   type CocoModelOutput,
   type CocoRequest,
   type CocoResponse,
 } from './contracts';
+import { permissionDomainForAction } from './allowed-actions';
+import { CONTEXT_LIMITS, truncateWords } from './context-limits';
+import type { MusContextPermissionDomain } from './context-permissions';
 import { evaluateCocoSafety } from './safety';
 
 export type CocoProviderRequest = {
@@ -20,6 +25,8 @@ export type CocoProviderRequest = {
   userId: string;
   mode: CocoMode;
   message: string;
+  /** Prior turns, oldest first. Already clamped. See cocoHistoryTurnSchema. */
+  history: CocoHistoryTurn[];
   context: CocoContextSnapshot;
   maxOutputTokens: number;
   abortSignal?: AbortSignal;
@@ -82,6 +89,7 @@ const requestSchema = z
     message: z.string().max(5000),
     context: cocoContextSnapshotSchema,
     allowedActions: z.array(cocoActionNameSchema),
+    history: z.array(cocoHistoryTurnSchema).max(CONTEXT_LIMITS.historyTurnsAccepted).optional(),
   })
   .strict();
 
@@ -99,6 +107,8 @@ class CocoRouterError extends Error {
   constructor(
     readonly code: CocoTelemetryEvent['errorCode'],
     message: string,
+    /** Set when a proposal was refused, so the reply can name the permission. */
+    readonly action?: CocoActionName,
   ) {
     super(message);
   }
@@ -115,6 +125,7 @@ function authorizeOutput(
       throw new CocoRouterError(
         'unauthorized_action',
         `Model proposed disallowed action ${proposal.action}`,
+        proposal.action,
       );
     }
     if (!proposal.requiresConfirmation) {
@@ -149,29 +160,56 @@ function authorizeOutput(
   return output;
 }
 
+/** What each domain unlocks, in the user's words, for a refusal message. */
+const PERMISSION_ASK: Record<MusContextPermissionDomain, string> = {
+  physical_self: 'your food, nutrition and workouts',
+  goals_planning: 'your goals and planning',
+  memory: 'your saved memories',
+  faith: 'your faith context',
+};
+
 function fallbackOutput(
   request: CocoRequest,
   reason: 'fallback' | 'budget',
+  error?: unknown,
 ): CocoModelOutput {
   const next = request.context.recommendedAction;
+  // A refusal is not an outage. When the guard rejected a proposal because the
+  // domain is switched off, say which switch — the remedy is one toggle away
+  // and the old copy sent people looking for a network problem instead.
+  const deniedAction =
+    error instanceof CocoRouterError && error.code === 'unauthorized_action'
+      ? error.action
+      : undefined;
+  const deniedDomain = deniedAction ? permissionDomainForAction(deniedAction) : null;
   const message =
     reason === 'budget'
-      ? `Mus's AI limit is resting for today. Your next grounded step is still: ${next.title}.`
-      : `I couldn't reach Mus's AI right now. We can still take one clear step: ${next.title}.`;
+      ? `Kai's AI limit is resting for today. Your next grounded step is still: ${next.title}.`
+      : deniedDomain
+        ? `I would need access to ${PERMISSION_ASK[deniedDomain]} before I can do that. You can turn it on under Context access.`
+        : `I could not reach Kai right now. We can still take one clear step: ${next.title}.`;
   return {
     message,
     tone: request.mode === 'focus' || request.mode === 'workout' ? 'firm' : 'balanced',
     proposals: [],
-    citations: next.recordId
-      ? [
-          {
-            recordType: next.kind === 'task' ? 'task' : 'routine',
-            recordId: next.recordId,
-            label: next.title,
-          },
-        ]
-      : [],
+    citations:
+      next.recordId && (next.kind === 'task' || next.kind === 'routine')
+        ? [{ recordType: next.kind, recordId: next.recordId, label: next.title }]
+        : [],
   };
+}
+
+/**
+ * Keep the most recent turns and cut each to length. Clamped rather than
+ * rejected: a long conversation is normal, and dropping the request because
+ * turn nine exists would be the same class of bug as the memories cap.
+ */
+export function clampHistory(history: CocoHistoryTurn[] | undefined): CocoHistoryTurn[] {
+  if (!history?.length) return [];
+  return history.slice(-CONTEXT_LIMITS.historyTurns).map((turn) => ({
+    role: turn.role,
+    content: truncateWords(turn.content, CONTEXT_LIMITS.historyTurnChars),
+  }));
 }
 
 function localOnlyOutput(request: CocoRequest): CocoModelOutput {
@@ -191,11 +229,31 @@ function withSafety(
   return { ...output, safety: cocoSafetyResultSchema.parse(safety) };
 }
 
+/**
+ * The deterministic crisis reply. Exported because the route evaluates safety
+ * before it reserves an AI request — this response costs no tokens and must
+ * never be gated behind a quota — and both callers have to produce the exact
+ * same shape.
+ */
+export function cocoSafetyResponse(
+  safety: ReturnType<typeof evaluateCocoSafety>,
+): CocoResponse {
+  return withSafety(
+    {
+      message: safety.message ?? 'Please seek appropriate support now.',
+      tone: 'gentle',
+      proposals: [],
+      citations: [],
+    },
+    safety,
+  );
+}
+
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, onTimeout: () => void): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(
-      () => { onTimeout(); reject(new CocoRouterError('timeout', 'Coco provider timed out')); },
+      () => { onTimeout(); reject(new CocoRouterError('timeout', 'Kai provider timed out')); },
       timeoutMs,
     );
   });
@@ -223,7 +281,11 @@ export function createCocoRouter(deps: {
   return async function routeCoco(unparsed: CocoRequest): Promise<CocoRouterResult> {
     const request = requestSchema.parse(unparsed) as CocoRequest;
     const started = Date.now();
-    const safety = evaluateCocoSafety(request.message);
+    // Region comes from the profile timezone the snapshot already carries, so
+    // the support footer names numbers the user can actually dial.
+    const safety = evaluateCocoSafety(request.message, {
+      timezone: request.context.timezone,
+    });
 
     const record = async (
       event: Omit<
@@ -246,15 +308,7 @@ export function createCocoRouter(deps: {
     };
 
     if (!safety.allowModel) {
-      const response = withSafety(
-        {
-          message: safety.message ?? 'Please seek appropriate support now.',
-          tone: 'gentle',
-          proposals: [],
-          citations: [],
-        },
-        safety,
-      );
+      const response = cocoSafetyResponse(safety);
       await record({
         model: 'deterministic-safety',
         inputTokens: 0,
@@ -303,6 +357,7 @@ export function createCocoRouter(deps: {
             userId: request.userId,
             mode: request.mode,
             message: request.message,
+            history: clampHistory(request.history),
             context: request.context,
             maxOutputTokens: config.maxOutputTokens,
             abortSignal: controller.signal,
@@ -347,7 +402,7 @@ export function createCocoRouter(deps: {
     });
     return {
       source: 'fallback',
-      response: withSafety(fallbackOutput(request, 'fallback'), safety),
+      response: withSafety(fallbackOutput(request, 'fallback', lastError), safety),
     };
   };
 }

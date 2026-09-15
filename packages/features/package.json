@@ -10,10 +10,13 @@
     "./api-origin": "./src/api/api-origin.ts",
     "./auth": "./src/auth/server.ts",
     "./desktop": "./src/desktop.ts",
+    "./worldwide-food-search": "./src/food/worldwide-food-search.tsx",
+    "./worldwide-search-server": "./src/food/worldwide-search-server.ts",
     "./food-catalog": "./src/food/hydrate-catalog.ts",
     "./gym": "./src/gym/index.ts",
     "./todo": "./src/todo/index.ts",
     "./mus-server": "./src/mus/server-context.ts",
+    "./mus-respond": "./src/mus/respond-handler.ts",
     "./mus-plan-server": "./src/mus/server-plan.ts",
     "./app-shell.module.css": "./src/screens/kayamo-app.module.css"
   },

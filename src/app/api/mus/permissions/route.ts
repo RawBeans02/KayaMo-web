@@ -8,6 +8,14 @@ import { createServerSupabase } from '@/lib/supabase/server';
 
 const noStoreHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
 
+/** Postgres error code or error name only — never a message carrying row data. */
+function describeCause(error: unknown): string {
+  if (error && typeof error === 'object' && 'code' in error) {
+    return String((error as { code: unknown }).code);
+  }
+  return error instanceof Error ? error.name : 'unknown';
+}
+
 async function authenticatedClient(request: Request) {
   const client = await createServerSupabase(request);
   const {
@@ -20,7 +28,7 @@ export async function GET(request: Request) {
   const { client, user } = await authenticatedClient(request);
   if (!user) {
     return NextResponse.json(
-      { error: 'Sign in to manage Mus permissions.' },
+      { error: 'Sign in to manage Kai permissions.' },
       { status: 401, headers: noStoreHeaders },
     );
   }
@@ -30,9 +38,13 @@ export async function GET(request: Request) {
       { permissions: musContextPermissionsFromRows(rows) },
       { headers: noStoreHeaders },
     );
-  } catch {
+  } catch (error) {
+    // Log the cause, never the rows. A bare `catch {}` here meant a missing
+    // table looked identical to a transient failure, and the whole permission
+    // system being absent took a manual REST probe to diagnose.
+    console.error(`Kai permission read failed (${describeCause(error)}).`);
     return NextResponse.json(
-      { error: 'Mus permissions are unavailable.' },
+      { error: 'Kai permissions are unavailable.' },
       { status: 500, headers: noStoreHeaders },
     );
   }
@@ -42,7 +54,7 @@ export async function PUT(request: Request) {
   const { client, user } = await authenticatedClient(request);
   if (!user) {
     return NextResponse.json(
-      { error: 'Sign in to manage Mus permissions.' },
+      { error: 'Sign in to manage Kai permissions.' },
       { status: 401, headers: noStoreHeaders },
     );
   }
@@ -51,7 +63,7 @@ export async function PUT(request: Request) {
   );
   if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Invalid Mus permission.' },
+      { error: 'Invalid Kai permission.' },
       { status: 400, headers: noStoreHeaders },
     );
   }
@@ -68,7 +80,7 @@ export async function PUT(request: Request) {
     );
   } catch {
     return NextResponse.json(
-      { error: 'Mus permission could not be saved.' },
+      { error: 'Kai permission could not be saved.' },
       { status: 500, headers: noStoreHeaders },
     );
   }

@@ -27,7 +27,7 @@ function touchesFor(action: CocoActionName): string[] {
     return ['Gym'];
   }
   if (action === 'create_goal') return ['Goals', 'Todos'];
-  if (action === 'remember_this') return ['Mus'];
+  if (action === 'remember_this') return ['Kai'];
   return ['Todos'];
 }
 
@@ -61,7 +61,7 @@ export function MusProposalCard({
       risk={riskFor(proposal.action)}
       action={proposal.action.replaceAll('_', ' ')}
       title={proposal.summary}
-      why="Mus proposes this. Nothing is saved until you confirm."
+      why="Kai proposes this. Nothing is saved until you confirm."
       touches={touchesFor(proposal.action)}
       foot="Nothing is saved until you confirm."
       diff={diff}
