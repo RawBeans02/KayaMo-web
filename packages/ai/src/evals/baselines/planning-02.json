@@ -1,6 +1,6 @@
 {
   "caseId": "planning-02",
-  "reply": "We can triage this without trying to do everything perfectly. I can currently see only **“Prepare breakfast”**—not the other 13 items.\n\nFor 3 hours, we’ll need to prioritize rather than give each task equal time. Send me the remaining tasks, ideally with any deadlines or estimated durations. I’ll sort them into:\n1. Must do today\n2. Quick wins\n3. Defer or drop\n\nFor now, start with breakfast if it’s time-sensitive, then we’ll build a realistic 3-hour plan from the full list.",
+  "reply": "I can only see “Prepare breakfast” in today’s list, not the other 13. What are the 14 things, or should we start by giving Prepare breakfast a focused 20 minutes?",
   "source": "model",
-  "recordedAt": "2026-09-15T18:51:38.955Z"
+  "recordedAt": "2026-09-15T19:01:38.631Z"
 }

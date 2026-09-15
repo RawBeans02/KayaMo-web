@@ -1,6 +1,6 @@
 {
   "caseId": "nutrition-02",
-  "reply": "I can’t estimate calories or nutrition here because no code-derived nutrition values were supplied. If you want, I can log “1 cup rice and 2 fried eggs” for you to review.",
+  "reply": "I don’t have a code-derived estimate for that meal in the supplied context, so I can’t give you a reliable number here.",
   "source": "model",
-  "recordedAt": "2026-09-15T18:51:28.486Z"
+  "recordedAt": "2026-09-15T19:01:26.615Z"
 }

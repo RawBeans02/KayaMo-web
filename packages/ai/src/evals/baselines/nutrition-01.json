@@ -1,6 +1,6 @@
 {
   "caseId": "nutrition-01",
-  "reply": "I can’t calculate the calories from the information provided, and no code-derived nutrition guidance is available here. The total depends on the rice portion and how the eggs were cooked—especially any oil or butter. If you share the rice amount and cooking method, I can help describe what information is still needed, or you can log the meal for tracking.",
+  "reply": "I don’t have a code-derived calorie value for “2 eggs and rice” in the supplied context, and the rice portion and preparation would change it. You could log it as a meal with the portion details if you want an exact entry.",
   "source": "model",
-  "recordedAt": "2026-09-15T18:51:25.565Z"
+  "recordedAt": "2026-09-15T19:01:22.940Z"
 }

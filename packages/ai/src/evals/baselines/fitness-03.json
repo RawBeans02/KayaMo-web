@@ -1,6 +1,6 @@
 {
   "caseId": "fitness-03",
-  "reply": "I could not reach Lis right now. We can still take one clear step: Prepare breakfast.",
-  "source": "fallback",
-  "recordedAt": "2026-09-15T18:51:22.442Z"
+  "reply": "Skip legs today—if you’re wrecked, pushing through isn’t worth it. Is this just fatigue, or are you feeling pain or an injury?",
+  "source": "model",
+  "recordedAt": "2026-09-15T19:01:17.499Z"
 }

@@ -21,7 +21,30 @@ describe('musReplyFromApi', () => {
       message: response.message,
       source: 'model',
       proposals: [],
+      tone: 'balanced',
+      safetyLevel: 'safe',
     });
+  });
+
+  /**
+   * `tone` is required on every model output and used to be dropped here, so it
+   * cost tokens on every request and changed nothing. It now reaches the UI.
+   */
+  it('carries tone and safety level through to the caller', () => {
+    const gentle = musReplyFromApi({
+      source: 'model',
+      response: { ...response, tone: 'gentle' },
+    });
+    expect(gentle?.tone).toBe('gentle');
+
+    const urgent = musReplyFromApi({
+      source: 'safety',
+      response: {
+        ...response,
+        safety: { ...response.safety, level: 'urgent' },
+      },
+    });
+    expect(urgent?.safetyLevel).toBe('urgent');
   });
 
   it('does not read message off the envelope root', () => {

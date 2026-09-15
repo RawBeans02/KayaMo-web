@@ -34,6 +34,26 @@ export function musFaceFor(trigger: MusFaceTrigger): MusFace {
   }
 }
 
+/**
+ * Map a reply's declared tone, plus its safety verdict, onto an expression.
+ *
+ * `tone` is a REQUIRED field on every model output and, until now, was read by
+ * nothing — `musReplyFromApi` dropped it on the floor. It cost tokens on every
+ * request and changed nothing. This is the smallest honest use for it: the
+ * assistant has no character, but it does have a register, and the register is
+ * worth showing.
+ *
+ * Safety outranks tone. A crisis reply is concern for the person, never a
+ * neutral acknowledgement, whatever the model happened to declare.
+ */
+export function musFaceForReply(input: {
+  tone?: 'gentle' | 'balanced' | 'firm' | null;
+  safetyLevel?: 'safe' | 'supportive_redirect' | 'urgent' | null;
+}): MusFace {
+  if (input.safetyLevel && input.safetyLevel !== 'safe') return 'concerned';
+  return input.tone === 'gentle' ? 'concerned' : 'neutral';
+}
+
 export function musFaceSrc(face: MusFace): string {
   return `/mus-${face}.png`;
 }

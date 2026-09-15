@@ -1,6 +1,6 @@
 {
   "caseId": "emotional-01",
-  "reply": "I could not reach Lis right now. We can still take one clear step: Prepare breakfast.",
-  "source": "fallback",
-  "recordedAt": "2026-09-15T18:52:19.492Z"
+  "reply": "That sounds really heavy. Prepare breakfast is the one thing still open, but you do not have to solve everything right now—do you want to talk about what feels most exhausting?",
+  "source": "model",
+  "recordedAt": "2026-09-15T19:02:30.112Z"
 }

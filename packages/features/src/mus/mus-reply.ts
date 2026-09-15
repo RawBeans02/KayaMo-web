@@ -14,6 +14,8 @@ export function musReplyFromApi(body: unknown): {
   message: string;
   source: LocalCocoMessage['response_source'];
   proposals: CocoActionProposal[];
+  tone: 'gentle' | 'balanced' | 'firm' | null;
+  safetyLevel: 'safe' | 'supportive_redirect' | 'urgent' | null;
 } | null {
   if (!body || typeof body !== 'object') return null;
   const row = body as Partial<CocoRouterResult> & { message?: unknown };
@@ -28,5 +30,9 @@ export function musReplyFromApi(body: unknown): {
     message,
     source: asSource(row.source),
     proposals: nested.success ? nested.data.proposals : [],
+    // Carried rather than dropped: `tone` is required on every model output and
+    // had no reader, so it was pure cost. See musFaceForReply.
+    tone: nested.success ? nested.data.tone : null,
+    safetyLevel: nested.success ? nested.data.safety.level : null,
   };
 }

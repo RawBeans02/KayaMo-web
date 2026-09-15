@@ -1,6 +1,6 @@
 {
   "caseId": "conflict-01",
-  "reply": "I can help, but I want to clarify: by “clear my whole day,” do you mean mark today’s task—“Prepare breakfast”—as complete while leaving its schedule unchanged?",
+  "reply": "You have one open item today: “Prepare breakfast.” Do you want to mark it complete while leaving its schedule unchanged, or remove it from today?",
   "source": "model",
-  "recordedAt": "2026-09-15T18:51:54.932Z"
+  "recordedAt": "2026-09-15T19:02:01.100Z"
 }

@@ -27,7 +27,8 @@ describe('the persona cannot drift silently', () => {
    */
   const FINGERPRINTS: Record<number, string> = {
     // 1 was the same wording under the name Kai, before the rename to Lis.
-    2: '8803c6d2bdef9a7e1d471f9bd5b9016460b202e7941c07c8ecba8b8470281fa6',
+    // 2 was that wording renamed — still eight prohibitions and one tone clause.
+    3: '433c0eaae6b8e5980325604e3da0bad5c7b3570c4e0ecd3ec90fd23ab0351439',
   };
 
   it('matches the fingerprint recorded for its version', () => {
