@@ -138,6 +138,9 @@ function authorizeOutput(
     ...context.goals.map((row) => `goal:${row.id}`),
     ...(context.companion?.achievements ?? []).map((row) => `achievement:${row.id}`),
     ...context.memories.map((row) => `memory:${row.id}`),
+    ...(context.identity?.futureSelf ? ['future_self:self'] : []),
+    ...(context.identity?.compass ? ['compass:self'] : []),
+    ...(context.identity?.rules ?? []).map((row) => `personal_rule:${row.id}`),
     ...(context.health.confirmedWorkouts ?? []).map((row) => `workout:${row.id}`),
     ...(context.permissions.faith ? (context.scripture ?? []) : []).map(
       (row) => `scripture:${row.id}`,
@@ -166,6 +169,7 @@ const PERMISSION_ASK: Record<MusContextPermissionDomain, string> = {
   goals_planning: 'your goals and planning',
   memory: 'your saved memories',
   faith: 'your faith context',
+  identity: 'what you have told me about yourself',
 };
 
 function fallbackOutput(

@@ -1,5 +1,4 @@
 'use client';
-import Image from 'next/image';
 import Link from 'next/link';
 import { ThemeToggle } from '@/shell/theme-toggle';
 import { useSearchParams } from 'next/navigation';
@@ -32,12 +31,11 @@ export function LoginView({ localDev }: { localDev: boolean }) {
       </header>
       <div className={styles.shell}>
         <section className={styles.signIn} aria-labelledby="login-title">
-          <p className={styles.eyebrow}>Your everyday, in one place</p>
           <h1 id="login-title">
             {locale === 'en' ? 'Sign in to KayaMo.' : 'Tuloy ka sa KayaMo.'}
           </h1>
           <p className={styles.intro}>
-            Enter your email. We’ll send you a sign-in link—no password needed.
+            Enter your email. We’ll send you a sign-in link, no password needed.
           </p>
           {fromDemo ? (
             <p className={styles.demoNote}>
@@ -57,7 +55,7 @@ export function LoginView({ localDev }: { localDev: boolean }) {
           </details>
         </section>
         <aside className={styles.welcome} aria-label="Welcome to KayaMo">
-          <p className={styles.eyebrow}>Kaya mo. One day at a time.</p>
+          <p className={styles.eyebrow}>Small steps. One day at a time.</p>
           <h2>
             A little more room
             <br />
@@ -66,21 +64,8 @@ export function LoginView({ localDev }: { localDev: boolean }) {
           <p>
             Your meals, your training, your next small step. Pick up where you left off.
           </p>
-          <div className={styles.companion}>
-            <Image
-              className={styles.mus}
-              src="/botanical/mus-neutral.webp"
-              alt="Mus, your seed companion"
-              width={160}
-              height={160}
-              sizes="160px"
-            />
-            <p>
-              <strong>Kasama mo si Mus.</strong>A little encouragement along the way.
-            </p>
-          </div>
           <span className={styles.signature}>
-            Made for the everyday. Made for the Philippines.
+            Personal growth, on your terms.
           </span>
         </aside>
       </div>

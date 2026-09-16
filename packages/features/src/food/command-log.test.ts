@@ -125,7 +125,7 @@ describe('command log helpers', () => {
     expect(clampSelectedIndex(0, 0)).toBe(0);
   });
 
-  it('keeps PH core and user foods, drops USDA and Open Food Facts', () => {
+  it('includes sourced foods across cuisines and providers', () => {
     const per100g = {
       kcal: 100,
       protein_g: 0,
@@ -194,7 +194,7 @@ describe('command log helpers', () => {
         createdBy: null,
       },
     ]);
-    expect(kept.map((row) => row.id)).toEqual(['ph', 'mine']);
+    expect(kept.map((row) => row.id)).toEqual(['ph', 'mine', 'usda', 'off']);
   });
 
   it('keeps four palette states exclusive and labels them', () => {
@@ -309,7 +309,7 @@ describe('command log helpers', () => {
   });
 
   it('maps no-match shortcuts onto leave routes, not writes', () => {
-    expect(leaveHrefFromPaletteKey({ metaKey: true, ctrlKey: false, shiftKey: false, key: 'n' })).toBe('/verify');
+    expect(leaveHrefFromPaletteKey({ metaKey: true, ctrlKey: false, shiftKey: false, key: 'n' })).toBe('/foods');
     expect(leaveHrefFromPaletteKey({ metaKey: true, ctrlKey: false, shiftKey: true, key: 'f' })).toBe('/foods');
     expect(leaveHrefFromPaletteKey({ metaKey: false, ctrlKey: true, shiftKey: false, key: 'm' })).toBe('/mus');
     expect(leaveHrefFromPaletteKey({ metaKey: true, ctrlKey: false, shiftKey: false, key: 'k' })).toBeNull();

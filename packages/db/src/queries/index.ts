@@ -78,6 +78,9 @@ export {
 } from './journey';
 export {
   upsertCompass,
+  getCompassForAi,
+  getFutureSelfForAi,
+  listPersonalRulesForAi,
   upsertFutureSelf,
   upsertInboxItem,
   upsertPersonalRule,

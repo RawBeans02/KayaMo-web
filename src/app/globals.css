@@ -1,4 +1,7 @@
 @import '@kayamo/config/tailwind.css';
 @import '@kayamo/ui/tokens.css';
 @import './botanical.css';
+/* Liquid Glass loads after the legacy layer so its tokens win. */
+@import './glass.css';
+@import '@kayamo/ui/web-motion.css';
 @source "../**/*.{ts,tsx}";

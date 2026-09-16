@@ -119,6 +119,7 @@ describe('what the router actually sends the provider', () => {
         physical_self: true,
         memory: true,
         faith: false,
+        identity: false,
       },
       tasks: [
         { id: 'task-1', title: 'SENTINEL-TASK-TITLE', completed: false, dueAt: null },

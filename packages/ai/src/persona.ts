@@ -108,35 +108,63 @@ const REGISTER_LINES: Record<string, string> = {
  *     noise that spends tokens to describe the default.
  */
 export function renderLisIdentityCard(context: CocoContextSnapshot): string {
+  // The two halves are independent: someone can grant the identity domain
+  // without ever opening companion settings, and vice versa.
   const profile = context.companionProfile;
-  if (!profile) return '';
-
   const lines: string[] = [];
 
-  const name = profile.displayName?.trim();
-  const pronouns = profile.pronouns?.trim();
-  if (name && pronouns) lines.push(`Call them ${name} (${pronouns}).`);
-  else if (name) lines.push(`Call them ${name}.`);
-  else if (pronouns) lines.push(`Their pronouns are ${pronouns}.`);
+  if (profile) {
+    const name = profile.displayName?.trim();
+    const pronouns = profile.pronouns?.trim();
+    if (name && pronouns) lines.push(`Call them ${name} (${pronouns}).`);
+    else if (name) lines.push(`Call them ${name}.`);
+    else if (pronouns) lines.push(`Their pronouns are ${pronouns}.`);
 
-  const register = REGISTER_LINES[profile.languageRegister];
-  if (register) lines.push(register);
+    const register = REGISTER_LINES[profile.languageRegister];
+    if (register) lines.push(register);
 
-  const dials = Object.entries(profile.dials)
-    .map(([dial, setting]) => DIAL_LINES[dial]?.[setting] ?? '')
-    .filter(Boolean);
-  if (dials.length) lines.push(`How they want you: ${dials.join('; ')}.`);
+    const dials = Object.entries(profile.dials)
+      .map(([dial, setting]) => DIAL_LINES[dial]?.[setting] ?? '')
+      .filter(Boolean);
+    if (dials.length) lines.push(`How they want you: ${dials.join('; ')}.`);
 
-  const about = profile.aboutMe?.trim();
-  if (about) lines.push(`In their words: ${about}`);
+    const about = profile.aboutMe?.trim();
+    if (about) lines.push(`In their words: ${about}`);
 
-  const avoid = profile.avoidTopics.map((topic) => topic.trim()).filter(Boolean);
-  if (avoid.length) {
-    lines.push(`Do not raise unless they raise it first: ${avoid.join(', ')}.`);
+    const avoid = profile.avoidTopics.map((topic) => topic.trim()).filter(Boolean);
+    if (avoid.length) {
+      lines.push(`Do not raise unless they raise it first: ${avoid.join(', ')}.`);
+    }
   }
 
-  if (!lines.length) return '';
-  return `WHO YOU ARE SPEAKING WITH\n${lines.join('\n')}`;
+  const sections: string[] = [];
+  if (lines.length) sections.push(`WHO YOU ARE SPEAKING WITH\n${lines.join('\n')}`);
+
+  // Identity facts are gated by the `identity` domain; when it is off the whole
+  // section vanishes rather than appearing empty.
+  const identity = context.identity;
+  if (identity) {
+    const moving: string[] = [];
+    if (identity.futureSelf) moving.push(`Becoming: ${identity.futureSelf.statement}`);
+    if (identity.compass) {
+      const { mattersNow, protect, strugglingWith, doNotBecome, activeAreas } =
+        identity.compass;
+      if (mattersNow) moving.push(`Matters now: ${mattersNow}`);
+      if (protect) moving.push(`Protecting: ${protect}`);
+      if (strugglingWith) moving.push(`Struggling with: ${strugglingWith}`);
+      if (doNotBecome) moving.push(`Not becoming: ${doNotBecome}`);
+      if (activeAreas.length) moving.push(`Focused areas: ${activeAreas.join(', ')}`);
+    }
+    if (moving.length) sections.push(`WHAT THEY ARE MOVING TOWARD\n${moving.join('\n')}`);
+
+    if (identity.rules.length) {
+      const rules = identity.rules.map((rule) => `- ${rule.title}`).join('\n');
+      sections.push(`RULES THEY SET FOR THEMSELVES\n${rules}`);
+    }
+  }
+
+  if (!sections.length) return '';
+  return sections.join('\n\n');
 }
 
 /** What actually goes in the system position. */

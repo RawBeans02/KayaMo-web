@@ -5,6 +5,9 @@ export const MUS_CONTEXT_PERMISSION_DOMAINS = [
   'physical_self',
   'memory',
   'faith',
+  // What the user has told us about who they are: their future self, their
+  // compass, the rules they set for themselves. Added in migration 0022.
+  'identity',
 ] as const;
 
 export const musContextPermissionDomainSchema = z.enum(MUS_CONTEXT_PERMISSION_DOMAINS);
@@ -16,6 +19,7 @@ export const musContextPermissionsSchema = z
     physical_self: z.boolean(),
     memory: z.boolean(),
     faith: z.boolean(),
+    identity: z.boolean(),
   })
   .strict();
 export type MusContextPermissions = z.infer<typeof musContextPermissionsSchema>;
@@ -33,6 +37,7 @@ export function defaultMusContextPermissions(): MusContextPermissions {
     physical_self: false,
     memory: false,
     faith: false,
+    identity: false,
   };
 }
 

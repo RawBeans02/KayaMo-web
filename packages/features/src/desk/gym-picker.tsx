@@ -197,7 +197,7 @@ export function GymPicker({
             {rows.length === 0 ? (
               <tr>
                 <td colSpan={6} className={styles.wrap}>
-                  No lifts match that search. Try a muscle, pattern, or Taglish name.
+                  No lifts match that search. Try an exercise name, muscle, or movement pattern.
                 </td>
               </tr>
             ) : (
@@ -231,7 +231,7 @@ export function GymPicker({
       </div>
       <p className={styles.statNote}>
         {rows.length} in view. Pick a row, then log. Search matches aliases (DB bench, RDL) and
-        families — it does not create a new lift.
+        families. It does not create a new lift.
       </p>
     </div>
   );

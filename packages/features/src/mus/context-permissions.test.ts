@@ -19,6 +19,7 @@ describe('Lis permission API client', () => {
           physical_self: true,
           memory: false,
           faith: false,
+          identity: false,
         },
       }),
     );
@@ -29,6 +30,7 @@ describe('Lis permission API client', () => {
       physical_self: true,
       memory: false,
       faith: false,
+      identity: false,
     });
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/mus/permissions',

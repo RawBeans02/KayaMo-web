@@ -77,7 +77,7 @@ export function FoodHistory({ userId }: { userId: string }) {
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Adobo, kanin…"
+            placeholder="Search your logged foods…"
           />
         </label>
         <fieldset className={styles.range}>

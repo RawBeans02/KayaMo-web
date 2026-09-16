@@ -1,4 +1,8 @@
-import type { CocoContextSnapshot, LisCompanionProfileContext } from './contracts';
+import type {
+  CocoContextSnapshot,
+  LisCompanionProfileContext,
+  LisIdentityContext,
+} from './contracts';
 import { CONTEXT_LIMITS, truncateWords } from './context-limits';
 import {
   MUS_CONTEXT_PERMISSION_DOMAINS,
@@ -27,6 +31,10 @@ export type MemoryContextProjection = {
   memories: CocoContextSnapshot['memories'];
 };
 
+export type IdentityContextProjection = {
+  identity: LisIdentityContext;
+};
+
 export type FaithContextProjection = {
   scripture: NonNullable<CocoContextSnapshot['scripture']>;
 };
@@ -36,6 +44,7 @@ export type MusContextDomainLoaders = {
   physical_self: () => Promise<PhysicalSelfContextProjection>;
   memory: () => Promise<MemoryContextProjection>;
   faith: () => Promise<FaithContextProjection>;
+  identity: () => Promise<IdentityContextProjection>;
 };
 
 export type MusContextAuthorizationAudit = {
@@ -92,6 +101,12 @@ export function clampCocoContext(context: CocoContextSnapshot): {
     scripture: context.scripture
       ? take(context.scripture, CONTEXT_LIMITS.scripture, 'faith')
       : context.scripture,
+    identity: context.identity
+      ? {
+          ...context.identity,
+          rules: take(context.identity.rules, CONTEXT_LIMITS.personalRules, 'identity'),
+        }
+      : context.identity,
   };
   return { context: clamped, truncated: [...truncated] };
 }
@@ -155,6 +170,15 @@ export async function buildAuthorizedCocoContext(input: {
       domainLoadFailures.push('memory');
     }
   }
+  let identity: IdentityContextProjection | null = null;
+  if (!permissionLookupFailed && configured.identity) {
+    try {
+      identity = await input.loaders.identity();
+      effective.identity = true;
+    } catch {
+      domainLoadFailures.push('identity');
+    }
+  }
   if (!permissionLookupFailed && configured.faith) {
     try {
       faith = await input.loaders.faith();
@@ -194,6 +218,7 @@ export async function buildAuthorizedCocoContext(input: {
     memories: memory?.memories ?? [],
     permissions: effective,
     companionProfile,
+    identity: identity?.identity,
   };
   const grantedDomains = MUS_CONTEXT_PERMISSION_DOMAINS.filter(
     (domain) => effective[domain],

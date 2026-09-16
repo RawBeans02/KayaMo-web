@@ -57,6 +57,9 @@ function loaders() {
         },
       ],
     })),
+    identity: vi.fn(async () => ({
+      identity: { futureSelf: null, compass: null, rules: [] },
+    })),
   };
 }
 

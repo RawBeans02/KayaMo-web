@@ -374,7 +374,7 @@ export function VerifyTable({ userId }: { userId: string }) {
               ref={jumpRef}
               type="search"
               value={jumpQuery}
-              placeholder="kanin, adobo…"
+              placeholder="Search curated foods…"
               aria-label="Jump to a dish by name or alias"
               data-verify-jump=""
               onChange={(event) => {
@@ -472,12 +472,12 @@ export function VerifyTable({ userId }: { userId: string }) {
       <div className={styles.verifySplit}>
         <div className={styles.verifyTable} role="table" aria-label="PH core foods">
           <div className={styles.verifyCols} role="row">
-            <span />
-            <span>Dish · Taglish aliases</span>
-            <span>P / C / F g</span>
-            <span>kcal /100g</span>
-            <span>Conf</span>
-            <span>4/4/9</span>
+            <span role="columnheader" aria-label="Verification" />
+            <span role="columnheader">Food · aliases</span>
+            <span role="columnheader">P / C / F g</span>
+            <span role="columnheader">kcal /100g</span>
+            <span role="columnheader">Conf</span>
+            <span role="columnheader">4/4/9</span>
           </div>
           <div className={styles.verifyBody}>
             {rows.map((food, index) => {
@@ -497,17 +497,17 @@ export function VerifyTable({ userId }: { userId: string }) {
                   data-verified={verified ? 'true' : 'false'}
                   onClick={() => setActive(index)}
                 >
-                  <span className={styles.mark} data-kind={verified ? 'verified' : 'plain'} aria-hidden="true">
+                  <span role="cell" className={styles.mark} data-kind={verified ? 'verified' : 'plain'} aria-label={verified ? 'Verified' : 'Unverified'}>
                     {verified ? '✓' : '~'}
                   </span>
-                  <span className={styles.verifyName}>
-                    <strong>{food.name}</strong>
+                  <span role="cell" className={styles.verifyName}>
+                    <button type="button" data-food-select=""><strong>{food.name}</strong></button>
                     <span>{(food.name_tl ?? []).join(' · ') || '—'}</span>
                   </span>
-                  <span className={styles.verifyPcf}>{pcfLabel(protein, carbs, fat)}</span>
-                  <span className={styles.verifyKcal}>{Math.round(kcal).toLocaleString('en-PH')}</span>
-                  <span className={styles.verifyConf}>{Number(food.confidence).toFixed(2)}</span>
-                  <span className={styles.verifyFlag} data-off={off ? 'true' : 'false'}>
+                  <span role="cell" className={styles.verifyPcf}>{pcfLabel(protein, carbs, fat)}</span>
+                  <span role="cell" className={styles.verifyKcal}>{Math.round(kcal).toLocaleString('en-PH')}</span>
+                  <span role="cell" className={styles.verifyConf}>{Number(food.confidence).toFixed(2)}</span>
+                  <span role="cell" className={styles.verifyFlag} data-off={off ? 'true' : 'false'}>
                     {off ? 'off >5%' : 'ok'}
                   </span>
                 </div>
@@ -580,7 +580,7 @@ export function VerifyTable({ userId }: { userId: string }) {
                     data-on={activeRow.verified_by_user ? 'true' : 'false'}
                     onClick={() => void verifyActive()}
                   >
-                    {activeRow.verified_by_user ? 'Verified — undo' : 'Mark verified'}
+                    {activeRow.verified_by_user ? 'Verified · undo' : 'Mark verified'}
                   </button>
                   <kbd className={styles.k}>⌘S</kbd>
                 </div>
@@ -589,7 +589,7 @@ export function VerifyTable({ userId }: { userId: string }) {
                 </button>
                 <p className={styles.verifyFoot}>
                   Verifying raises confidence to 1.00 on this browser and this machine&apos;s Dexie
-                  cache. It is not written to the server — another device, a cleared cache, or Android
+                  cache. It is not written to the server. Another device, a cleared cache, or Android
                   still sees the catalog estimate until verify_ph_core_food exists.
                 </p>
               </div>

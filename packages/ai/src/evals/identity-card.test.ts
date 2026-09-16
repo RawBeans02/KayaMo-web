@@ -141,3 +141,62 @@ describe('the card carries voice, never records', () => {
     expect(rendered.length).toBeLessThan(1200);
   });
 });
+
+describe('identity facts, gated by the identity domain', () => {
+  const identity = {
+    futureSelf: { id: 'self' as const, statement: 'Someone who finishes what they start.' },
+    compass: {
+      id: 'self' as const,
+      mattersNow: 'Getting the thesis out',
+      protect: 'Mornings with my kid',
+      strugglingWith: null,
+      doNotBecome: 'Someone who only works',
+      activeAreas: ['work', 'relationships'],
+    },
+    rules: [
+      { id: 'rule-1', title: 'No work past 9pm' },
+      { id: 'rule-2', title: 'One rest day a week' },
+    ],
+  };
+
+  it('renders what they are moving toward, and their own rules', () => {
+    const rendered = renderLisIdentityCard(baselineContext({ identity }));
+    expect(rendered).toContain('Becoming: Someone who finishes what they start.');
+    expect(rendered).toContain('Matters now: Getting the thesis out');
+    expect(rendered).toContain('Protecting: Mornings with my kid');
+    expect(rendered).toContain('Not becoming: Someone who only works');
+    expect(rendered).toContain('- No work past 9pm');
+  });
+
+  it('omits a compass field the user left blank', () => {
+    const rendered = renderLisIdentityCard(baselineContext({ identity }));
+    expect(rendered).not.toMatch(/Struggling with:/);
+  });
+
+  /**
+   * The whole point of the domain: revoke it and the section is gone, not
+   * emptied. The gateway simply never populates `identity`.
+   */
+  it('vanishes entirely when the domain is off', () => {
+    const rendered = renderLisIdentityCard(baselineContext());
+    expect(rendered).not.toMatch(/MOVING TOWARD|RULES THEY SET/);
+  });
+
+  it('renders without a companion profile, and vice versa', () => {
+    const factsOnly = renderLisIdentityCard(baselineContext({ identity }));
+    expect(factsOnly).toContain('WHAT THEY ARE MOVING TOWARD');
+    expect(factsOnly).not.toContain('WHO YOU ARE SPEAKING WITH');
+
+    const voiceOnly = card({ displayName: 'Rovs' });
+    expect(voiceOnly).toContain('WHO YOU ARE SPEAKING WITH');
+    expect(voiceOnly).not.toContain('WHAT THEY ARE MOVING TOWARD');
+  });
+
+  it('carries both halves when both are present', () => {
+    const rendered = renderLisIdentityCard(
+      baselineContext({ companionProfile: profile({ displayName: 'Rovs' }), identity }),
+    );
+    expect(rendered).toContain('Call them Rovs.');
+    expect(rendered).toContain('Becoming: Someone who finishes what they start.');
+  });
+});

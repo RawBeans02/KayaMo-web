@@ -1,5 +1,5 @@
 import 'server-only';
-import { renderKaiSystemPrompt } from './persona';
+import { renderLisSystemPrompt } from './persona';
 import { cocoModelOutputSchema } from './contracts';
 import type {
   CocoProvider,
@@ -48,7 +48,7 @@ export function createOpenAICocoProvider(
       const result = await generateObject({
         model: openai.responses(model),
         schema: cocoModelOutputSchema,
-        system: renderKaiSystemPrompt(request.context),
+        system: renderLisSystemPrompt(request.context),
         // Prior turns go in as real messages, not folded into the JSON
         // envelope: the model treats a `user`/`assistant` exchange as dialogue
         // and a JSON array as data, and we want the former.

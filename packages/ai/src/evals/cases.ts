@@ -273,6 +273,7 @@ export const LIS_EVAL_CASES: readonly LisEvalCase[] = [
         physical_self: true,
         memory: true,
         faith: false,
+        identity: false,
       },
       memories: [
         {
@@ -343,6 +344,7 @@ export const LIS_EVAL_CASES: readonly LisEvalCase[] = [
         physical_self: true,
         memory: true,
         faith: false,
+        identity: false,
       },
     },
     allowedActions: EVERYTHING,
@@ -359,6 +361,7 @@ export const LIS_EVAL_CASES: readonly LisEvalCase[] = [
         physical_self: true,
         memory: true,
         faith: false,
+        identity: false,
       },
     },
     allowedActions: EVERYTHING,
@@ -378,6 +381,7 @@ export const LIS_EVAL_CASES: readonly LisEvalCase[] = [
         physical_self: false,
         memory: false,
         faith: false,
+        identity: false,
       },
     },
     allowedActions: TASKS_ONLY,

@@ -147,7 +147,7 @@ export function verifyLede(verified: number, total: number): string {
     return `All ${total} dishes are now trusted data.`;
   }
   if (verified >= 31) {
-    return 'Thirty-one dishes are now trusted data. The nine left are the ones with the widest recipe variation — worth slowing down for.';
+    return 'Thirty-one dishes are now trusted data. The nine left have the widest recipe variation, so they are worth slowing down for.';
   }
   return `${verified} down. The queue sorts by how often you have logged the dish, so the ones that matter most come first.`;
 }

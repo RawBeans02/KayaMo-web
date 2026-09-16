@@ -179,10 +179,19 @@ export function TodayTable({ userId }: { userId: string }) {
     () => Math.round(entries.reduce((sum, row) => sum + (Number(row.kcal) || 0), 0)),
     [entries],
   );
-  const proteinG = useMemo(
-    () => entries.reduce((sum, row) => sum + (Number(row.protein_g) || 0), 0),
+  const macroTotals = useMemo(
+    () =>
+      entries.reduce(
+        (sum, row) => ({
+          protein: sum.protein + (Number(row.protein_g) || 0),
+          carbs: sum.carbs + (Number(row.carbs_g) || 0),
+          fat: sum.fat + (Number(row.fat_g) || 0),
+        }),
+        { protein: 0, carbs: 0, fat: 0 },
+      ),
     [entries],
   );
+  const proteinG = macroTotals.protein;
   const bar = weekAverageBar(headline.weekAverageKcal, headline.targetKcal);
   const delta = formatWeekDelta(headline.weekAverageKcal, headline.targetKcal);
   const weekOver =
@@ -393,7 +402,7 @@ export function TodayTable({ userId }: { userId: string }) {
             {group.empty ? (
               <div className={styles.mealEmpty}>
                 <button type="button" data-add-meal={group.slot} onClick={() => onAdd(group.slot)}>
-                  Nothing yet — ⌘K to add
+                  Nothing yet · ⌘K to add
                 </button>
               </div>
             ) : null}

@@ -33,6 +33,7 @@ const PERMISSION_ROWS: { key: MusContextPermissionDomain; label: string }[] = [
   { key: 'physical_self', label: 'Food, nutrition & workouts' },
   { key: 'goals_planning', label: 'Goals & planning' },
   { key: 'memory', label: 'Saved memories' },
+  { key: 'identity', label: 'Who you are' },
   { key: 'faith', label: 'Faith context' },
 ];
 

@@ -145,7 +145,7 @@ export function AddProductForm({
     }
     setMissing(stillMissing);
     if (stillMissing.length > 0) {
-      setError('Fill the highlighted fields. Empty means unread — type 0 only if the label says 0.');
+      setError('Fill the highlighted fields. Empty means unread. Type 0 only if the label says 0.');
       return;
     }
 
@@ -306,7 +306,7 @@ export function AddProductForm({
 
       {lowConfidence.length > 0 ? (
         <p className="font-body text-body text-warning">
-          Check the highlighted fields — the photo was hard to read there.
+          Check the highlighted fields. The photo was hard to read there.
         </p>
       ) : null}
       {error ? <p className="font-body text-body text-warning">{error}</p> : null}

@@ -486,7 +486,7 @@ export function FoodSearch({
           data-testid="food-search-input"
           value={query}
           onChange={(event) => setQuery(event.target.value.slice(0, 200))}
-          placeholder="kanin, adobo, chicken breast"
+          placeholder="Food, brand, or barcode"
           autoFocus
           autoCapitalize="off"
           autoComplete="off"
@@ -536,7 +536,7 @@ export function FoodSearch({
           {emptySearch ? (
             <EmptyState
               title="Nothing matched"
-              body="Add it to My Foods, or describe it in chat."
+              body="Try another name or barcode, or add a custom food from a nutrition label."
               action={<EmptyActions onAddProduct={onAddProduct} onDescribeInChat={onDescribeInChat} />}
             />
           ) : null}

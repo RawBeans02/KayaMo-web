@@ -14,7 +14,7 @@ function snapshot(overrides: Partial<CocoContextSnapshot> = {}): CocoContextSnap
     goals: [],
     health: { mealsLogged: 0, weightLogged: false, workoutStatus: 'none' },
     memories: [],
-    permissions: { goals_planning: true, physical_self: true, memory: true, faith: false },
+    permissions: { goals_planning: true, physical_self: true, memory: true, faith: false, identity: false },
     ...overrides,
   };
 }

@@ -38,6 +38,9 @@ export const CONTEXT_LIMITS = {
    * schema is generous enough to stop abuse and `clampHistory` decides what is
    * actually sent.
    */
+  personalRules: 6,
+  futureSelfChars: 400,
+  compassFieldChars: 200,
   historyTurnsAccepted: 60,
   historyTurnCharsAccepted: 4000,
 } as const;

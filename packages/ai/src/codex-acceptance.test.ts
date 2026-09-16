@@ -50,6 +50,7 @@ describe('codex acceptance: prompt and shared Lis', () => {
         physical_self: false,
         memory: false,
         faith: false,
+        identity: false,
       },
     });
     expect(snapshot.entry?.module).toBe('gym');

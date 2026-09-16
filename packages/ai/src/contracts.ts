@@ -28,6 +28,9 @@ export const cocoCitationSchema = z
       'expenditure',
       'achievement',
       'scripture',
+      'future_self',
+      'compass',
+      'personal_rule',
     ]),
     recordId: z.string().min(1).max(200),
     label: z.string().trim().min(1).max(120),
@@ -504,6 +507,46 @@ export const lisCompanionProfileSchema = z
   .strict();
 export type LisCompanionProfileContext = z.infer<typeof lisCompanionProfileSchema>;
 
+/**
+ * What the user has told us about who they are. Unlike the companion profile,
+ * these ARE records: each carries an id so `authorizeOutput` can check any
+ * citation against them, and they are gated by the `identity` domain.
+ *
+ * `future_selves` and `compasses` are keyed by user_id with no id column, so
+ * they cite as the literal 'self' rather than putting a user uuid into model
+ * output.
+ */
+export const lisIdentityContextSchema = z
+  .object({
+    futureSelf: z
+      .object({ id: z.literal('self'), statement: z.string().trim().min(1).max(400) })
+      .strict()
+      .nullable(),
+    compass: z
+      .object({
+        id: z.literal('self'),
+        mattersNow: z.string().trim().max(200).nullable(),
+        protect: z.string().trim().max(200).nullable(),
+        strugglingWith: z.string().trim().max(200).nullable(),
+        doNotBecome: z.string().trim().max(200).nullable(),
+        activeAreas: z.array(z.string().min(1).max(20)).max(8),
+      })
+      .strict()
+      .nullable(),
+    rules: z
+      .array(
+        z
+          .object({
+            id: z.string().min(1).max(200),
+            title: z.string().trim().min(1).max(120),
+          })
+          .strict(),
+      )
+      .max(6),
+  })
+  .strict();
+export type LisIdentityContext = z.infer<typeof lisIdentityContextSchema>;
+
 export const cocoContextSnapshotSchema = z
   .object({
     version: z.literal(1),
@@ -636,6 +679,7 @@ export const cocoContextSnapshotSchema = z
       .max(CONTEXT_LIMITS.memories),
     permissions: musContextPermissionsSchema,
     companionProfile: lisCompanionProfileSchema.optional(),
+    identity: lisIdentityContextSchema.optional(),
   })
   .strict();
 export type CocoContextSnapshot = z.infer<typeof cocoContextSnapshotSchema>;

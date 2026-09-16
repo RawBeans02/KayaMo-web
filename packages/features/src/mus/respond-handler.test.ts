@@ -69,6 +69,7 @@ function emptyContext() {
       physical_self: false,
       memory: false,
       faith: false,
+      identity: false,
     },
   };
 }

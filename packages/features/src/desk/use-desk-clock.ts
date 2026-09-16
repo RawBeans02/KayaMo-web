@@ -4,9 +4,10 @@ import { createBrowserSupabase } from '@kayamo/db';
 import { logicalDateFromInstant } from '@kayamo/offline';
 import { useEffect, useState } from 'react';
 import { hydrateFoodHistory } from '../food/hydrate-food-history';
+import { browserTimeZone } from '../food/default-clock';
 
 export function useDeskClock(userId: string) {
-  const [clock, setClock] = useState({ timeZone: 'Asia/Manila', dayStartsAt: '00:00:00' });
+  const [clock, setClock] = useState({ timeZone: 'UTC', dayStartsAt: '00:00:00' });
   const [nowMs, setNowMs] = useState(() => Date.now());
 
   useEffect(() => {
@@ -17,7 +18,7 @@ export function useDeskClock(userId: string) {
         if (!cancelled) setClock(next);
       })
       .catch(() => {
-        // Manila defaults are enough to render a logical date.
+        if (!cancelled) setClock({ timeZone: browserTimeZone(), dayStartsAt: '00:00:00' });
       });
     const tick = window.setInterval(() => setNowMs(Date.now()), 60_000);
     return () => {

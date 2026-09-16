@@ -37,6 +37,7 @@ export function baselineContext(
       physical_self: true,
       memory: false,
       faith: false,
+      identity: false,
     },
     ...overrides,
   };

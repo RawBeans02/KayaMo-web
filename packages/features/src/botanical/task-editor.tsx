@@ -2,6 +2,8 @@
 import { updateLocalTask, type LocalTask } from '@kayamo/offline';
 import { useEffect, useRef, useState } from 'react';
 import styles from './botanical.module.css';
+import { trapDialogTab } from './dialog-keyboard';
+import { openDialog, closeDialog } from './dialog-motion';
 
 export function TaskEditor({
   task,
@@ -38,7 +40,7 @@ export function TaskEditor({
   const [error, setError] = useState<string | null>(null);
   const dirty = draft.title !== task.title || draft.notes !== (task.notes ?? '');
   useEffect(() => {
-    dialog.current?.showModal();
+    openDialog(dialog.current);
   }, []);
   useEffect(() => {
     try {
@@ -64,13 +66,14 @@ export function TaskEditor({
     } catch {
       /* Optional draft storage. */
     }
-    onClose();
+    closeDialog(dialog.current, onClose);
   }
   return (
     <dialog
       ref={dialog}
       className={styles.dialog}
       aria-labelledby="task-editor-title"
+      onKeyDown={trapDialogTab}
       onCancel={(event) => {
         event.preventDefault();
         close();
@@ -99,7 +102,7 @@ export function TaskEditor({
               /* Optional draft storage. */
             }
             await onSaved();
-            onClose();
+            closeDialog(dialog.current, onClose);
           } catch {
             setError(
               'Could not save your changes. Your draft is still here. Please retry.',
@@ -113,7 +116,6 @@ export function TaskEditor({
         <label>
           Task
           <input
-            autoFocus
             value={draft.title}
             maxLength={160}
             required

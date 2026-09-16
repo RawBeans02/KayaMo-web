@@ -127,6 +127,7 @@ describeLive('Lis live voice baseline', () => {
         physical_self: true,
         memory: true,
         faith: false,
+        identity: false,
       },
       tasks: Array.from({ length: 50 }, (_, i) => ({
         id: `task-${i}`,

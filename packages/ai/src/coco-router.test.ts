@@ -39,6 +39,7 @@ function request(overrides: Partial<CocoRequest> = {}): CocoRequest {
         goals_planning: true,
         physical_self: true,
         faith: false,
+        identity: false,
         memory: false,
       },
     },

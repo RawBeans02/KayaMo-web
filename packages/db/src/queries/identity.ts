@@ -111,3 +111,60 @@ export const upsertInboxItem = (client: DbClient, row: InboxItemWrite) =>
 
 export const upsertPersonalRule = (client: DbClient, row: PersonalRuleWrite) =>
   upsertById<PersonalRule>(client, 'personal_rules', row);
+
+/**
+ * Reads for the `identity` context domain.
+ *
+ * Migration 0014 gave every one of these rows a `mus_may_read` flag and nothing
+ * has ever consulted it. These are its first readers.
+ *
+ * The filter cannot live in RLS: the user owns these rows, so the policy that
+ * lets them read their own compass necessarily lets the server read it on their
+ * behalf. `mus_may_read` is a narrower, per-row grant on top of ownership, and
+ * enforcing it is this layer's job.
+ */
+export async function getFutureSelfForAi(
+  client: DbClient,
+  userId: string,
+): Promise<FutureSelf | null> {
+  const { data, error } = await client
+    .from('future_selves')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('mus_may_read', true)
+    .maybeSingle();
+  throwIfError(error);
+  return data ?? null;
+}
+
+export async function getCompassForAi(
+  client: DbClient,
+  userId: string,
+): Promise<Compass | null> {
+  const { data, error } = await client
+    .from('compasses')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('mus_may_read', true)
+    .maybeSingle();
+  throwIfError(error);
+  return data ?? null;
+}
+
+export async function listPersonalRulesForAi(
+  client: DbClient,
+  userId: string,
+  limit = 6,
+): Promise<PersonalRule[]> {
+  const { data, error } = await client
+    .from('personal_rules')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('mus_may_read', true)
+    .eq('active', true)
+    .is('deleted_at', null)
+    .order('updated_at', { ascending: false })
+    .limit(limit);
+  throwIfError(error);
+  return data ?? [];
+}
