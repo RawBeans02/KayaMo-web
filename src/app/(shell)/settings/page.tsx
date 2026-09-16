@@ -1,6 +1,7 @@
 import { requireShellUserId } from '@/lib/shell-user';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { AppearanceSettings } from '@/shell/appearance-settings';
+import { CompanionSettings } from '@/shell/companion-settings';
 import { SignOutButton } from '@/shell/sign-out-button';
 import { BotanicalIcon } from '@kayamo/features/desktop';
 import styles from '@/shell/settings.module.css';
@@ -94,6 +95,26 @@ export default async function SettingsPage() {
             <BotanicalIcon name="next" size={20} />
           </span>
         </a>
+
+        <details className={styles.details}>
+          <summary className={styles.row}>
+            <span className={styles.lisMark} aria-hidden="true">
+              <BotanicalIcon name="lis" size={17} weight="fill" />
+            </span>
+            <span className={styles.rowLabel}>
+              How Lis speaks to you
+              <small className={styles.rowNote}>
+                Your name, and how much encouragement, firmness and humour you want.
+              </small>
+            </span>
+            <span className={styles.caret} aria-hidden="true">
+              <BotanicalIcon name="next" size={20} />
+            </span>
+          </summary>
+          <div className={styles.detailsBody}>
+            <CompanionSettings />
+          </div>
+        </details>
 
         <details className={styles.details}>
           <summary className={styles.row}>

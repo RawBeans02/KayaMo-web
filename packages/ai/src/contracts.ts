@@ -477,6 +477,33 @@ export const musEntrySchema = z
   .strict();
 export type MusEntry = z.infer<typeof musEntrySchema>;
 
+/**
+ * How the user wants Lis to speak to them.
+ *
+ * This is the only part of the snapshot that shapes VOICE rather than supplying
+ * FACTS, and it is the only part that is not permission-gated: it holds no life
+ * data by construction, and someone typing it is the consent. It is rendered
+ * into the system prompt rather than the context JSON — see persona.ts for why.
+ */
+export const lisCompanionProfileSchema = z
+  .object({
+    displayName: z.string().trim().min(1).max(40).nullable(),
+    pronouns: z.string().trim().min(1).max(24).nullable(),
+    languageRegister: z.enum(['english', 'taglish', 'match_me']),
+    dials: z
+      .object({
+        encouragement: z.enum(['low', 'balanced', 'high']),
+        accountability: z.enum(['gentle', 'balanced', 'firm']),
+        humor: z.enum(['serious', 'balanced', 'playful']),
+        proactivity: z.enum(['quiet', 'balanced', 'proactive']),
+      })
+      .strict(),
+    aboutMe: z.string().trim().min(1).max(600).nullable(),
+    avoidTopics: z.array(z.string().trim().min(1).max(60)).max(10),
+  })
+  .strict();
+export type LisCompanionProfileContext = z.infer<typeof lisCompanionProfileSchema>;
+
 export const cocoContextSnapshotSchema = z
   .object({
     version: z.literal(1),
@@ -608,6 +635,7 @@ export const cocoContextSnapshotSchema = z
       )
       .max(CONTEXT_LIMITS.memories),
     permissions: musContextPermissionsSchema,
+    companionProfile: lisCompanionProfileSchema.optional(),
   })
   .strict();
 export type CocoContextSnapshot = z.infer<typeof cocoContextSnapshotSchema>;

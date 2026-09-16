@@ -89,6 +89,11 @@ export {
 } from './identity';
 export { listMusContextPermissions, setMusContextPermission } from './mus-context';
 export {
+  getLisCompanionProfile,
+  upsertLisCompanionProfile,
+  type LisCompanionProfilePatch,
+} from './lis-companion';
+export {
   getProfile,
   getProfileTimezone,
   recomputeLogicalDates,

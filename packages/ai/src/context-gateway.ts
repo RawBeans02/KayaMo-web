@@ -1,4 +1,4 @@
-import type { CocoContextSnapshot } from './contracts';
+import type { CocoContextSnapshot, LisCompanionProfileContext } from './contracts';
 import { CONTEXT_LIMITS, truncateWords } from './context-limits';
 import {
   MUS_CONTEXT_PERMISSION_DOMAINS,
@@ -109,6 +109,12 @@ export async function buildAuthorizedCocoContext(input: {
   timezone: string;
   readPermissions: () => Promise<MusContextPermissions>;
   loaders: MusContextDomainLoaders;
+  /**
+   * How the user wants Lis to speak. Read unconditionally and outside the
+   * permission loop on purpose: gating it behind a domain that defaults false
+   * would mean the persona silently does not apply for every new user.
+   */
+  readCompanionProfile?: () => Promise<LisCompanionProfileContext | null>;
 }): Promise<{ context: CocoContextSnapshot; audit: MusContextAuthorizationAudit }> {
   let configured = defaultMusContextPermissions();
   let permissionLookupFailed = false;
@@ -164,6 +170,17 @@ export async function buildAuthorizedCocoContext(input: {
       recordId: null,
       title: 'Choose what would help next',
     };
+  let companionProfile: LisCompanionProfileContext | undefined;
+  if (input.readCompanionProfile) {
+    try {
+      companionProfile = (await input.readCompanionProfile()) ?? undefined;
+    } catch {
+      // A missing profile must never cost someone their assistant. The persona
+      // simply stays impersonal.
+      companionProfile = undefined;
+    }
+  }
+
   const context: CocoContextSnapshot = {
     version: 1,
     logicalDate: input.logicalDate,
@@ -176,6 +193,7 @@ export async function buildAuthorizedCocoContext(input: {
     scripture: faith?.scripture,
     memories: memory?.memories ?? [],
     permissions: effective,
+    companionProfile,
   };
   const grantedDomains = MUS_CONTEXT_PERMISSION_DOMAINS.filter(
     (domain) => effective[domain],

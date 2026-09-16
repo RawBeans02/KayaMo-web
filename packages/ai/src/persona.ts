@@ -63,17 +63,80 @@ export function lisPersonaFingerprint(): string {
   return createHash('sha256').update(renderLisBasePersona(), 'utf8').digest('hex');
 }
 
+const DIAL_LINES: Record<string, Record<string, string>> = {
+  encouragement: {
+    low: 'keep encouragement sparing',
+    balanced: '',
+    high: 'be generous with encouragement',
+  },
+  accountability: {
+    gentle: 'hold them to things gently',
+    balanced: '',
+    firm: 'hold them to what they said, firmly',
+  },
+  humor: {
+    serious: 'stay serious',
+    balanced: '',
+    playful: 'a light touch is welcome',
+  },
+  proactivity: {
+    quiet: 'wait to be asked; do not volunteer next steps',
+    balanced: '',
+    proactive: 'offer the next step without being asked',
+  },
+};
+
+const REGISTER_LINES: Record<string, string> = {
+  english: 'Write in English.',
+  taglish: 'Taglish is welcome; match how they mix it.',
+  match_me: 'Match their language and register, including Taglish, without forcing it.',
+};
+
 /**
  * The per-user block: who Lis is speaking with, and how they want to be spoken
- * to. Pure and deterministic — the "What Lis knows about me" screen will render
+ * to. Pure, deterministic, no I/O — the "What Lis knows about me" screen renders
  * this exact string, so the two can never disagree.
  *
- * Returns '' today because nothing populates it yet. A cold-start user must
- * produce an empty string rather than "the user has not told you anything",
- * which reliably turns the first reply into an interrogation.
+ * Rules, each of which is a test:
+ *   - Omit empty sections and empty lines entirely. Never "Call them: (not set)";
+ *     an absent line is information, a null placeholder teaches the model to
+ *     talk about gaps.
+ *   - A user who has set nothing produces an EMPTY STRING, not "the user has not
+ *     told you anything", which reliably turns the first reply into an
+ *     interrogation.
+ *   - A dial at its midpoint contributes nothing. Saying "balanced humour" is
+ *     noise that spends tokens to describe the default.
  */
-export function renderLisIdentityCard(_context: CocoContextSnapshot): string {
-  return '';
+export function renderLisIdentityCard(context: CocoContextSnapshot): string {
+  const profile = context.companionProfile;
+  if (!profile) return '';
+
+  const lines: string[] = [];
+
+  const name = profile.displayName?.trim();
+  const pronouns = profile.pronouns?.trim();
+  if (name && pronouns) lines.push(`Call them ${name} (${pronouns}).`);
+  else if (name) lines.push(`Call them ${name}.`);
+  else if (pronouns) lines.push(`Their pronouns are ${pronouns}.`);
+
+  const register = REGISTER_LINES[profile.languageRegister];
+  if (register) lines.push(register);
+
+  const dials = Object.entries(profile.dials)
+    .map(([dial, setting]) => DIAL_LINES[dial]?.[setting] ?? '')
+    .filter(Boolean);
+  if (dials.length) lines.push(`How they want you: ${dials.join('; ')}.`);
+
+  const about = profile.aboutMe?.trim();
+  if (about) lines.push(`In their words: ${about}`);
+
+  const avoid = profile.avoidTopics.map((topic) => topic.trim()).filter(Boolean);
+  if (avoid.length) {
+    lines.push(`Do not raise unless they raise it first: ${avoid.join(', ')}.`);
+  }
+
+  if (!lines.length) return '';
+  return `WHO YOU ARE SPEAKING WITH\n${lines.join('\n')}`;
 }
 
 /** What actually goes in the system position. */

@@ -12,6 +12,7 @@ import {
   listEffectiveNutritionTargets,
   listFoodEntriesByLogicalDate,
   listGoals,
+  getLisCompanionProfile,
   listMusContextPermissions,
   listRoutineCompletionsForDate,
   listScriptureByTag,
@@ -21,6 +22,16 @@ import {
   listWorkoutSets,
   type DbClient,
 } from '@kayamo/db';
+
+const LANGUAGE_REGISTERS = new Set(['english', 'taglish', 'match_me']);
+
+/** smallint 0/1/2 -> the word each dial uses. Index is the stored value. */
+const DIAL_SCALES = {
+  encouragement: ['low', 'balanced', 'high'],
+  accountability: ['gentle', 'balanced', 'firm'],
+  humor: ['serious', 'balanced', 'playful'],
+  proactivity: ['quiet', 'balanced', 'proactive'],
+} as const;
 
 export async function buildServerMusContext(input: {
   client: DbClient;
@@ -35,6 +46,25 @@ export async function buildServerMusContext(input: {
     timezone: timezone ?? 'Asia/Manila',
     readPermissions: async () =>
       musContextPermissionsFromRows(await listMusContextPermissions(client, userId)),
+    readCompanionProfile: async () => {
+      const row = await getLisCompanionProfile(client, userId);
+      if (!row) return null;
+      return {
+        displayName: row.display_name?.trim() || null,
+        pronouns: row.pronouns?.trim() || null,
+        languageRegister: LANGUAGE_REGISTERS.has(row.language_register)
+          ? (row.language_register as 'english' | 'taglish' | 'match_me')
+          : 'match_me',
+        dials: {
+          encouragement: DIAL_SCALES.encouragement[row.encouragement] ?? 'balanced',
+          accountability: DIAL_SCALES.accountability[row.accountability] ?? 'balanced',
+          humor: DIAL_SCALES.humor[row.humor] ?? 'balanced',
+          proactivity: DIAL_SCALES.proactivity[row.proactivity] ?? 'balanced',
+        },
+        aboutMe: row.about_me?.trim() || null,
+        avoidTopics: row.avoid_topics.map((topic: string) => topic.trim()).filter(Boolean),
+      };
+    },
     loaders: {
       goals_planning: async () => {
         const weekday = new Date(`${logicalDate}T12:00:00.000Z`).getUTCDay();
