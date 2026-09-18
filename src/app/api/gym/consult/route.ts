@@ -1,5 +1,4 @@
 import { allowanceRejection, reserveWebAiRequest } from '@/lib/server-ai-allowance';
-import { NextResponse } from 'next/server';
 import { AiBudgetError, AiConfigError, completeObject } from '@kayamo/ai';
 import { getAgentSpendUsd, insertAgentRunTelemetry } from '@kayamo/db';
 import {
@@ -7,8 +6,9 @@ import {
   catalogPromptLines,
   gymConsultSchema,
 } from '@kayamo/features/gym';
+import { readAiBudgetEnv } from '@kayamo/features/mus-plan-server';
 import { z } from 'zod';
-import { createServerSupabase } from '@/lib/supabase/server';
+import { json, jsonError, requireUser } from '@/lib/api';
 
 const requestSchema = z
   .object({
@@ -17,11 +17,6 @@ const requestSchema = z
     recentLifts: z.array(z.string().trim().min(1).max(80)).max(40).optional(),
   })
   .strict();
-
-function nonnegativeEnvNumber(name: string, fallback: number): number {
-  const value = Number(process.env[name]);
-  return Number.isFinite(value) && value >= 0 ? value : fallback;
-}
 
 function gymModelId(): string {
   return process.env.MODEL_GYM?.trim() || process.env.MUS_ORCHESTRATOR_MODEL?.trim() || process.env.MODEL_SMALL?.trim() || 'gpt-5.6-luna';
@@ -39,25 +34,18 @@ Catalog (slug | name | pattern | muscle | mechanic | group | equipment | trackin
 ${catalogPromptLines()}`;
 
 export async function POST(request: Request) {
-  const supabase = await createServerSupabase(request);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: 'Sign in to consult a session.' }, { status: 401 });
-  }
+  const auth = await requireUser(request, 'Sign in to consult a session.');
+  if (!auth.ok) return auth.response;
+  const { supabase, user } = auth;
 
   const parsed = requestSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid gym consult request.' }, { status: 400 });
-  }
+  if (!parsed.success) return jsonError(400, 'Invalid gym consult request.');
 
   // Reserved after the parse so a malformed request does not spend a slot.
   const allowanceError = allowanceRejection(await reserveWebAiRequest(user.id));
   if (allowanceError) return allowanceError;
 
-  const dailyBudgetUsd = nonnegativeEnvNumber('AI_DAILY_BUDGET_USD_PER_USER', 0.05);
-  const estimatedRequestCostUsd = nonnegativeEnvNumber('AI_ESTIMATED_REQUEST_USD', 0.01);
+  const { dailyBudgetUsd, estimatedRequestCostUsd } = readAiBudgetEnv();
   const started = Date.now();
   const modelId = gymModelId();
 
@@ -112,13 +100,10 @@ export async function POST(request: Request) {
 
     const bound = bindConsultToCatalog(raw);
     if (bound.picks.length < 3) {
-      return NextResponse.json(
-        { error: 'Consult did not land on the library. Pick from the list.' },
-        { status: 422 },
-      );
+      return jsonError(422, 'Consult did not land on the library. Pick from the list.');
     }
 
-    return NextResponse.json({
+    return json({
       consult: {
         splitLabel: bound.splitLabel,
         rationale: bound.rationale,
@@ -132,13 +117,10 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof AiBudgetError) {
-      return NextResponse.json(
-        { error: "Today's AI limit is resting. Search the list instead." },
-        { status: 429 },
-      );
+      return jsonError(429, "Today's AI limit is resting. Search the list instead.");
     }
     if (error instanceof AiConfigError) {
-      return NextResponse.json({ error: 'Gym consult is not configured.' }, { status: 503 });
+      return jsonError(503, 'Gym consult is not configured.');
     }
     void insertAgentRunTelemetry(supabase, {
       id: crypto.randomUUID(),
@@ -156,6 +138,6 @@ export async function POST(request: Request) {
       updatedAt: new Date().toISOString(),
       agent: 'gym_consult',
     }).catch(() => undefined);
-    return NextResponse.json({ error: 'Could not consult. Pick from the list.' }, { status: 502 });
+    return jsonError(502, 'Could not consult. Pick from the list.');
   }
 }

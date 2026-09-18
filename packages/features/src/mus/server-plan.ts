@@ -32,17 +32,11 @@ async function rejectedByAllowance(
   return { status: outcome.status, body: { error: outcome.error } };
 }
 
-function nonnegativeEnvNumber(name: string, fallback: number): number {
-  const value = Number(process.env[name]);
-  return Number.isFinite(value) && value >= 0 ? value : fallback;
-}
+import { readAiBudgetEnv } from './ai-budget-env';
 
-function budgetUsd() {
-  return {
-    dailyBudgetUsd: nonnegativeEnvNumber('AI_DAILY_BUDGET_USD_PER_USER', 0.05),
-    estimatedRequestCostUsd: nonnegativeEnvNumber('AI_ESTIMATED_REQUEST_USD', 0.01),
-  };
-}
+export { readAiBudgetEnv } from './ai-budget-env';
+
+const budgetUsd = readAiBudgetEnv;
 
 async function withTelemetry<T>(params: {
   client: DbClient;

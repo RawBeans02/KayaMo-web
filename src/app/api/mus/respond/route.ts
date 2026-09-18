@@ -1,5 +1,5 @@
 import { reserveWebAiRequest } from '@/lib/server-ai-allowance';
-import { NextResponse } from 'next/server';
+import { json, requireUser } from '@/lib/api';
 import type { CocoProvider } from '@kayamo/ai';
 import { createOpenAICocoProvider } from '@kayamo/ai/server';
 import {
@@ -8,12 +8,7 @@ import {
   insertAgentRunTelemetry,
 } from '@kayamo/db';
 import { handleMusRespond } from '@kayamo/features/mus-respond';
-import { createServerSupabase } from '@/lib/supabase/server';
-
-function nonnegativeEnvNumber(name: string, fallback: number): number {
-  const value = Number(process.env[name]);
-  return Number.isFinite(value) && value >= 0 ? value : fallback;
-}
+import { readAiBudgetEnv } from '@kayamo/features/mus-plan-server';
 
 function configuredProvider(): CocoProvider {
   try {
@@ -31,13 +26,9 @@ function configuredProvider(): CocoProvider {
 
 /** Auth and wiring only; the turn itself lives in `handleMusRespond`. */
 export async function POST(request: Request) {
-  const supabase = await createServerSupabase(request);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: 'Sign in to talk with Lis.' }, { status: 401 });
-  }
+  const auth = await requireUser(request, 'Sign in to talk with Lis.');
+  if (!auth.ok) return auth.response;
+  const { supabase, user } = auth;
 
   const result = await handleMusRespond({
     client: supabase,
@@ -68,10 +59,10 @@ export async function POST(request: Request) {
     },
     config: {
       maxRetries: 0,
-      dailyBudgetUsd: nonnegativeEnvNumber('AI_DAILY_BUDGET_USD_PER_USER', 0.05),
-      estimatedRequestCostUsd: nonnegativeEnvNumber('AI_ESTIMATED_REQUEST_USD', 0.01),
+      dailyBudgetUsd: readAiBudgetEnv().dailyBudgetUsd,
+      estimatedRequestCostUsd: readAiBudgetEnv().estimatedRequestCostUsd,
     },
   });
 
-  return NextResponse.json(result.body, { status: result.status });
+  return json(result.body, { status: result.status });
 }

@@ -1,8 +1,7 @@
 import { parseFoodMessage } from '@kayamo/ai';
 import { foodParseSchema } from '@kayamo/food';
-import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createServerSupabase } from '@/lib/supabase/server';
+import { json, jsonError, requireUser } from '@/lib/api';
 
 const bodySchema = z.object({
   message: z.string().trim().min(1).max(2000),
@@ -23,18 +22,12 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const supabase = await createServerSupabase(request);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: 'Sign in to parse food.' }, { status: 401 });
-  }
+  const auth = await requireUser(request, 'Sign in to parse food.');
+  if (!auth.ok) return auth.response;
+  const { user } = auth;
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid parse request.' }, { status: 400 });
-  }
+  if (!parsed.success) return jsonError(400, 'Invalid parse request.');
 
   const result = await parseFoodMessage({
     userId: user.id,
@@ -45,5 +38,5 @@ export async function POST(request: Request) {
       aliases: parsed.data.aliases,
     },
   });
-  return NextResponse.json(foodParseSchema.parse(result));
+  return json(foodParseSchema.parse(result));
 }

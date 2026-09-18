@@ -1,7 +1,6 @@
 import { getLisCompanionProfile, upsertLisCompanionProfile } from '@kayamo/db';
-import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createServerSupabase } from '@/lib/supabase/server';
+import { errorCode, json, jsonError, requireUser } from '@/lib/api';
 
 /**
  * The companion profile: how the user wants Lis to speak to them.
@@ -11,8 +10,6 @@ import { createServerSupabase } from '@/lib/supabase/server';
  * construction and typing it IS the consent — gating it behind a domain that
  * defaults false would mean the persona silently never applies.
  */
-
-const noStoreHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
 
 /** Per-element length lives here, not in a CHECK; see migration 0021. */
 const patchSchema = z
@@ -29,59 +26,29 @@ const patchSchema = z
   })
   .strict();
 
-/** Postgres error code or error name only — never a message carrying row data. */
-function describeCause(error: unknown): string {
-  if (error && typeof error === 'object' && 'code' in error) {
-    return String((error as { code: unknown }).code);
-  }
-  return error instanceof Error ? error.name : 'unknown';
-}
-
-async function authenticated(request: Request) {
-  const client = await createServerSupabase(request);
-  const {
-    data: { user },
-  } = await client.auth.getUser();
-  return { client, user };
-}
-
 export async function GET(request: Request) {
-  const { client, user } = await authenticated(request);
-  if (!user) {
-    return NextResponse.json(
-      { error: 'Sign in to manage how Lis speaks to you.' },
-      { status: 401, headers: noStoreHeaders },
-    );
-  }
+  const auth = await requireUser(request, 'Sign in to manage how Lis speaks to you.');
+  if (!auth.ok) return auth.response;
+  const { supabase: client, user } = auth;
   try {
     const row = await getLisCompanionProfile(client, user.id);
     // A user who has never opened the screen has no row, and that is not an
     // error: it is the cold start, and the caller renders defaults.
-    return NextResponse.json({ profile: row }, { headers: noStoreHeaders });
+    return json({ profile: row });
   } catch (error) {
-    console.error(`Lis companion profile read failed (${describeCause(error)}).`);
-    return NextResponse.json(
-      { error: 'Your companion settings are unavailable.' },
-      { status: 500, headers: noStoreHeaders },
-    );
+    console.error(`Lis companion profile read failed (${errorCode(error)}).`);
+    return jsonError(500, 'Your companion settings are unavailable.');
   }
 }
 
 export async function PUT(request: Request) {
-  const { client, user } = await authenticated(request);
-  if (!user) {
-    return NextResponse.json(
-      { error: 'Sign in to manage how Lis speaks to you.' },
-      { status: 401, headers: noStoreHeaders },
-    );
-  }
+  const auth = await requireUser(request, 'Sign in to manage how Lis speaks to you.');
+  if (!auth.ok) return auth.response;
+  const { supabase: client, user } = auth;
 
   const parsed = patchSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'Invalid companion settings.' },
-      { status: 400, headers: noStoreHeaders },
-    );
+    return jsonError(400, 'Invalid companion settings.');
   }
 
   const patch = parsed.data;
@@ -103,12 +70,9 @@ export async function PUT(request: Request) {
       ...(patch.aboutMe !== undefined ? { about_me: patch.aboutMe } : {}),
       ...(patch.avoidTopics !== undefined ? { avoid_topics: patch.avoidTopics } : {}),
     });
-    return NextResponse.json({ profile: row }, { headers: noStoreHeaders });
+    return json({ profile: row });
   } catch (error) {
-    console.error(`Lis companion profile write failed (${describeCause(error)}).`);
-    return NextResponse.json(
-      { error: 'Could not save your companion settings.' },
-      { status: 500, headers: noStoreHeaders },
-    );
+    console.error(`Lis companion profile write failed (${errorCode(error)}).`);
+    return jsonError(500, 'Could not save your companion settings.');
   }
 }
