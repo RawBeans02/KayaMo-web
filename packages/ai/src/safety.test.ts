@@ -114,6 +114,90 @@ describe('evaluateCocoSafety', () => {
       expect(evaluateCocoSafety(message, PH).allowModel).toBe(true);
     });
   });
+
+  /**
+   * A food-logging app hears about eating all day. These are the ordinary
+   * sentences that the first version of the classifier sent to a clinician
+   * message: no duration, no intent, just someone describing a meal.
+   */
+  describe('ordinary talk about eating is not a red flag', () => {
+    it.each([
+      ['i havent eaten yet, what should i have for lunch'],
+      ["haven't eaten breakfast yet"],
+      ['i stopped eating rice this week'],
+      ['i stopped eating after 8pm'],
+      ['stopped eating so much sugar'],
+      ['i havent eaten anything sweet today'],
+    ] as const)('allows %s', (message) => {
+      expect(evaluateCocoSafety(message, PH).allowModel).toBe(true);
+    });
+
+    it.each([
+      ['i havent eaten for a week'],
+      ['havent eaten in days'],
+      ['i stopped eating altogether'],
+      ['stopped eating completely'],
+      ['i stopped eating for three days'],
+    ] as const)('still catches %s', (message) => {
+      expect(evaluateCocoSafety(message, PH).category).toBe('eating_disorder');
+    });
+  });
+
+  /**
+   * Household and family abuse. The first version only knew intimate partners.
+   */
+  describe('abuse is not only from a partner', () => {
+    it.each([
+      ['my dad hits me'],
+      ['my mother beats me'],
+      ['my stepdad hurts me'],
+      ['my brother threatens me'],
+    ] as const)('catches %s', (message) => {
+      const result = evaluateCocoSafety(message, PH);
+      expect(result.category).toBe('abuse');
+      expect(result.allowModel).toBe(false);
+    });
+  });
+
+  /**
+   * The persona invites Taglish, so the classifier has to read it. Written from
+   * common phrasings, not a clinical vocabulary; a Filipino-speaking reviewer
+   * should extend this table.
+   */
+  describe('Filipino and Taglish crisis phrasings', () => {
+    it.each([
+      ['gusto ko na lang mamatay', 'self_harm'],
+      ['magpapakamatay na ako', 'self_harm'],
+      ['gusto kong magpakamatay', 'self_harm'],
+      ['ayoko na mabuhay', 'self_harm'],
+      ['ayaw ko na mabuhay', 'self_harm'],
+      ['wala nang kwenta ang buhay ko', 'self_harm'],
+      ['gusto ko nang mawala', 'self_harm'],
+      ['sasaktan ko ang sarili ko', 'self_harm'],
+      ['hindi ako makahinga', 'medical_emergency'],
+      ['di ako makahinga', 'medical_emergency'],
+      ['sumasakit ang dibdib ko', 'medical_emergency'],
+      ['sinasaktan ako ng asawa ko', 'abuse'],
+      ['sinasaktan ako ng nobyo ko', 'abuse'],
+      ['binubugbog ako ng partner ko', 'abuse'],
+      ['ilang araw na akong hindi kumakain', 'eating_disorder'],
+      ['pinipilit kong sumuka pagkatapos kumain', 'eating_disorder'],
+      ['nagsusuka ako pagkatapos kumain', 'eating_disorder'],
+    ] as const)('catches %s', (message, category) => {
+      const result = evaluateCocoSafety(message, PH);
+      expect(result.category).toBe(category);
+      expect(result.allowModel).toBe(false);
+    });
+
+    it.each([
+      ['hindi ko na kaya yung workout na to'],
+      ['ayoko na ng kanin ngayon'],
+      ['gusto ko ng adobo mamaya'],
+      ['hindi ako kumain ng almusal'],
+    ] as const)('allows ordinary Taglish %s', (message) => {
+      expect(evaluateCocoSafety(message, PH).allowModel).toBe(true);
+    });
+  });
 });
 
 describe('normaliseForSafety', () => {

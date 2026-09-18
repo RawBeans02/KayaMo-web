@@ -40,6 +40,18 @@ const SELF_HARM = [
   /\bbetter\s+off\s+(?:dead|without\s+me)\b/i,
   /\bdo(?:n'?t|\s+not)\s+see\s+(?:the\s+)?point\s+(?:of|in)\s+(?:living|life|going\s+on)\b/i,
   /\bno\s+(?:point|reason)\s+(?:in|to)\s+(?:living|going\s+on)\b/i,
+  // Filipino and Taglish. The persona invites Taglish, so the classifier has
+  // to read it or the message reaches the model unscreened. This is a bank of
+  // common phrasings written from everyday usage, not a clinical vocabulary;
+  // a Filipino-speaking reviewer should extend it. "hindi ko na kaya" (I can't
+  // take it any more) is deliberately absent: in a food and gym app it is far
+  // more often about a workout than about living.
+  /\bgusto\s+ko\s+(?:na\s+lang|nang|na)\s+mamatay\b/i,
+  /\bmag(?:pa)?pakamatay\b/i,
+  /\b(?:ayoko|ayaw\s+ko)\s+na\s+mabuhay\b/i,
+  /\bwala\s+nang\s+(?:kwenta|saysay)\s+(?:ang\s+)?buhay\s+ko\b/i,
+  /\bgusto\s+ko\s+nang\s+mawala\b/i,
+  /\b(?:sasaktan|papatayin)\s+ko\s+(?:ang\s+)?sarili\s+ko\b/i,
 ];
 
 const MEDICAL_EMERGENCY = [
@@ -48,23 +60,42 @@ const MEDICAL_EMERGENCY = [
   /\b(?:overdose[ds]?|seizure|unconscious|passed\s+out)\b/i,
   /\bsevere\s+bleeding\b/i,
   /\bbleeding\s+(?:a\s+lot|badly|heavily)\b/i,
+  // Filipino: "hindi/di ako makahinga" (I can't breathe), chest pain.
+  /\b(?:hindi|di)\s+ako\s+makahinga\b/i,
+  /\b(?:sumasakit|masakit|sobrang\s+sakit)\s+(?:ang|ng)\s+dibdib\b/i,
 ];
 
 const EATING_DISORDER = [
-  /\b(?:stop|stopped)\s+eating\b/i,
+  // A food-logging app hears "stopped eating rice" and "haven't eaten yet" all
+  // day. Both patterns used to fire on those and send a hungry person to a
+  // clinician message. They now need totality or a span of days.
+  /\bstop(?:ped)?\s+eating\s+(?:altogether|completely|entirely|for\s+(?:\w+\s+)?(?:days?|weeks?))\b/i,
   /\bstarv(?:e|ing)\s+myself\b/i,
-  /\bhave?n'?t\s+eaten\b/i,
+  /\bhave?n'?t\s+eaten\s+(?:in|for)\s+(?:\w+\s+)?(?:days?|weeks?)\b/i,
   /\bnot\s+eat(?:ing)?\s+for\s+(?:a\s+few\s+)?days?\b/i,
   /\bpurge\b/i,
   /\bmake\s+myself\s+(?:vomit|throw\s+up)\b/i,
   /\bunder\s+800\s+calories\b/i,
   /\bunder\s+\d{3}\s+calories?\s*(?:a|per|\/)\s*day\b/i,
+  // Filipino: days without eating, forcing or repeatedly vomiting after meals.
+  /\bilang\s+araw\s+na\s+(?:akong|ako)\s+(?:hindi|di)\s+kumakain\b/i,
+  /\b(?:pinipilit|pilit)\s+(?:kong|ko)\s+(?:sumuka|magsuka)\b/i,
+  /\bnagsusuka\s+(?:ako\s+)?(?:pagkatapos|after)\s+kumain\b/i,
 ];
 
+// Intimate partners and household members. The first version knew only the
+// former, so "my dad hits me" reached the model.
+const ABUSER =
+  '(?:partner|boyfriend|girlfriend|husband|wife|bf|gf|dad|father|mom|mum|mother|step(?:dad|father|mom|mother)|brother|sister|uncle|aunt|parents?)';
+
 const ABUSE = [
-  /\b(?:partner|boyfriend|girlfriend|husband|wife|bf|gf)\s+(?:hits?|hurts?|beats?|threatens?|threatened|hit|hurt)\s+me\b/i,
+  new RegExp(`\\b${ABUSER}\\s+(?:hits?|hurts?|beats?|threatens?|threatened|hit|hurt)\\s+me\\b`, 'i'),
   /\b(?:not|is\s*n'?t)\s+safe\s+at\s+home\b/i,
-  /\bafraid\s+of\s+(?:my\s+)?(?:partner|boyfriend|girlfriend|husband|wife)\b/i,
+  new RegExp(`\\bafraid\\s+of\\s+(?:my\\s+)?${ABUSER}\\b`, 'i'),
+  // Filipino: "sinasaktan ako ng <someone>" (someone hurts me) needs the agent
+  // so it stays physical; "binubugbog ako" (I am being beaten) does not.
+  /\bsinasaktan\s+ako\s+ng\b/i,
+  /\bbinu?bugbog\s+ako\b/i,
 ];
 
 function matchesAny(value: string, patterns: RegExp[]): boolean {
