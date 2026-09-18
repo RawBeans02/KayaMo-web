@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
  * This replaces the previous test, which guarded the botanical sidebar's
  * texture image — a surface the Liquid Glass shell no longer renders.
  */
-const css = readFileSync(new URL('../app/glass.css', import.meta.url), 'utf8');
+const css = readFileSync(new URL('../../packages/ui/src/glass.css', import.meta.url), 'utf8');
 
 const light = css.slice(0, css.indexOf("[data-kayamo-theme='night']"));
 const night = css.slice(css.indexOf("[data-kayamo-theme='night']"));

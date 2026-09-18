@@ -1,7 +1,7 @@
 /* Liquid Glass materials.
  *
  * Global utility classes that screens compose onto surfaces. Loaded last so a
- * material tier wins over the base component styling in glass.css.
+ * material tier wins over the base component styling in glass.css (same package).
  *
  * Tokens, keyframes and the accessibility blocks stay in glass.css.
  *

@@ -8,7 +8,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./tokens.css": "./src/tokens.css",
-    "./web-motion.css": "./src/web-motion.css"
+    "./web-motion.css": "./src/web-motion.css",
+    "./glass.css": "./src/glass.css",
+    "./glass-materials.css": "./src/glass-materials.css"
   },
   "scripts": {
     "lint": "eslint src",
