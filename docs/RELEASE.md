@@ -18,21 +18,11 @@ independently verified findings) and `docs/audits/2026-09-18-build-sot-audit.md`
 
 Things only the owner can do. Most of the release is waiting on these.
 
-- [ ] **Apply the pending migrations.** Verified read-only against the hosted
-      database on 2026-09-19: it was migrated by Drizzle through 0012 (twelve
-      rows in `drizzle.__drizzle_migrations`), 0020 was applied out of band
-      (`private.web_ai_allowances` and `reserve_web_ai_request` exist), and the
-      Supabase CLI history is empty. **Ten migrations are unapplied: 0013 to
-      0019 and 0021 to 0023.** `goals.life_area`, the 0015 daily-plan columns,
-      `future_selves`/`compasses`/`inbox_items`/`personal_rules`,
-      `mus_context_permissions`, `private.sync_user_counters`,
-      `lis_companion_profile` and the agent_runs grant are all missing, and
-      `tasks_select` still hides tombstones. Procedure: take a backup, mark
-      0001-0012 and 0020 as applied with `supabase migration repair`, dry-run
-      `db push --linked`, then push. Confirm `GET /api/mus/permissions` returns
-      200. Record the applied set under `docs/releases/`. Until this is done,
-      Lis permissions and profile return 500 in production and the server never
-      sees a tombstoned task.
+- [x] **Apply the pending migrations.** Done 2026-09-19: ten migrations
+      (0013–0019, 0021–0023) pushed with the Supabase CLI after backups and a
+      history repair; every object verified present read-only. Record:
+      `docs/releases/2026-09-19-hosted-migrations.md`. Still to confirm from a
+      signed-in session: `GET /api/mus/permissions` returns 200 on the hosted app.
 - [x] **Production branch is `main`.** Decided 2026-09-18. Vercel builds `main`,
       and GitHub's default branch is already `main`. `origin/feat/web` is stale
       at 2026-09-01; do not target it. **A merge to `main` deploys**, so nothing
@@ -125,11 +115,10 @@ Things only the owner can do. Most of the release is waiting on these.
 - [x] **Add `pnpm check:copy` to CI.** Also: a concurrency group, a read-only
       token, one retry in CI so traces record, and the report kept on failure.
       2026-09-18.
-- [ ] **Settle the migration runners.** Decision proposed 2026-09-19: the Supabase
-      CLI history (`supabase_migrations.schema_migrations`) becomes the only
-      record, seeded by the repair above; the Drizzle table stays as history and
-      nothing writes to it. Remove or archive the Drizzle migration path after
-      the push succeeds.
+- [ ] **Settle the migration runners.** Decided 2026-09-19: the Supabase CLI
+      history is the only record (seeded by the repair; see the release note).
+      Remaining code work: remove or archive the Drizzle migration path and the
+      stale journal so nothing can write a second history.
 - [x] **Take Gym and Todos off the rail and the Life hub** per the v1 scope
       decision. 2026-09-19. **Owner call left open:** Home still deep-links to
       both (Open planner, View all N tasks, the Movement glance card, a workout
