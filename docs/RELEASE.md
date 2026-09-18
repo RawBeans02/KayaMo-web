@@ -19,7 +19,8 @@ independently verified findings) and `docs/audits/2026-09-18-build-sot-audit.md`
 Things only the owner can do. Most of the release is waiting on these.
 
 - [ ] **Apply the pending migrations.** `supabase migration list --linked`, then
-      push 0018, 0021 and 0022. The Sep 15 QA found `mus_context_permissions`
+      push 0018, 0021, 0022 and 0023 (the agent_runs column grant, added in
+      Phase 2). The Sep 15 QA found `mus_context_permissions`
       (0018) missing from the deployed database; 0021 and 0022 have no
       application record at all. Confirm `GET /api/mus/permissions` returns 200.
       Record the applied set under `docs/releases/`. Until this is done, Lis
@@ -69,51 +70,69 @@ Things only the owner can do. Most of the release is waiting on these.
 - [x] Dependency remediation applied and gated in CI. Zero production advisories.
 - [x] Writable database connections refuse a non-loopback host without
       `KAYAMO_ALLOW_REMOTE_DB=1`.
-- [ ] **Restrict `agent_runs` writes.** Users can update any column of their own
-      rows, including `cost_usd`, so the per-user spend ceiling can be zeroed.
-      Revoke UPDATE and grant only `scrubbed_at`. Add an RLS test that tries to
-      write the cost.
-- [ ] **Close the auth gaps.** `authCallbackNextPath` accepts `//evil.example`;
-      delete `/auth/set-session`, which logs the browser into any tokens in the
-      URL fragment; add `/settings` to the proxy matcher.
-- [ ] **Add security headers.** No CSP, frame-ancestors, Referrer-Policy or
-      Permissions-Policy is configured.
-- [ ] **Add an error boundary and a 404.** There is no `error.tsx`,
-      `global-error.tsx`, `not-found.tsx` or `loading.tsx` anywhere.
+- [x] **Restrict `agent_runs` writes.** Migration 0023 revokes table-wide UPDATE
+      and grants only `scrubbed_at`; the RLS suite asserts a `cost_usd` write
+      fails with 42501. Written 2026-09-18; the owner still has to apply it.
+- [x] **Close the auth gaps.** The `next` guard rejects protocol-relative and
+      backslash paths and the callback re-checks the origin; `/auth/set-session`
+      and `/auth/complete` are gone; `/settings` is gated, and a test pins the
+      shell directory to the protected list. 2026-09-18.
+- [x] **Add security headers.** frame-ancestors, X-Frame-Options, nosniff,
+      Referrer-Policy, Permissions-Policy on every response; HSTS in production.
+      2026-09-18. **Follow-up:** a `script-src` policy needs per-request nonces
+      for the two inline boot scripts and the JSON-LD; ship it Report-Only first.
+- [x] **Add an error boundary and a 404.** `not-found.tsx`, `error.tsx` and
+      `global-error.tsx` on the glass materials; the error page shows only the
+      digest. 2026-09-18.
 - [ ] **Add `/privacy`, `/terms` and `/accessibility` routes** and link them.
       Nothing in the app links to any policy today.
 - [ ] **Fix the export claim.** The landing promises data export; Settings says
       it is unavailable; the draft privacy notice forbids implying it exists.
-- [ ] **Fix the safety classifier.** The eating-disorder patterns match "haven't
-      eaten yet" and "stopped eating rice", and the classifier is English-only
-      while the persona invites Taglish.
-- [ ] **Fix the undo race.** Deleting a food entry pushes the tombstone
-      immediately, and server tombstones are irreversible, so the eight-second
-      undo fails whenever sync is fast.
-- [ ] **Fix the week statistics.** `listLocalFoodHistory` drops every entry
-      without a catalog `food_id`, so worldwide-search and personal foods vanish
-      from the week average, strip and presence grid.
-- [ ] **Fix the log sheet handoff.** The meal route dispatches a string while the
-      palette listener reads `detail.query`, so the palette never opens.
-- [ ] **Fix the Verify provenance rewrite.** The overlay rewrites cached rows to
-      confidence 1.00 under source `ph_core`, so later entries claim server
-      provenance for numbers that exist only in one browser.
+- [x] **Fix the safety classifier.** Eating patterns need totality or a span of
+      days; Filipino and Taglish banks for all four categories; household abuse
+      covered. 2026-09-18. The Filipino bank was written from everyday usage and
+      asks for a Filipino-speaking reviewer.
+- [x] **Fix the undo race.** The tombstone is held for `FOOD_ENTRY_UNDO_MS`, a
+      restore inside the window supersedes it, and the diary and the queue share
+      the constant. 2026-09-18.
+- [x] **Fix the week statistics.** The diary reads a new `listLocalFoodLedger`;
+      the catalog-only history stays for the six re-logging consumers. 2026-09-18.
+- [x] **Fix the log sheet handoff.** One factory and one reader for the prefill
+      event; a guest-safe e2e proves the draft reaches the palette. 2026-09-18.
+- [x] **Fix the Verify provenance rewrite.** A local verification keeps the base
+      confidence, and an overlaid row logs `resolved_via: 'user'`. One test that
+      pinned the 1.00 was corrected as a stated product decision. 2026-09-18.
 - [ ] **Audit cached USDA branded rows.** Rows cached before the per-100g fix
       hold values divided by serving size, and `cacheOnFirstHit` returns an
       existing row forever, so they will not self-correct.
 - [ ] **Run e2e against a production build.** CI only ever serves `next dev`.
+      Also owed: the AI routes' allowance is now reserved after the body parses
+      in every route (done 2026-09-18), but no e2e exercises them authenticated.
       Note the guest cookie is `Secure` under `NODE_ENV=production`, so a
       plain-HTTP localhost run fails the demo; the job needs HTTPS or an
       accommodation.
 - [ ] **Add preview smoke, Lighthouse and a bundle budget.** No production bundle
       has ever been measured.
-- [ ] **Add `pnpm check:copy` to CI.** The banned-vocabulary rule is enforced
-      only by a script nobody runs.
+- [x] **Add `pnpm check:copy` to CI.** Also: a concurrency group, a read-only
+      token, one retry in CI so traces record, and the report kept on failure.
+      2026-09-18.
 - [ ] **Settle the migration runners.** Two exist with divergent bookkeeping and
       the Drizzle journal stops at 0019 with no snapshots.
 - [ ] **Take Gym and Todos off the rail and the Life hub** per the v1 scope
       decision. `src/shell/desktop-shell.tsx` still lists `/gym` in `RAIL` and
       both routes in `LIFE_ROUTES`.
+
+## Follow-ups opened by Phase 2
+
+- `script-src` Content-Security-Policy with per-request nonces, Report-Only first.
+- The other authenticated specs still use fixed titles (`E2E Palette Kanin` and
+  friends) across three engines sharing one account; the todos spec was isolated
+  after a collision, the rest need the same in the e2e fixture consolidation.
+- CI run three failed once on `WebKit encountered an internal error` in
+  `page.goto`, a browser crash. With one retry in CI it will report as flaky
+  with a trace rather than fail the job; watch whether it recurs.
+- The vestigial `LlmEstimate` hook in `packages/food/src/resolve.ts` has no
+  caller and contradicts the constitution; remove it in the structural refactor.
 
 ## Verification before promotion
 

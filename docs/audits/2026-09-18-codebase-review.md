@@ -391,3 +391,51 @@ Two things Phase 0 found that the review did not:
 Not done in Phase 0, deliberately: nothing is pushed, and the two migration runners
 are untouched because that interacts with the hosted-schema and package-ownership
 decisions in Phase 1.
+
+## Phase 2 outcome — 2026-09-18
+
+Fourteen commits, `b053805` through `81952f2`, on Fable 5.1 at high effort. Every
+fix was written test-first where a unit test could express it, and several were
+also proved red against the old code in the browser before being proved green.
+
+Resolved, all from the confirmed-defects table:
+
+- **Auth.** The `next` guard rejects protocol-relative and backslash paths and
+  the callback re-checks the origin; `/auth/set-session` and `/auth/complete`
+  removed; `/settings` gated. A first draft derived the proxy matcher from the
+  shared list and broke every request, because Next parses the matcher at
+  compile time; a running server caught it before push, and a test now pins the
+  literal to the list.
+- **Headers.** Baseline set on every response, HSTS in production, pinned by a
+  unit test and an e2e. A `script-src` policy is deliberately absent and pinned
+  absent until the inline boot scripts carry nonces.
+- **Safety classifier.** Meal talk no longer trips the eating-disorder path;
+  Filipino and Taglish banks for all four categories; household abuse covered.
+  27 tests written first, all now pass.
+- **Log sheet.** One factory and one reader for the prefill event; a new e2e
+  fails on the old shell and passes on the fix, on all three engines.
+- **Week statistics.** A ledger query for totals beside the catalog-only history
+  for re-logging.
+- **Undo.** The tombstone is held for the undo window and a restore supersedes it.
+- **Verify provenance.** Base confidence survives a local verification and an
+  overlaid row logs `resolved_via: 'user'`. One existing test had pinned the 1.00
+  and was corrected as a stated product decision.
+- **Recovery pages.** 404, route error boundary and global error page.
+- **Allowance.** All five AI routes reserve after the body parses, with the first
+  tests those handlers have had.
+- **`agent_runs` column grant.** Migration 0023 plus an RLS test that expects
+  42501 on a `cost_usd` write. Verified by CI's disposable database, not locally.
+- **CI.** Concurrency group, read-only token, one retry so traces record, report
+  kept on failure, banned-copy sweep in the pipeline.
+
+CI on this branch, which had never run before Phase 0, went from four failures to
+one across three runs. The Lis-rail mock was missing the fifth permission domain;
+the entry-pages WebKit failure was typing before hydration; the todos WebKit
+failure was three engines sharing one account. The remaining single failure in
+run three was a WebKit internal error on `page.goto`, which the CI retry now
+absorbs. The run that verifies migration 0023 is in flight as this is written.
+
+Not done in Phase 2, and recorded in `docs/RELEASE.md`: legal routes, the landing
+export claim, the cached USDA audit, e2e against a production build, preview
+smoke and Lighthouse, the migration-runner decision, and taking Gym and Todos off
+the rail. All belong to later phases.
