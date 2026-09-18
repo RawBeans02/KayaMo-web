@@ -24,9 +24,10 @@ Things only the owner can do. Most of the release is waiting on these.
       application record at all. Confirm `GET /api/mus/permissions` returns 200.
       Record the applied set under `docs/releases/`. Until this is done, Lis
       permissions and profile return 500 in production.
-- [ ] **Decide the production branch.** Production runs `e7326d8`, which is on
-      `origin/main`. `origin/HEAD` points at `origin/feat/web`, 20 commits
-      behind. Align Vercel, the default branch and the PR base.
+- [x] **Production branch is `main`.** Decided 2026-09-18. Vercel builds `main`,
+      and GitHub's default branch is already `main`. `origin/feat/web` is stale
+      at 2026-09-01; do not target it. **A merge to `main` deploys**, so nothing
+      merges while this checklist reads BLOCKED.
 - [ ] **Stop pointing local development at production.** `.env.local` aims both
       `NEXT_PUBLIC_SUPABASE_URL` and `DATABASE_URL` at the hosted project, so
       local e2e creates `local@kayamo.test` in production Auth through the
