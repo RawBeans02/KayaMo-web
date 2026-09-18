@@ -38,7 +38,10 @@ import {
  * The rebrand's icon vocabulary. Phosphor regular by default; `weight="fill"`
  * marks the selected nav item, matching the iOS tab-bar convention.
  *
- * `lis` is a sparkle, never a character — the assistant has no mascot.
+ * `lis` is the sparkle used for Lis in navigation and on buttons. Lis also has
+ * a face (mus/lis-face.tsx, the four expressions under public/botanical); the
+ * icon is for places an icon belongs, the face for the surfaces where Lis is
+ * present.
  */
 const icons = {
   home: House,

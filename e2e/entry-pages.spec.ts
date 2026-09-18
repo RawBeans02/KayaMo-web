@@ -30,8 +30,9 @@ test.describe('public entry pages', () => {
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
       ).toBe(true);
       if (width < 800) {
-        // The mascot is retired. The intent it guarded still holds: on a phone
-        // the email field must come before any supporting copy.
+        // The login shows no mascot (Lis's face renders on the Lis surface). The
+        // intent this guarded still holds: on a phone the email field must come
+        // before any supporting copy.
         const form = await page
           .getByRole('textbox', { name: 'Email', exact: true })
           .boundingBox();

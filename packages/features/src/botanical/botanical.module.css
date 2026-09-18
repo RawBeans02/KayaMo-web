@@ -61,7 +61,8 @@
   white-space: nowrap;
   text-decoration: none;
 }
-/* Lis's mark: a sparkle in an accent circle, never a face. */
+/* Lis's mark on a button: the sparkle icon in an accent circle. The face
+   renders on the Lis surface (mus/lis-face.tsx), not on an "Ask Lis" pill. */
 .askMark {
   display: grid;
   place-items: center;

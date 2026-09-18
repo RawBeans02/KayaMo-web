@@ -3,7 +3,7 @@
 import { defaultMusContextPermissions, type MusContextPermissionDomain, type MusContextPermissions, type MusEntry, type MusEntryModule } from '@kayamo/ai';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { loadMusContextPermissions, updateMusContextPermission } from '../mus/context-permissions';
-import { BotanicalIcon } from '../botanical/icons';
+import { LisFace } from '../mus/lis-face';
 import { useMusBusy, useMusSelection } from '../mus/mus-selection';
 import { MusThread } from '../mus/mus-thread';
 import { useDeskClock } from './use-desk-clock';
@@ -113,9 +113,7 @@ export function MusRail({
     return (
       <aside className={styles.railCollapsed} aria-label="Lis, collapsed" data-shell="rail" data-mus-rail="collapsed">
         <button type="button" className={styles.expand} onClick={onToggle} aria-label="Expand Lis">
-          <span className={styles.lisMark} aria-hidden="true">
-            <BotanicalIcon name="lis" size={17} weight="fill" />
-          </span>
+          <LisFace size={34} className={styles.face} />
         </button>
         <span className={styles.spine}>Lis</span>
         <span />
@@ -136,9 +134,7 @@ export function MusRail({
       data-mus-rail={variant}
     >
       <header className={variant === 'page' ? styles.pageHeader : styles.header}>
-        <span className={styles.lisMark} aria-hidden="true">
-          <BotanicalIcon name="lis" size={16} weight="fill" />
-        </span>
+        <LisFace size={36} className={styles.face} />
         <div className={styles.title}>
           <p>Lis</p>
           <p className={styles.mono}>{busy ? 'thinking' : 'proposes · you confirm'}</p>

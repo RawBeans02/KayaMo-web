@@ -15,11 +15,11 @@ describe('Mus faces', () => {
     expect(musFaceFor({ kind: 'thinking' })).toBe('thinking');
   });
 
-  it('ships all four faces from the same generation pass', () => {
-    expect(musFaceSrc('neutral')).toBe('/mus-neutral.png');
-    expect(musFaceSrc('thinking')).toBe('/mus-thinking.png');
-    expect(musFaceSrc('happy')).toBe('/mus-happy.png');
-    expect(musFaceSrc('concerned')).toBe('/mus-concerned.png');
+  it('ships all four faces from public/botanical as WebP', () => {
+    expect(musFaceSrc('neutral')).toBe('/botanical/mus-neutral.webp');
+    expect(musFaceSrc('thinking')).toBe('/botanical/mus-thinking.webp');
+    expect(musFaceSrc('happy')).toBe('/botanical/mus-happy.webp');
+    expect(musFaceSrc('concerned')).toBe('/botanical/mus-concerned.webp');
   });
 });
 /**

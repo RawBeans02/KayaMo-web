@@ -37,11 +37,10 @@ export function musFaceFor(trigger: MusFaceTrigger): MusFace {
 /**
  * Map a reply's declared tone, plus its safety verdict, onto an expression.
  *
- * `tone` is a REQUIRED field on every model output and, until now, was read by
- * nothing — `musReplyFromApi` dropped it on the floor. It cost tokens on every
- * request and changed nothing. This is the smallest honest use for it: the
- * assistant has no character, but it does have a register, and the register is
- * worth showing.
+ * `tone` is a REQUIRED field on every model output and, for a long time, was
+ * read by nothing — `musReplyFromApi` dropped it on the floor. It cost tokens
+ * on every request and changed nothing. This is its reader: Lis has a register,
+ * and since 2026-09-19 the register shows on her face (LisFace).
  *
  * Safety outranks tone. A crisis reply is concern for the person, never a
  * neutral acknowledgement, whatever the model happened to declare.
@@ -54,6 +53,7 @@ export function musFaceForReply(input: {
   return input.tone === 'gentle' ? 'concerned' : 'neutral';
 }
 
+/** The shipped expressions: transparent WebP under public/botanical. */
 export function musFaceSrc(face: MusFace): string {
-  return `/mus-${face}.png`;
+  return `/botanical/mus-${face}.webp`;
 }

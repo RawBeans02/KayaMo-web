@@ -73,11 +73,15 @@ test.describe('Lis rail vocabulary', () => {
       'data-mus-perm-level',
       'read',
     );
-    // Lis has no character: the expressions gallery and every mascot image are
-    // gone, and the mark is a sparkle in an accent circle.
+    // Lis has a face (owner decision, 2026-09-18): the shipped expressions
+    // render on the Lis surface, at rest neutral, and are decorative beside the
+    // name. There is still no expressions gallery and no seed mark.
     await expect(page.getByText('About Lis’s expressions')).toHaveCount(0);
-    await expect(page.locator('[data-mus-face]')).toHaveCount(0);
-    await expect(page.locator('img[src*="mus-"]')).toHaveCount(0);
+    const faces = page.locator('img[data-mus-face]');
+    await expect(faces.first()).toBeVisible();
+    await expect(faces.first()).toHaveAttribute('data-mus-face', 'neutral');
+    await expect(faces.first()).toHaveAttribute('src', /\/botanical\/mus-neutral\.webp$/);
+    await expect(faces.first()).toHaveAttribute('alt', '');
     await expect(page.locator('img[src*="seed-mark"]')).toHaveCount(0);
   });
 });

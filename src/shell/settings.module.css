@@ -212,7 +212,8 @@ label.row:active {
   color: var(--ink3);
 }
 
-/* Lis's mark: a sparkle in an accent circle. Never a character. */
+/* Lis's mark in a settings row: the sparkle icon in an accent circle. The
+   face renders on the Lis surface, not in a list row. */
 .lisMark {
   display: grid;
   place-items: center;

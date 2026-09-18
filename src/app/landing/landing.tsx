@@ -9,7 +9,8 @@ import styles from './landing.module.css';
  *
  * A centred glass nav pill over the app's own backdrop wash, one 76px
  * headline, one primary action (the no-account demo) and three glass
- * feature cards. The assistant is Lis: a sparkle, never a character.
+ * feature cards. Lis appears here by name and sparkle icon; her face renders
+ * on the Lis surface in the app.
  */
 export function Landing({ demoStarted = false }: { demoStarted?: boolean }) {
   return (

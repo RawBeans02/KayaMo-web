@@ -7,7 +7,8 @@ import styles from './mus-desk.module.css';
 
 /**
  * The Lis screen. The route and internal identifiers still say "mus"; the
- * assistant's name and face do not — Lis is a sparkle, never a character.
+ * assistant's name does not. Lis has a face here (LisFace in the thread header
+ * and the rail); in navigation she is the sparkle icon.
  */
 export function MusDesk({ userId }: { userId: string }) {
   const { today } = useDeskClock(userId);

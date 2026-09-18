@@ -36,12 +36,14 @@ import { apiFetch } from '../api/api-origin';
 import { BotanicalIcon } from '../botanical/icons';
 import { hydrateFoodHistory } from '../food/hydrate-food-history';
 import { applyMusProposal } from './apply-proposal';
+import { LisFace } from './lis-face';
+import { musFaceForReply } from './mus-faces';
 import {
   readActiveMusConversationId,
   writeActiveMusConversationId,
 } from './conversation-session';
 import { musReplyFromApi } from './mus-reply';
-import { setMusBusy } from './mus-selection';
+import { setMusBusy, setMusFace } from './mus-selection';
 import {
   musMayWrite,
   permModuleForAction,
@@ -475,6 +477,7 @@ export function MusThread({
             reply = parsed.message;
             source = parsed.source;
             nextProposals = parsed.proposals;
+            setMusFace(musFaceForReply(parsed));
           }
         } else {
           statusOnly = true;
@@ -728,10 +731,10 @@ export function MusThread({
       {showPageList ? conversationList : null}
       {showHeader ? (
         <header className={styles.header}>
-          {/* Lis is a sparkle in an accent circle — never a character. */}
-          <span className={styles.mark} aria-hidden="true">
-            <BotanicalIcon name="lis" size={18} weight="fill" />
-          </span>
+          {/* Lis's face: neutral at rest, thinking while a reply is in flight,
+              concerned when the reply's register or its safety verdict calls
+              for it. The sparkle stays the icon in navigation. */}
+          <LisFace size={44} className={styles.face} />
           <div className={styles.identity}>
             <Heading id="mus-chat-title" className={styles.name}>
               Lis
