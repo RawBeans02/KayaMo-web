@@ -27,12 +27,15 @@ Things only the owner can do. Most of the release is waiting on these.
       and GitHub's default branch is already `main`. `origin/feat/web` is stale
       at 2026-09-01; do not target it. **A merge to `main` deploys**, so nothing
       merges while this checklist reads BLOCKED.
-- [ ] **Stop pointing local development at production.** `.env.local` aims both
-      `NEXT_PUBLIC_SUPABASE_URL` and `DATABASE_URL` at the hosted project, so
-      local e2e creates `local@kayamo.test` in production Auth through the
-      service role and UI-driven tests write to production tables. Use a local
-      Supabase or a separate development project, then purge the test account
-      and any `E2E *` rows.
+- [x] **Stop pointing local development at production.** Done 2026-09-19:
+      `npx supabase start` (Docker Desktop) runs the stack locally, all 23
+      migrations applied by `db reset`, `scripts/seed.ts` seeded it, and
+      `.env.local` now carries the local URL, keys and `DATABASE_URL` with the
+      hosted lines kept commented beside them. Verified: the local skip-login
+      creates `local@kayamo.test` in the *local* Auth, sync reports `synced`,
+      and `GET /api/mus/permissions` returns 200 with the five domains. **Still
+      owed on the hosted project:** delete the `local@kayamo.test` user and the
+      `E2E *` rows that earlier local runs wrote there.
 - [ ] **Fix the USDA key.** The configured `USDA_FDC_API_KEY` returns 403.
       Replace it locally and in Vercel, verify one lookup, then run the cached
       `usda_fdc` audit below.
