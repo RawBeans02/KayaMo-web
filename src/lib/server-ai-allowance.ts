@@ -42,12 +42,10 @@ export async function reserveWebAiRequest(userId: string): Promise<AllowanceOutc
 }
 
 /**
- * Adapter for routes that still reserve before parsing. Returns null when the
- * request may proceed, mirroring the previous signature.
- *
- * Those routes carry the same defect this module's doc comment describes — a
- * malformed body costs a daily slot — but they are not the chat path and were
- * left alone deliberately rather than widened into this change.
+ * Adapter for a route that reserves inline rather than through a handler.
+ * Returns null when the request may proceed. Every route now parses before it
+ * reserves; the four planner routes pass reserveWebAiRequest into their
+ * handler, and gym consult calls this after its own parse.
  */
 export function allowanceRejection(outcome: AllowanceOutcome): NextResponse | null {
   if (outcome.ok) return null;

@@ -47,13 +47,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Sign in to consult a session.' }, { status: 401 });
   }
 
-  const allowanceError = allowanceRejection(await reserveWebAiRequest(user.id));
-  if (allowanceError) return allowanceError;
-
   const parsed = requestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid gym consult request.' }, { status: 400 });
   }
+
+  // Reserved after the parse so a malformed request does not spend a slot.
+  const allowanceError = allowanceRejection(await reserveWebAiRequest(user.id));
+  if (allowanceError) return allowanceError;
 
   const dailyBudgetUsd = nonnegativeEnvNumber('AI_DAILY_BUDGET_USD_PER_USER', 0.05);
   const estimatedRequestCostUsd = nonnegativeEnvNumber('AI_ESTIMATED_REQUEST_USD', 0.01);
