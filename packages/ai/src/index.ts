@@ -93,5 +93,3 @@ export type {
 } from './coco-router';
 export { evaluateCocoSafety, normaliseForSafety } from './safety';
 export { CONTEXT_LIMITS, truncateWords } from './context-limits';
-export { authorizeCocoToolCall } from './tools';
-export type { CocoToolAuthorization } from './tools';

@@ -49,12 +49,10 @@ describe('resolveFood', () => {
     const searchOff = vi.fn();
     const searchUsda = vi.fn();
     const lookupOffBarcode = vi.fn();
-    const estimateWithLlm = vi.fn();
 
     const results = await resolveFood({ text: '2 tasa kanin' }, USER, {
       catalog: yamlPhCoreCatalog(),
       network: { searchOff, searchUsda, lookupOffBarcode },
-      estimateWithLlm,
     });
 
     const top = results[0];
@@ -70,7 +68,6 @@ describe('resolveFood', () => {
     expect(searchOff).not.toHaveBeenCalled();
     expect(searchUsda).not.toHaveBeenCalled();
     expect(lookupOffBarcode).not.toHaveBeenCalled();
-    expect(estimateWithLlm).not.toHaveBeenCalled();
     expect(shouldAutoPick(results)).toBe(true);
   });
 
