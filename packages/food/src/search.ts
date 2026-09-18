@@ -35,13 +35,16 @@ export async function searchExternalFoods(
     return foods;
   }
 
-  const usda = await searchUsda(trimmed, deps.usda);
-  let off: NormalizedFood[] = [];
-  try {
-    off = await searchOff(trimmed, deps.off);
-  } catch {
-    off = [];
+  // A provider outage must not hide results from the other source.
+  const [usdaResult, offResult] = await Promise.allSettled([
+    searchUsda(trimmed, deps.usda),
+    searchOff(trimmed, deps.off),
+  ]);
+  if (usdaResult.status === 'rejected' && offResult.status === 'rejected') {
+    throw new Error('Food search providers are temporarily unavailable.');
   }
+  const usda = usdaResult.status === 'fulfilled' ? usdaResult.value : [];
+  const off = offResult.status === 'fulfilled' ? offResult.value : [];
 
   const foods = mergeCandidates([...usda, ...off]);
   await cacheAll(foods, deps.cache);

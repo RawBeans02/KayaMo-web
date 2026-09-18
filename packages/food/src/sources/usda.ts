@@ -3,7 +3,6 @@ import {
   displayName,
   kjToKcal,
   normalizeBarcode,
-  perServingToPer100g,
   toGrams,
   withDefaultServings,
 } from '../normalize';
@@ -148,9 +147,10 @@ function toMgAmount(nutrients: UsdaNutrient[], ids: number[]): number {
   return hit.amount;
 }
 
-function extractPerServing(nutrients: UsdaNutrient[]): NutrientsPer100g | null {
+function extractPer100g(nutrients: UsdaNutrient[]): NutrientsPer100g | null {
   const kcal = toKcal(nutrients);
   if (kcal === null) return null;
+  if ([PROTEIN_ID, CARB_ID, FAT_ID].some((id) => !pickAmount(nutrients, [id]))) return null;
   return {
     kcal,
     protein_g: toGramsAmount(nutrients, [PROTEIN_ID]),
@@ -201,15 +201,13 @@ function usdaConfidence(dataType: string | undefined): number {
 
 export function mapUsdaFood(food: UsdaFoodPayload): NormalizedFood | null {
   if (typeof food.fdcId !== 'number' || !food.description?.trim()) return null;
-  const nutrients = extractPerServing(food.foodNutrients ?? []);
+  const nutrients = extractPer100g(food.foodNutrients ?? []);
   if (!nutrients) return null;
 
   const dataType = food.dataType ?? '';
-  const servingGrams = brandedServingGrams(food);
-  const per100g =
-    dataType === 'Branded' && servingGrams
-      ? perServingToPer100g(nutrients, servingGrams)
-      : nutrients;
+  // FDC foodNutrients are already standardized per 100 g, including branded
+  // foods. Only labelNutrients use label portions; do not divide a second time.
+  const per100g = nutrients;
 
   const brand = food.brandName?.trim() || food.brandOwner?.trim() || undefined;
   const barcode = normalizeBarcode(food.gtinUpc ?? undefined);

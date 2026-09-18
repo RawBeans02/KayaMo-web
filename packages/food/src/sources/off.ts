@@ -74,10 +74,14 @@ function numberField(nutriments: OffNutriments, keys: string[]): number | undefi
 }
 
 function per100gFromNutriments(nutriments: OffNutriments): NutrientsPer100g | null {
-  const kcalDirect = numberField(nutriments, ['energy-kcal_100g', 'energy-kcal']);
-  const energyKj = numberField(nutriments, ['energy_100g', 'energy']);
+  const kcalDirect = numberField(nutriments, ['energy-kcal_100g']);
+  const energyKj = numberField(nutriments, ['energy_100g']);
   const kcal = kcalDirect ?? (energyKj !== undefined ? kjToKcal(energyKj) : undefined);
   if (kcal === undefined) return null;
+  const protein = numberField(nutriments, ['proteins_100g']);
+  const carbs = numberField(nutriments, ['carbohydrates_100g']);
+  const fat = numberField(nutriments, ['fat_100g']);
+  if (protein === undefined || carbs === undefined || fat === undefined) return null;
 
   const sodiumG = numberField(nutriments, ['sodium_100g']);
   const saltG = numberField(nutriments, ['salt_100g']);
@@ -86,9 +90,9 @@ function per100gFromNutriments(nutriments: OffNutriments): NutrientsPer100g | nu
 
   return {
     kcal,
-    protein_g: numberField(nutriments, ['proteins_100g']) ?? 0,
-    carbs_g: numberField(nutriments, ['carbohydrates_100g']) ?? 0,
-    fat_g: numberField(nutriments, ['fat_100g']) ?? 0,
+    protein_g: protein,
+    carbs_g: carbs,
+    fat_g: fat,
     fiber_g: numberField(nutriments, ['fiber_100g', 'fibre_100g']) ?? 0,
     sugar_g: numberField(nutriments, ['sugars_100g']) ?? 0,
     sodium_mg: sodiumMg,
