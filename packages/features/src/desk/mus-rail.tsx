@@ -155,7 +155,7 @@ export function MusRail({
           </div>
           <div>
             <dt className={styles.mono}>this</dt>
-            <dd style={{ color: selectedLabel ? 'var(--color-text)' : 'var(--color-muted-2)' }}>
+            <dd style={{ color: selectedLabel ? 'var(--ink)' : 'var(--ink2)' }}>
               {selectedLabel || 'nothing selected. Say “this” after picking a row'}
             </dd>
           </div>

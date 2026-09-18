@@ -51,7 +51,7 @@ import {
   openWindows,
   weekDates,
 } from '../todo/timetable';
-import styles from '../food/desk.module.css';
+import styles from './desk.module.css';
 import { DeskMusPane } from './desk-mus';
 import { TodosInspector } from './todos-inspector';
 import { TodosTimeline } from './todos-timeline';

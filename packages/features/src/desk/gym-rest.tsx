@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import styles from '../food/desk.module.css';
+import styles from './desk.module.css';
 import { useGymSession } from './gym-session-provider';
 
 export function GymRestBar({

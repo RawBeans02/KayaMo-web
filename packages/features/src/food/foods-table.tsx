@@ -34,7 +34,7 @@ import {
 import { applyOverlayToFood } from './verify-model';
 import { readVerifyOverlay } from './verify-overlay';
 import { waitForUserDb } from './wait-user-db';
-import styles from './desk.module.css';
+import styles from './catalog.module.css';
 
 const UNDO_MS = 8000;
 

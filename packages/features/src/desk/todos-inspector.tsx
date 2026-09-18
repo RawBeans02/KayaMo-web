@@ -13,7 +13,7 @@ import {
   type ScheduleFlexibility,
 } from '@kayamo/offline';
 import { useEffect, useRef, useState } from 'react';
-import styles from '../food/desk.module.css';
+import styles from './desk.module.css';
 import { labelToMinutes, minutesToLabel } from '../todo/timetable';
 
 const FLEX: ScheduleFlexibility[] = ['FIXED', 'FLEXIBLE', 'AUTO', 'ANYTIME', 'PROTECTED'];

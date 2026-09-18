@@ -1,0 +1,939 @@
+/* Food catalog and Verify (/foods, /verify) — split from desk.module.css on
+   2026-09-19. Rules kept verbatim; only the ones these two surfaces
+   reference. Colours are glass tokens. */
+
+.panel {
+  display: grid;
+  /* An auto track sizes to its widest child's MAX-content, so a header whose
+  shortcut hints could wrap still measured unwrapped and dragged the whole
+  page into a horizontal scroll. minmax(0, 1fr) caps the track at the
+  available width and lets the children wrap or scroll inside it. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  min-width: 0;
+  color: var(--ink);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+/* Flex children default to min-width:auto, so a wide group of shortcut hints
+   cannot shrink and drags the whole page into a horizontal scroll. Let them
+   shrink, and let the header wrap once they run out of room. */
+
+.header > * {
+  min-width: 0;
+}
+
+/* Section label, not a hero eyebrow: it sits under the title, never above it. */
+
+.eyebrow {
+  margin: 0;
+  color: var(--ink2);
+  font-size: 0.8125rem;
+}
+
+.header h1,
+.title {
+  margin: 0;
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-size: 2.125rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+@media (min-width: 900px) {
+  .header h1,
+.title {
+    font-size: 2.5rem;
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+}
+
+.statLabel {
+  margin: 0;
+  color: var(--ink2);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.empty,
+.note {
+  margin: 0;
+  color: var(--ink2);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.k {
+  display: inline-block;
+  margin-left: 3px;
+  padding: 1px 7px;
+  border-radius: 8px;
+  background: var(--track);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.toastDock {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 40;
+  min-width: 17rem;
+  overflow: hidden;
+  border-radius: 24px;
+  box-shadow: var(--shadow-deep);
+}
+
+.verify > .header,
+.foods > .header {
+  margin-bottom: 2px;
+}
+
+.mark {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--ink2);
+  background: var(--track);
+}
+
+.mark[data-kind='verified'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.mark[data-kind='estimate'] {
+  background: transparent;
+  color: var(--ink2);
+  box-shadow: inset 0 0 0 1.5px var(--ink2);
+}
+
+.verify {
+  gap: 1rem;
+}
+
+.verifyKeys {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px 14px;
+  color: var(--ink2);
+  font-size: 0.78125rem;
+}
+
+.verifyJump {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.verifyJump input {
+  width: 160px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--stroke);
+  border-radius: 7px;
+  background: var(--glass);
+  color: inherit;
+  font: inherit;
+  font-size: 0.8125rem;
+}
+
+.verifyProgress {
+  padding: 17px 20px 18px;
+  border: 1px solid var(--stroke2);
+  border-radius: 10px;
+  background: var(--glass);
+}
+
+.verifyProgressTop {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.verifyCountLine {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+}
+
+.verifyCount {
+  font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
+  font-size: 3rem;
+  font-weight: 600;
+  line-height: 0.85;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.verifyOf {
+  font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
+  font-size: 1.625rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--ink2);
+}
+
+.verifyCountLabel {
+  padding-bottom: 3px;
+  color: var(--ink2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 0.65625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.verifyLede {
+  max-width: 62ch;
+  margin: 8px 0 0;
+  color: var(--ink2);
+  font-size: 0.84375rem;
+  line-height: 1.5;
+}
+
+.verifyMeta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.verifyStat {
+  margin: 5px 0 0;
+  font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
+  font-size: 1.625rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.verifyStat[data-warn='true'] {
+  color: var(--danger);
+}
+
+.verifyGhost {
+  padding: 7px 12px;
+  border: 1px solid var(--stroke);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink2);
+  font: inherit;
+  font-size: 0.78125rem;
+  cursor: pointer;
+}
+
+.verifyCells {
+  display: grid;
+  gap: 3px;
+  margin-top: 16px;
+}
+
+.verifyCell {
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--stroke);
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.verifyCell[data-kind='verified'] {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.verifyCell[data-kind='active'] {
+  border-color: var(--accent);
+  background: var(--glass-strong);
+}
+
+.verifyCell[data-kind='skipped'] {
+  background: color-mix(in srgb, var(--ink2) 18%, transparent);
+}
+
+.verifyProposal {
+  max-width: 36rem;
+}
+
+.verifySplit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 288px;
+  gap: 20px;
+  align-items: start;
+  min-width: 0;
+}
+
+.verifyTable {
+  overflow: hidden;
+  border: 1px solid var(--stroke2);
+  border-radius: 10px;
+  background: var(--glass);
+}
+
+.verifyCols,
+.verifyRow {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 104px 80px 46px 54px;
+  align-items: center;
+  gap: 0;
+  padding: 8px 14px;
+}
+
+.verifyCols {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--stroke2);
+  background: var(--glass-strong);
+  color: var(--ink2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 0.59375rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.verifyCols span:nth-child(3),
+.verifyCols span:nth-child(4),
+.verifyCols span:nth-child(6) {
+  text-align: right;
+}
+
+.verifyCols span:nth-child(5) {
+  text-align: center;
+}
+
+.verifyBody {
+  max-height: min(452px, 55vh);
+  overflow-y: auto;
+}
+
+.verifyRow {
+  border-bottom: 1px solid var(--stroke2);
+  cursor: pointer;
+}
+
+.verifyRow[data-active='true'] {
+  background: var(--glass-strong);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.verifyRow[data-verified='true'] {
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+.verifyRow[data-verified='true'][data-active='true'] {
+  background: var(--glass-strong);
+}
+
+.verifyName {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  padding-right: 12px;
+}
+
+.verifyName strong {
+  overflow: hidden;
+  font-size: 0.90625rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.verifyName span {
+  overflow: hidden;
+  color: var(--ink2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 0.71875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.verifyPcf,
+.verifyKcal,
+.verifyConf {
+  font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.verifyPcf {
+  padding-right: 12px;
+  color: var(--ink2);
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: right;
+}
+
+.verifyKcal {
+  padding-right: 12px;
+  font-size: 1.1875rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.verifyConf {
+  font-size: 1rem;
+  color: var(--ink2);
+  text-align: center;
+}
+
+.verifyFlag {
+  display: inline-block;
+  justify-self: end;
+  padding: 2px 6px;
+  border: 1px solid var(--stroke2);
+  border-radius: 4px;
+  color: var(--ink2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.verifyFlag[data-off='true'] {
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  color: var(--danger);
+}
+
+.verifyInspector {
+  overflow: hidden;
+  border: 1px solid var(--stroke);
+  border-radius: 10px;
+  background: var(--glass);
+}
+
+.verifyInspector[data-dirty='true'] {
+  border-color: var(--accent);
+}
+
+.verifyInspectorHead {
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--stroke2);
+}
+
+.verifyInspectorHead h2 {
+  margin: 5px 0 0;
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+  font-size: 1.3125rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.verifyInspectorHead p:last-child {
+  margin: 6px 0 0;
+  color: var(--ink2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 0.71875rem;
+  line-height: 1.5;
+}
+
+.verifyInspectorBody {
+  padding: 15px 18px;
+}
+
+.verifyMacros {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.verifyMacros label,
+.verifyField {
+  display: grid;
+  gap: 5px;
+}
+
+.verifyMacros span,
+.verifyField span {
+  color: var(--ink2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.verifyMacros input,
+.verifyField input,
+.verifyField textarea,
+.verifyField select {
+  width: 100%;
+  border: 1px solid var(--stroke);
+  border-radius: 6px;
+  background: var(--bg0);
+  color: inherit;
+  font: inherit;
+}
+
+.verifyMacros input {
+  height: 34px;
+  padding: 0 8px;
+  font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
+  font-size: 1.1875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.verifyField {
+  margin-top: 12px;
+}
+
+.verifyField input {
+  height: 34px;
+  padding: 0 9px;
+  font-size: 0.875rem;
+}
+
+.verifyField textarea {
+  padding: 9px;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  resize: none;
+}
+
+.verifyAtwater {
+  display: grid;
+  grid-template-columns: 15px minmax(0, 1fr);
+  gap: 9px;
+  margin-top: 13px;
+  padding: 10px 12px;
+  border: 1px solid var(--stroke2);
+  border-radius: 7px;
+  background: var(--glass-strong);
+}
+
+.verifyAtwater[data-off='true'] {
+  border-color: color-mix(in srgb, var(--danger) 38%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+
+.verifyAtwater strong {
+  display: block;
+  font-size: 0.84375rem;
+}
+
+.verifyAtwater span span {
+  color: var(--ink2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 0.78125rem;
+  line-height: 1.45;
+}
+
+.verifyActions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 15px;
+}
+
+.verifyPrimary {
+  flex: 1;
+  height: 40px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: inherit;
+  font-size: 0.90625rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.verifyPrimary[data-on='true'] {
+  background: var(--glass-strong);
+  color: var(--ink2);
+}
+
+.verifySkip {
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink2);
+  font: inherit;
+  font-size: 0.78125rem;
+  cursor: pointer;
+}
+
+.verifyFoot {
+  margin: 9px 0 0;
+  color: var(--ink2);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.verify .statLabel {
+  color: var(--ink2);
+}
+
+.foods {
+  gap: 1rem;
+}
+
+.foodsLede {
+  margin: 0;
+  max-width: 34ch;
+  color: var(--ink2);
+  font-size: 0.84375rem;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.foodsShape {
+  padding: 17px 20px 18px;
+  border: 1px solid var(--stroke2);
+  border-radius: 10px;
+  background: var(--glass);
+}
+
+.foodsBar {
+  display: flex;
+  height: 12px;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--glass-strong);
+}
+
+.foodsBar span {
+  display: block;
+  height: 12px;
+}
+
+.foodsLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin-top: 14px;
+}
+
+.foodsLegendItem {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.foodsSwatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.foodsLegendCount {
+  font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.foodsLegendSub {
+  color: var(--ink2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 0.59375rem;
+}
+
+.foodsToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.foodsToolbar input[type='search'] {
+  width: 320px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--stroke);
+  border-radius: 7px;
+  background: var(--glass);
+  color: inherit;
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.foodsPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.foodsPill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  height: 36px;
+  padding: 0 11px;
+  border: 1px solid var(--stroke);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink2);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.foodsPill[data-on='true'] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.foodsPillCount {
+  font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+.foodsCount {
+  margin-left: auto;
+  color: var(--ink2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 0.65625rem;
+}
+
+.foodsGrid {
+  border: 1px solid var(--stroke2);
+  border-radius: 10px;
+  background: var(--glass);
+  overflow: hidden;
+}
+
+.foodsCols,
+.foodsRow {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 200px 116px 148px 66px;
+  align-items: center;
+  padding: 8px 14px;
+}
+
+.foodsCols {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--stroke2);
+  background: var(--glass-strong);
+  color: var(--ink2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 0.59375rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.foodsCols span:nth-child(4),
+.foodsCols span:nth-child(6) {
+  text-align: right;
+}
+
+.foodsBody {
+  max-height: min(520px, 55vh);
+  overflow-y: auto;
+}
+
+.foodsRow {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--stroke2);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.foodsRow[data-active='true'] {
+  background: var(--glass-strong);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.foodsName {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+  padding-right: 14px;
+}
+
+.foodsName strong {
+  font-size: 0.90625rem;
+  font-weight: 500;
+}
+
+.foodsName span {
+  overflow: hidden;
+  color: var(--ink2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 0.71875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.foodsProv {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.foodsBadge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--stroke);
+  color: var(--ink2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.foodsBadge[data-source='ph_core'] {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.foodsBadge[data-source='off'] {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.foodsBadge[data-source='usda_fdc'] {
+  color: var(--color-source-usda);
+  border-color: color-mix(in srgb, var(--color-source-usda) 50%, transparent);
+}
+
+.foodsBadge[data-source='user'] {
+  color: var(--color-source-user);
+  border-color: color-mix(in srgb, var(--color-source-user) 40%, transparent);
+}
+
+.foodsBadge[data-source='llm'] {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+}
+
+.foodsKcal {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 4px;
+  padding-right: 16px;
+  font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
+  font-size: 1.1875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.foodsKcalUnit {
+  color: var(--ink2);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 0.65625rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.foodsServing {
+  overflow: hidden;
+  color: var(--ink2);
+  font-size: 0.78125rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.foodsConf {
+  color: var(--ink2);
+  font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
+  font-size: 1.0625rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* ── Web overrides, now owned (from src/app/botanical.css, 2026-09-18) ──
+   These were [class*=] substring selectors applied from the root app. In the
+   owning module they are ordinary rules that win by source order. */
+
+.foodsPillCount {
+  opacity: 1;
+}
+
+.verifyCells {
+  grid-template-columns: none !important;
+  grid-auto-flow: column;
+  grid-auto-columns: 44px;
+  overflow: auto;
+}
+
+.foodsGrid,
+.verifyTable {
+  overflow: auto;
+}
+
+.foodsCols,
+.foodsRow {
+  min-width: 740px;
+}
+
+.verifyCols,
+.verifyRow {
+  min-width: 640px;
+}
+
+/* The desk surfaces size their small labels alike. */
+
+:is(.foods, .verify)
+  :is(.eyebrow, .statLabel, .verifyCountLabel) {
+  font-size: 0.8125rem;
+  letter-spacing: 0;
+}
+
+@media (max-width: 1100px) {
+  .verifySplit {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .verify {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .verify > * {
+    min-width: 0;
+  }
+
+  .verifyProgressTop {
+    flex-wrap: wrap;
+  }
+
+  .verifyCells {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 44px;
+    gap: 6px;
+    overflow: auto;
+  }
+
+  :is(.foodsLegend) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.foodsToolbar, .header) {
+    flex-wrap: wrap;
+  }
+}

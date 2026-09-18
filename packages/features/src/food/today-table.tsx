@@ -39,7 +39,7 @@ import {
 } from './today-diary';
 import { useDeskLocale } from '../i18n/desk-locale';
 import { DeskMusPane } from '../desk/desk-mus';
-import styles from './desk.module.css';
+import styles from './diary.module.css';
 
 
 function formatTime(loggedAt: string, timeZone: string): string {

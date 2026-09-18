@@ -34,7 +34,7 @@ import {
   type VerifyOverlayEntry,
 } from './verify-model';
 import { moveVerifyIndex, sortVerifyRows } from './verify-rows';
-import styles from './desk.module.css';
+import styles from './catalog.module.css';
 
 const UNDO_MS = 8000;
 

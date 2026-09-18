@@ -41,7 +41,7 @@ import { catalogExerciseId, exerciseBySlug, GYM_CATALOG, listedSubstitutes, sear
 import { lastLoadKg, lastSessionSets } from '../gym/last-load';
 import { familyOverlapWarnings } from '../gym/redundancy';
 import { formatRestClock, sessionElapsedSeconds } from '../gym/session-clock';
-import styles from '../food/desk.module.css';
+import styles from './desk.module.css';
 import { DeskMusPane } from './desk-mus';
 import { GymRestBar } from './gym-rest';
 import { useGymSession } from './gym-session-provider';

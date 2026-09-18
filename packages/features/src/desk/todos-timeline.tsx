@@ -3,7 +3,7 @@
 import type { LocalTimeBlock } from '@kayamo/offline';
 import { useEffect, useRef, useState } from 'react';
 import { startTimelineDrag } from '../todo/timeline-drag';
-import styles from '../food/desk.module.css';
+import styles from './desk.module.css';
 import {
   DAY_END_MIN,
   DAY_START_MIN,

@@ -706,7 +706,7 @@
   min-height: 650px;
   height: calc(100dvh - 140px);
   border-radius: 20px;
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--stroke2);
 }
 
 @media (max-width: 1000px) {
