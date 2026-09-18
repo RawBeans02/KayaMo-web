@@ -33,9 +33,11 @@ Things only the owner can do. Most of the release is waiting on these.
       `.env.local` now carries the local URL, keys and `DATABASE_URL` with the
       hosted lines kept commented beside them. Verified: the local skip-login
       creates `local@kayamo.test` in the *local* Auth, sync reports `synced`,
-      and `GET /api/mus/permissions` returns 200 with the five domains. **Still
-      owed on the hosted project:** delete the `local@kayamo.test` user and the
-      `E2E *` rows that earlier local runs wrote there.
+      and `GET /api/mus/permissions` returns 200 with the five domains. The owner
+      deleted `local@kayamo.test` from the hosted Auth the same day; the
+      `ON DELETE CASCADE` on every `user_id` took its rows with it, and a
+      read-only sweep found zero `E2E *` rows and zero orphaned rows across the
+      user tables afterwards. Three real accounts remain.
 - [ ] **Fix the USDA key.** The configured `USDA_FDC_API_KEY` returns 403.
       Replace it locally and in Vercel, verify one lookup, then run the cached
       `usda_fdc` audit below.
