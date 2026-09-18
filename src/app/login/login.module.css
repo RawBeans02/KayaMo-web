@@ -88,6 +88,12 @@
   color: var(--ink);
 }
 
+/* One word at phone widths. The full label wrapped onto two lines at 390 and,
+   with the wider fallback fonts on Linux, pushed the top bar past 320. */
+.backShort {
+  display: none;
+}
+
 /* ── Two columns: welcome on the ground, the card beside it ─── */
 
 .shell {
@@ -276,16 +282,37 @@
   }
 }
 
-/* The back link keeps its words but drops its padding before the wordmark
-   and toggle run out of room. */
-@media (max-width: 400px) {
+@media (max-width: 480px) {
   .nav {
     gap: 6px;
   }
 
   .back {
-    padding: 0 6px;
-    font-size: 0.8125rem;
+    padding: 0 10px;
+  }
+
+  .backLong {
+    display: none;
+  }
+
+  .backShort {
+    display: inline;
+  }
+
+  /* Linux fallback faces run wider than SF and Manrope; give the two display
+     lines room at the narrowest phones instead of trusting the clamp. */
+  .signIn h1 {
+    font-size: 1.5rem;
+    overflow-wrap: anywhere;
+  }
+
+  .welcome h2 {
+    font-size: 1.75rem;
+    overflow-wrap: anywhere;
+  }
+
+  .welcome h2 br {
+    display: none;
   }
 }
 

@@ -25,7 +25,10 @@ export function LoginView({ localDev }: { localDev: boolean }) {
         <div className={styles.navActions}>
           <ThemeToggle />
           <Link className={styles.back} href={fromDemo ? '/today' : '/'}>
-            {fromDemo ? 'Back to your demo' : 'Back to home'}{' '}
+            <span className={styles.backLong}>
+              {fromDemo ? 'Back to your demo' : 'Back to home'}
+            </span>
+            <span className={styles.backShort}>Back</span>
             <span aria-hidden="true">↗</span>
           </Link>
         </div>
