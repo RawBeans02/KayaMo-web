@@ -1,11 +1,28 @@
 import 'server-only';
+import type { z } from 'zod';
 import { renderLisSystemPrompt } from './persona';
 import { cocoModelOutputSchema } from './contracts';
+import {
+  assertNoInventedNutrition,
+  callOpenAIObject,
+  type AiMessage,
+  type ModelUsage,
+} from './router';
 import type {
   CocoProvider,
   CocoProviderRequest,
   CocoProviderResult,
 } from './coco-router';
+
+/** What the provider needs from the model layer; injectable so it can be tested. */
+export type CocoModelCall = (call: {
+  modelId: string;
+  schema: typeof cocoModelOutputSchema;
+  system: string;
+  messages: AiMessage[];
+  abortSignal?: AbortSignal;
+  maxOutputTokens: number;
+}) => Promise<{ object: unknown; usage?: ModelUsage }>;
 
 export type OpenAICocoProviderOptions = {
   apiKey?: string;
@@ -13,11 +30,28 @@ export type OpenAICocoProviderOptions = {
   inputUsdPerMillion?: number;
   outputUsdPerMillion?: number;
   estimatedRequestCostUsd?: number;
+  /** Test seam. Production leaves this unset and goes through the router. */
+  generate?: CocoModelCall;
 };
 
 function envNumber(name: string): number {
   const value = Number(process.env[name] ?? '0');
   return Number.isFinite(value) && value >= 0 ? value : 0;
+}
+
+/** Prior turns go in as real messages; the current turn is a JSON envelope. */
+export function cocoMessages(request: CocoProviderRequest): AiMessage[] {
+  return [
+    ...request.history.map((turn) => ({ role: turn.role, content: turn.content })),
+    {
+      role: 'user' as const,
+      content: JSON.stringify({
+        mode: request.mode,
+        message: request.message,
+        context: request.context,
+      }),
+    },
+  ];
 }
 
 export function createOpenAICocoProvider(
@@ -36,43 +70,40 @@ export function createOpenAICocoProvider(
   const estimatedRequestCostUsd =
     options.estimatedRequestCostUsd ?? (envNumber('AI_ESTIMATED_REQUEST_USD') || 0.01);
 
-  if (!apiKey) {
+  if (!apiKey && !options.generate) {
     throw new Error('Missing server-only OPENAI_API_KEY');
   }
 
+  // The chat schema carries no nutrition fields. This is the same check every
+  // completeObject call gets; a chat provider is not exempt from the rule.
+  assertNoInventedNutrition(cocoModelOutputSchema as z.ZodType, false);
+
+  const generate: CocoModelCall =
+    options.generate ??
+    ((call) =>
+      callOpenAIObject({
+        apiKey: apiKey ?? '',
+        modelId: call.modelId,
+        schema: call.schema,
+        system: call.system,
+        messages: call.messages,
+        abortSignal: call.abortSignal,
+        maxOutputTokens: call.maxOutputTokens,
+        reasoningEffort: 'low',
+      }));
+
   return {
     async generate(request: CocoProviderRequest): Promise<CocoProviderResult> {
-      const { generateObject } = await import('ai');
-      const { createOpenAI } = await import('@ai-sdk/openai');
-      const openai = createOpenAI({ apiKey });
-      const result = await generateObject({
-        model: openai.responses(model),
+      const result = await generate({
+        modelId: model,
         schema: cocoModelOutputSchema,
         system: renderLisSystemPrompt(request.context),
-        // Prior turns go in as real messages, not folded into the JSON
-        // envelope: the model treats a `user`/`assistant` exchange as dialogue
-        // and a JSON array as data, and we want the former.
-        messages: [
-          ...request.history.map((turn) => ({
-            role: turn.role,
-            content: turn.content,
-          })),
-          {
-            role: 'user' as const,
-            content: JSON.stringify({
-              mode: request.mode,
-              message: request.message,
-              context: request.context,
-            }),
-          },
-        ],
+        messages: cocoMessages(request),
         maxOutputTokens: request.maxOutputTokens,
-        maxRetries: 0,
         abortSignal: request.abortSignal,
-        providerOptions: { openai: { reasoningEffort: 'low' } },
       });
-      const inputTokens = result.usage.inputTokens ?? 0;
-      const outputTokens = result.usage.outputTokens ?? 0;
+      const inputTokens = result.usage?.inputTokens ?? 0;
+      const outputTokens = result.usage?.outputTokens ?? 0;
       const tokenCostUsd =
         (inputTokens * inputUsdPerMillion + outputTokens * outputUsdPerMillion) /
         1_000_000;
@@ -86,8 +117,4 @@ export function createOpenAICocoProvider(
       };
     },
   };
-}
-
-export function isElevenLabsConfigured(): boolean {
-  return Boolean(process.env.ELEVENLABS_API_KEY?.trim());
 }
