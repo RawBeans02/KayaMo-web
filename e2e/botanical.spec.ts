@@ -54,7 +54,7 @@ test('goal first step reaches Home and explicit milestone confirmation reaches G
     page.getByRole('button', { name: 'Write one paragraph', exact: true }),
   ).toBeVisible();
   await page.getByRole('link', { name: 'Grove', exact: true }).click();
-  await expect(page.getByText('milestone completed', { exact: true })).toBeVisible();
+  await expect(page.getByText('Milestone completed', { exact: true })).toBeVisible();
 });
 test('all five destinations and appearance remain usable at narrow widths', async ({
   page,

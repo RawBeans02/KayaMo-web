@@ -1,15 +1,44 @@
 'use client';
+import type { CompanionEventType, CompanionProgression } from '@kayamo/core';
 import {
   getLocalCompanionProgression,
   listLocalCompanionEvents,
   listLocalTasks,
   listLocalGoals,
-  listLocalLifeStory,
 } from '@kayamo/offline';
 import { useCallback } from 'react';
 import { useDeskClock } from '../desk/use-desk-clock';
 import { useRecords } from './use-records';
 import styles from './botanical.module.css';
+
+/**
+ * What a person reads for a stored key. The keys are frozen identifiers in the
+ * ledger and the progression schema; printing them with the underscores
+ * swapped for spaces showed "young tree" and "milestone completed" as if they
+ * were sentences. These are the words.
+ */
+const STAGE_LABEL: Record<CompanionProgression['stageKey'], string> = {
+  seed: 'Seed',
+  sprout: 'Sprout',
+  sapling: 'Sapling',
+  young_tree: 'Young tree',
+  flourishing_tree: 'Flourishing tree',
+};
+
+const EVENT_LABEL: Record<CompanionEventType, string> = {
+  task_completed: 'Task completed',
+  routine_completed: 'Routine completed',
+  habit_completed: 'Habit completed',
+  milestone_completed: 'Milestone completed',
+  goal_completed: 'Goal reached',
+  workout_completed: 'Workout completed',
+  food_logged: 'Food logged',
+  recovery_return: 'Came back after a pause',
+};
+
+function eventLabel(type: string): string {
+  return (EVENT_LABEL as Record<string, string>)[type] ?? type.replaceAll('_', ' ');
+}
 
 const day = (iso: string, offset: number) => {
   const cursor = new Date(iso + 'T12:00:00Z');
@@ -49,14 +78,13 @@ function monthCells(dates: Set<string>, today: string) {
 export function BotanicalGrove({ userId }: { userId: string }) {
   const { today } = useDeskClock(userId);
   const load = useCallback(async () => {
-    const [progress, events, tasks, goals, story] = await Promise.all([
+    const [progress, events, tasks, goals] = await Promise.all([
       getLocalCompanionProgression(userId),
       listLocalCompanionEvents(userId),
       listLocalTasks(userId),
       listLocalGoals(userId),
-      listLocalLifeStory(userId),
     ]);
-    return { progress, events, tasks, goals, story };
+    return { progress, events, tasks, goals };
   }, [userId]);
   const { data, error, refresh } = useRecords(load);
   const dates = new Set((data?.events ?? []).map((event) => event.logical_date));
@@ -93,9 +121,12 @@ export function BotanicalGrove({ userId }: { userId: string }) {
         </p>
       ) : (
         <div className={styles.stack}>
-          <section className={`${styles.streak} kgSurface kgSheen`} aria-label="Streak">
+          <section
+            className={`${styles.streak} kgSurface kgSheen`}
+            aria-label="Days in a row"
+          >
             <div className={styles.streakBody}>
-              <p className="kgEyebrow">Streak</p>
+              <p className="kgEyebrow">Days in a row</p>
               <span className={`${styles.streakNum} kgNum`}>
                 {streak}
                 <span className={styles.streakUnit}>
@@ -103,8 +134,8 @@ export function BotanicalGrove({ userId }: { userId: string }) {
                 </span>
               </span>
               <p className={styles.streakNote}>
-                Every day you confirm a step plants one seed. Miss a day and the grove
-                pauses. It never dies.
+                Consecutive days with a confirmed step, counting today if it has one. A
+                quiet day ends the run and takes nothing away from what is recorded.
               </p>
             </div>
           </section>
@@ -115,7 +146,7 @@ export function BotanicalGrove({ userId }: { userId: string }) {
             <div className={styles.panelHead}>
               <h2 id="grove-month-title">{monthName}</h2>
               <p className={styles.muted}>
-                {planted} of {cells.length} planted
+                {planted} of {cells.length} days with a step
               </p>
             </div>
             <div
@@ -155,8 +186,8 @@ export function BotanicalGrove({ userId }: { userId: string }) {
                 <span className={styles.statUnit}>points</span>
               </span>
               <p className={styles.muted}>
-                Stage: {data.progress.stageKey.replaceAll('_', ' ')}. Based only on
-                confirmed records.
+                Stage: {STAGE_LABEL[data.progress.stageKey]}. Based only on confirmed
+                records.
               </p>
             </section>
             <section
@@ -165,7 +196,7 @@ export function BotanicalGrove({ userId }: { userId: string }) {
             >
               <h2 id="grove-days-title">Days with a confirmed step</h2>
               <span className={`${styles.stat} kgNum`}>{dates.size}</span>
-              <p className={styles.muted}>A history, not a streak to maintain.</p>
+              <p className={styles.muted}>Every such day since you started, in total.</p>
             </section>
           </div>
           <section
@@ -200,7 +231,7 @@ export function BotanicalGrove({ userId }: { userId: string }) {
                       data.tasks.find((task) => task.id === event.source_id)?.title ??
                       data.goals.find((goal) => goal.id === event.source_id)?.title ??
                       null;
-                    const kind = event.event_type.replaceAll('_', ' ');
+                    const kind = eventLabel(event.event_type);
                     // With no source to name, the kind IS the headline. Printing it
                     // again underneath said the same words twice.
                     return (
@@ -219,28 +250,6 @@ export function BotanicalGrove({ userId }: { userId: string }) {
                     );
                   })}
               </ul>
-            )}
-          </section>
-          <section
-            className={`${styles.panel} kgSurface`}
-            aria-labelledby="grove-story-title"
-          >
-            <div className={styles.panelHead}>
-              <h2 id="grove-story-title">Life story</h2>
-            </div>
-            {data.story.length ? (
-              <ul className={styles.history}>
-                {data.story.map((row) => (
-                  <li key={row.id}>
-                    <strong>{row.title}</strong>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className={styles.muted}>
-                No saved story entries yet. Your confirmed activity remains in the trail
-                above.
-              </p>
             )}
           </section>
         </div>
