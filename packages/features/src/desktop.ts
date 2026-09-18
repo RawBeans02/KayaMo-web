@@ -1,9 +1,10 @@
 /**
  * The web app's entry into @kayamo/features. Root code imports from here and
- * never from the main barrel: that barrel re-exports the phone screens
- * (HomeScreen, MusHabitat, DayStrip and their 4,817-line stylesheet), and a
- * client import of it pulls all of that into every route's graph even when
- * nothing renders it. A test under src/lib pins the rule.
+ * never from the main barrel: the barrel is the package's full surface (auth
+ * helpers, API client, Lis reply parsing), and a client import of it pulls all
+ * of that into every route's graph even when nothing renders it. A test under
+ * src/lib pins the rule. The phone screens and their 4,817-line stylesheet,
+ * the barrel's original reason, were deleted on 2026-09-19.
  */
 // Shell plumbing the root app composes.
 export { SyncStatusBar } from './sync/sync-status-bar';

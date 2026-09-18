@@ -10,9 +10,9 @@ import {
   type LifeArea,
 } from '@kayamo/core';
 import {
-  createLocalGoalPlan,
   completeLocalGoalMilestone,
   createLocalGoalMilestone,
+  createLocalGoalPlan,
   createLocalTask,
   listLocalGoalMilestones,
   setLocalGoalStatus,
@@ -37,9 +37,23 @@ import {
   Info,
   Pause,
 } from '@phosphor-icons/react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMinuteClock } from '../clock/use-clock';
-import styles from '../screens/kayamo-app.module.css';
+import styles from './goal-editor.module.css';
+
+/**
+ * The goal editor, on glass. Mounted by BotanicalGoals inside its dialog.
+ *
+ * Three views: an empty prompt with examples, the draft form, and the active
+ * goal with its next step and trail. The words are the product: Lis proposes,
+ * the person confirms, nothing is saved until they say so, and setting a goal
+ * down is never called a failure. A browser draft survives a reload and a
+ * failed save keeps the input on screen.
+ *
+ * Replaces journey/goal-flow.tsx (the phone flow rendering the 4,817-line
+ * phone stylesheet inside this dialog) on 2026-09-19. Every label, button and
+ * status string the e2e specs pin is kept verbatim.
+ */
 
 const EXAMPLES = [
   { label: 'Find work that does not drain me', Icon: Briefcase },
@@ -48,6 +62,8 @@ const EXAMPLES = [
   { label: 'Finish the thesis chapter', Icon: BookOpenText },
   { label: 'Squat a hundred kilos', Icon: Barbell },
 ] as const;
+
+const SAVE_FAILED = 'Could not finish saving. Your input is still here. Please retry.';
 
 type Step = 'empty' | 'draft' | 'active';
 
@@ -74,7 +90,19 @@ function trailWhen(iso: string, timeZone: string): string {
   });
 }
 
-export function GoalFlow({
+function draftKey(userId: string): string {
+  return 'kayamo:goal-draft:' + userId;
+}
+
+function forgetDraft(userId: string) {
+  try {
+    sessionStorage.removeItem(draftKey(userId));
+  } catch {
+    /* Optional browser draft. */
+  }
+}
+
+export function GoalEditor({
   userId,
   logicalDate,
   timeZone,
@@ -82,14 +110,10 @@ export function GoalFlow({
   goals,
   todayTasks,
   initialGoalId,
-  initialLifeArea = null,
   onClose,
   onChat,
   onGoToday,
   onChanged,
-  onAddToStory,
-  storySourceIds = [],
-  persistDraft = false,
 }: {
   userId: string;
   logicalDate: string;
@@ -98,17 +122,10 @@ export function GoalFlow({
   goals: LocalGoal[];
   todayTasks: LocalTask[];
   initialGoalId: string | null;
-  initialLifeArea?: LifeArea | null;
   onClose: () => void;
   onChat: () => void;
   onGoToday: () => void;
   onChanged: () => Promise<void>;
-  onAddToStory?: (
-    goal: LocalGoal,
-    status: 'completed' | 'released',
-  ) => Promise<void> | void;
-  storySourceIds?: string[];
-  persistDraft?: boolean;
 }) {
   const nowMs = useMinuteClock();
   const [step, setStep] = useState<Step>(initialGoalId ? 'active' : 'empty');
@@ -119,7 +136,7 @@ export function GoalFlow({
   const [why, setWhy] = useState('');
   const [doneLooks, setDoneLooks] = useState('');
   const [firstStep, setFirstStep] = useState('');
-  const [lifeArea, setLifeArea] = useState<LifeArea | null>(initialLifeArea);
+  const [lifeArea, setLifeArea] = useState<LifeArea | null>(null);
   const [doneBy, setDoneBy] = useState('');
   const [milestones, setMilestones] = useState<LocalGoalMilestone[]>([]);
   const [setdownOpen, setSetdownOpen] = useState(false);
@@ -127,6 +144,7 @@ export function GoalFlow({
   const [nextDraft, setNextDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const setdownRef = useRef<HTMLElement>(null);
 
   const goal =
     (created && created.id === viewId ? created : null) ??
@@ -156,11 +174,12 @@ export function GoalFlow({
     };
   }, [userId, viewId]);
 
-  const [draftReady, setDraftReady] = useState(!persistDraft);
+  /* A draft in progress survives a reload. Read once on mount, written on every
+     change while the form is open, forgotten on save. */
+  const [draftReady, setDraftReady] = useState(false);
   useEffect(() => {
-    if (!persistDraft) return;
     try {
-      const raw = sessionStorage.getItem('kayamo:goal-draft:' + userId);
+      const raw = sessionStorage.getItem(draftKey(userId));
       const saved: unknown = raw ? JSON.parse(raw) : null;
       if (saved && typeof saved === 'object' && !initialGoalId) {
         const value = saved as Record<string, unknown>;
@@ -186,38 +205,22 @@ export function GoalFlow({
       /* A damaged browser draft never changes saved goals. */
     }
     setDraftReady(true);
-  }, [persistDraft, userId, initialGoalId]);
+  }, [userId, initialGoalId]);
   useEffect(() => {
-    if (!persistDraft || !draftReady || step !== 'draft') return;
+    if (!draftReady || step !== 'draft') return;
     try {
       sessionStorage.setItem(
-        'kayamo:goal-draft:' + userId,
-        JSON.stringify({
-          title,
-          why,
-          doneLooks,
-          firstStep,
-          doneBy,
-          lifeArea,
-          confirmationId,
-        }),
+        draftKey(userId),
+        JSON.stringify({ title, why, doneLooks, firstStep, doneBy, lifeArea, confirmationId }),
       );
     } catch {
       /* Saving the goal still uses IndexedDB. */
     }
-  }, [
-    persistDraft,
-    draftReady,
-    step,
-    userId,
-    title,
-    why,
-    doneLooks,
-    firstStep,
-    doneBy,
-    lifeArea,
-    confirmationId,
-  ]);
+  }, [draftReady, step, userId, title, why, doneLooks, firstStep, doneBy, lifeArea, confirmationId]);
+
+  useEffect(() => {
+    if (setdownOpen) setdownRef.current?.querySelector('button')?.focus();
+  }, [setdownOpen]);
 
   const completed = milestones.filter((row) => row.completed_at);
   const next = milestones.find((row) => !row.completed_at) ?? null;
@@ -240,17 +243,14 @@ export function GoalFlow({
   const pace = goalPlausibility({ remainingSteps, daysLeft: risk.daysLeft });
   const nextTitle = changingNext ? nextDraft : (next?.title ?? nextDraft);
 
-  const stats = useMemo(
-    () => [
-      {
-        value: String(completed.length),
-        label: completed.length === 1 ? 'step confirmed' : 'steps confirmed',
-      },
-      { value: String(weeks), label: weeks === 1 ? 'week going' : 'weeks going' },
-      { value: String(weekHits), label: 'this week' },
-    ],
-    [completed.length, weekHits, weeks],
-  );
+  const stats = [
+    {
+      value: String(completed.length),
+      label: completed.length === 1 ? 'step confirmed' : 'steps confirmed',
+    },
+    { value: String(weeks), label: weeks === 1 ? 'week going' : 'weeks going' },
+    { value: String(weekHits), label: 'this week' },
+  ];
 
   function openDraft(seed = '') {
     setConfirmationId(crypto.randomUUID());
@@ -258,8 +258,9 @@ export function GoalFlow({
     setWhy('');
     setDoneLooks('');
     setFirstStep('');
-    setLifeArea(initialLifeArea ?? suggestLifeArea(seed));
+    setLifeArea(suggestLifeArea(seed));
     setDoneBy('');
+    setNotice(null);
     setStep('draft');
   }
 
@@ -280,13 +281,7 @@ export function GoalFlow({
         doneLooks,
         logicalDate,
       });
-      if (persistDraft) {
-        try {
-          sessionStorage.removeItem('kayamo:goal-draft:' + userId);
-        } catch {
-          /* Optional browser draft. */
-        }
-      }
+      forgetDraft(userId);
       setViewId(row.id);
       setCreated(row);
       setStep('active');
@@ -298,7 +293,7 @@ export function GoalFlow({
       await onChanged();
       await loadMilestones(row.id);
     } catch {
-      setNotice('Could not finish saving. Your input is still here. Please retry.');
+      setNotice(SAVE_FAILED);
     } finally {
       setBusy(false);
     }
@@ -333,7 +328,22 @@ export function GoalFlow({
       await onChanged();
       await loadMilestones(goal.id);
     } catch {
-      setNotice('Could not finish saving. Your input is still here. Please retry.');
+      setNotice(SAVE_FAILED);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function confirmStep() {
+    if (!goal || !next || busy) return;
+    setBusy(true);
+    try {
+      await completeLocalGoalMilestone({ id: next.id, userId, timeZone, dayStartsAt });
+      await loadMilestones(goal.id);
+      await onChanged();
+      setNotice('Step confirmed.');
+    } catch {
+      setNotice('Could not confirm this step. Please retry.');
     } finally {
       setBusy(false);
     }
@@ -343,21 +353,13 @@ export function GoalFlow({
     if (!goal || busy) return;
     setBusy(true);
     try {
-      const row = await setLocalGoalStatus({
-        id: goal.id,
-        userId,
-        status,
-        timeZone,
-        dayStartsAt,
-      });
+      const row = await setLocalGoalStatus({ id: goal.id, userId, status, timeZone, dayStartsAt });
       if (row) setCreated(row);
       setSetdownOpen(false);
       if (status === 'paused') {
         setNotice('Goal paused. Existing daily tasks remain yours to keep or edit.');
       } else if (status === 'completed') {
-        setNotice(
-          `Reached. +${COMPANION_EVENT_POINTS.goal_completed} toward the next stage.`,
-        );
+        setNotice(`Reached. +${COMPANION_EVENT_POINTS.goal_completed} toward the next stage.`);
       } else if (status === 'released') {
         setNotice('Set down. The trail stays. Nothing was taken away.');
       } else {
@@ -365,52 +367,52 @@ export function GoalFlow({
       }
       await onChanged();
     } catch {
-      setNotice('Could not finish saving. Your input is still here. Please retry.');
+      setNotice(SAVE_FAILED);
     } finally {
       setBusy(false);
     }
   }
 
+  const back = (label: string, onClick: () => void) => (
+    <button type="button" className={styles.iconButton} aria-label={label} onClick={onClick}>
+      <ArrowLeft size={21} aria-hidden="true" />
+    </button>
+  );
+
   if (step === 'empty') {
     return (
-      <div className={`${styles.flowOverlay} ${styles.flowSolid}`}>
-        <div className={styles.flowWash} aria-hidden="true" />
-        <div className={styles.flowTop}>
-          <button
-            type="button"
-            className={styles.iconButton}
-            aria-label="Back to Goals"
-            onClick={onClose}
-          >
-            <ArrowLeft size={21} />
-          </button>
+      <div className={styles.root}>
+        <div className={styles.top}>
+          {back('Back to Goals', onClose)}
+          <p className={`kgEyebrow ${styles.kicker}`}>Goals</p>
         </div>
-        <div className={styles.flowScroll}>
-          <p className={styles.flowKicker}>Goals</p>
-          <h1 className={styles.flowTitle}>What are you working toward?</h1>
-          <p className={styles.flowLead}>
+        <div className={styles.scroll} data-goal-editor="scroll">
+          <h2 className={styles.title}>What are you working toward?</h2>
+          <p className={styles.lead}>
             One thing at a time, big enough to matter. It does not have to be about food
             or the gym.
           </p>
-          <div className={styles.goalExamples}>
+          <ul className={styles.examples}>
             {EXAMPLES.map((row) => (
-              <button key={row.label} type="button" onClick={() => openDraft(row.label)}>
-                <row.Icon size={20} />
-                <span>{row.label}</span>
-                <CaretRight size={16} />
-              </button>
+              <li key={row.label}>
+                <button type="button" className={styles.example} onClick={() => openDraft(row.label)}>
+                  <row.Icon size={20} aria-hidden="true" />
+                  <span>{row.label}</span>
+                  <CaretRight size={16} aria-hidden="true" />
+                </button>
+              </li>
             ))}
-          </div>
-          <p className={styles.flowNote}>
+          </ul>
+          <p className={`${styles.muted} ${styles.eyebrow}`}>
             These are examples, not a menu. Lis can work with anything you can say out
             loud.
           </p>
         </div>
-        <div className={styles.flowFooter}>
-          <button className={styles.primaryButton} type="button" onClick={onChat}>
-            <ChatCircleDots size={20} /> Talk it through with Lis
+        <div className={styles.footer} data-goal-editor="footer">
+          <button className="kgAccent" type="button" onClick={onChat}>
+            <ChatCircleDots size={20} aria-hidden="true" /> Talk it through with Lis
           </button>
-          <button className={styles.ghostWide} type="button" onClick={() => openDraft()}>
+          <button className="kgGhost" type="button" onClick={() => openDraft()}>
             Write it myself
           </button>
         </div>
@@ -420,45 +422,31 @@ export function GoalFlow({
 
   if (step === 'draft') {
     return (
-      <div className={`${styles.flowOverlay} ${styles.flowSolid}`}>
-        <div className={styles.activeHeader}>
-          <button
-            type="button"
-            className={styles.iconButton}
-            aria-label="Back"
-            onClick={() => setStep('empty')}
-          >
-            <ArrowLeft size={21} />
-          </button>
-          <h1>Your goal, in your words</h1>
+      <div className={styles.root}>
+        <div className={styles.top}>
+          {back('Back', () => setStep('empty'))}
+          <p className={`kgEyebrow ${styles.kicker}`}>New goal</p>
         </div>
-        <div className={styles.flowScroll}>
-          <p className={styles.flowLead}>
+        <div className={styles.scroll} data-goal-editor="scroll">
+          <h2 className={styles.title}>Your goal, in your words</h2>
+          <p className={styles.lead}>
             Every line is yours to change, and nothing is saved until you confirm.
           </p>
           {notice ? (
-            <p role="status" className={styles.flowLead}>
+            <p role="status" className={styles.status}>
               {notice}
             </p>
           ) : null}
-          <div className={styles.goalDraft}>
-            <label>
+          <div className={styles.fields}>
+            <label className={styles.field}>
               <span>The goal</span>
-              <textarea
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                rows={2}
-              />
+              <textarea value={title} onChange={(event) => setTitle(event.target.value)} rows={2} />
             </label>
-            <label>
+            <label className={styles.field}>
               <span>Why it matters</span>
-              <textarea
-                value={why}
-                onChange={(event) => setWhy(event.target.value)}
-                rows={2}
-              />
+              <textarea value={why} onChange={(event) => setWhy(event.target.value)} rows={2} />
             </label>
-            <label>
+            <label className={styles.field}>
               <span>What done looks like</span>
               <textarea
                 value={doneLooks}
@@ -466,7 +454,7 @@ export function GoalFlow({
                 rows={2}
               />
             </label>
-            <label>
+            <label className={styles.field}>
               <span>First step, today-sized</span>
               <textarea
                 value={firstStep}
@@ -474,22 +462,18 @@ export function GoalFlow({
                 rows={2}
               />
             </label>
-            <label>
+            <label className={styles.field}>
               <span>Done-by date · optional</span>
-              <input
-                type="date"
-                value={doneBy}
-                onChange={(event) => setDoneBy(event.target.value)}
-              />
+              <input type="date" value={doneBy} onChange={(event) => setDoneBy(event.target.value)} />
             </label>
           </div>
-          <p className={styles.eyebrow}>Life area · optional</p>
-          <div className={styles.choiceRow}>
+          <p className={`kgEyebrow ${styles.eyebrow}`}>Life area · optional</p>
+          <div className={styles.chips}>
             {LIFE_AREAS.map((area) => (
               <button
                 key={area}
                 type="button"
-                className={lifeArea === area ? styles.choiceOn : styles.choiceOff}
+                className={styles.chip}
                 aria-pressed={lifeArea === area}
                 onClick={() => setLifeArea((current) => (current === area ? null : area))}
               >
@@ -497,24 +481,24 @@ export function GoalFlow({
               </button>
             ))}
           </div>
-          <div className={styles.goalHint}>
-            <Info size={19} />
+          <div className={styles.hint}>
+            <Info size={19} aria-hidden="true" />
             <p>
-              Steps land on Home as ordinary tasks. Confirming one is what moves the goal
+              Steps land on Home as ordinary tasks. Confirming one is what moves the goal.
               Lis never marks it for you.
             </p>
           </div>
         </div>
-        <div className={styles.flowFooter}>
+        <div className={styles.footer} data-goal-editor="footer">
           <button
-            className={styles.primaryButton}
+            className="kgAccent"
             type="button"
             disabled={!title.trim() || busy}
             onClick={() => void confirmGoal()}
           >
             Make this my goal
           </button>
-          <button className={styles.ghostWide} type="button" onClick={onChat}>
+          <button className="kgGhost" type="button" onClick={onChat}>
             Keep talking about it
           </button>
         </div>
@@ -524,78 +508,73 @@ export function GoalFlow({
 
   if (!goal) {
     return (
-      <div className={`${styles.flowOverlay} ${styles.flowSolid}`}>
-        <div className={styles.activeHeader}>
-          <button
-            type="button"
-            className={styles.iconButton}
-            aria-label="Back to Goals"
-            onClick={onClose}
-          >
-            <ArrowLeft size={21} />
-          </button>
-          <h1>Goal</h1>
+      <div className={styles.root}>
+        <div className={styles.top}>
+          {back('Back to Goals', onClose)}
+          <p className={`kgEyebrow ${styles.kicker}`}>Goal</p>
         </div>
-        <p className={styles.flowLead}>This goal is no longer on the device.</p>
+        <div className={styles.scroll} data-goal-editor="scroll">
+          <p className={styles.lead}>This goal is no longer on the device.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className={`${styles.flowOverlay} ${styles.flowSolid}`}>
-      <div className={styles.flowWash} aria-hidden="true" />
-      <div className={styles.flowTop}>
+    <div className={styles.root}>
+      <div className={styles.top}>
+        {back('Back to Goals', onClose)}
+        <p className={`kgEyebrow ${styles.kicker}`}>
+          {goal.status === 'active' ? 'Working toward' : goal.status}
+        </p>
         <button
           type="button"
           className={styles.iconButton}
-          aria-label="Back to Goals"
-          onClick={onClose}
-        >
-          <ArrowLeft size={21} />
-        </button>
-        <span className={styles.eyebrow}>
-          {goal.status === 'active' ? 'working toward' : goal.status}
-        </span>
-        <button
-          type="button"
-          className={`${styles.iconButton} ${styles.goalMenu}`}
           aria-label="Pause or set it down"
           onClick={() => setSetdownOpen(true)}
         >
-          <DotsThree size={22} />
+          <DotsThree size={22} aria-hidden="true" />
         </button>
       </div>
-      <div className={styles.flowScroll}>
-        <h1 className={styles.flowTitle}>{goal.title}</h1>
-        {goal.description ? <p className={styles.flowLead}>{goal.description}</p> : null}
+      <div className={styles.scroll} data-goal-editor="scroll">
+        <h2 className={styles.title}>{goal.title}</h2>
+        {goal.description ? <p className={styles.lead}>{goal.description}</p> : null}
+        {notice ? (
+          <p role="status" className={styles.status}>
+            {notice}
+          </p>
+        ) : null}
 
-        <div className={styles.goalStats}>
+        <div className={styles.stats}>
           {stats.map((row) => (
-            <div key={row.label}>
-              <p>{row.value}</p>
-              <span>{row.label}</span>
+            <div key={row.label} className={styles.stat}>
+              <span className={`${styles.statNum} kgNum`}>{row.value}</span>
+              <span className={styles.statLabel}>{row.label}</span>
             </div>
           ))}
         </div>
 
         {goal.target_date ? (
-          <div className={styles.surfaceCard}>
+          <div className={styles.card}>
             <p>{risk.reason || `A date is set: ${goal.target_date}.`}</p>
             <p className={styles.muted}>{pace.reason}</p>
           </div>
         ) : null}
 
-        <div className={styles.goalNext}>
-          <p className={styles.eyebrow}>Next step</p>
+        <section className={styles.next} aria-labelledby="goal-next-title">
+          <p id="goal-next-title" className={`kgEyebrow ${styles.eyebrow}`}>
+            Next step
+          </p>
           {changingNext ? (
             <textarea
+              aria-label="Next step"
               value={nextDraft}
               onChange={(event) => setNextDraft(event.target.value)}
               rows={2}
               autoFocus
             />
           ) : (
-            <p className={styles.goalNextTitle}>
+            <p className={styles.nextTitle}>
               {next?.title ?? 'Add a today-sized step when you are ready.'}
             </p>
           )}
@@ -604,41 +583,25 @@ export function GoalFlow({
               ? 'Already on Home. Confirming it there is what moves this.'
               : 'Lis will not mark this for you. Put it on Home, then confirm it there.'}
           </p>
-          {persistDraft && next && (
+          {next ? (
             <button
               type="button"
-              className={styles.secondaryButton}
+              className="kgGhost"
               disabled={busy}
-              onClick={async () => {
-                setBusy(true);
-                try {
-                  await completeLocalGoalMilestone({
-                    id: next.id,
-                    userId,
-                    timeZone,
-                    dayStartsAt,
-                  });
-                  await loadMilestones(goal.id);
-                  await onChanged();
-                  setNotice('Step confirmed.');
-                } catch {
-                  setNotice('Could not confirm this step. Please retry.');
-                } finally {
-                  setBusy(false);
-                }
-              }}
+              onClick={() => void confirmStep()}
             >
+              <CheckCircle size={18} aria-hidden="true" />
               Confirm step complete
             </button>
-          )}
+          ) : null}
           <div className={styles.buttonRow}>
             {onToday ? (
-              <button className={styles.primaryButton} type="button" onClick={onGoToday}>
+              <button className="kgAccent" type="button" onClick={onGoToday}>
                 Open Home
               </button>
             ) : (
               <button
-                className={styles.primaryButton}
+                className="kgAccent"
                 type="button"
                 disabled={!nextTitle.trim() || busy}
                 onClick={() => void putNextOnToday()}
@@ -647,7 +610,7 @@ export function GoalFlow({
               </button>
             )}
             <button
-              className={styles.secondaryButton}
+              className="kgGhost"
               type="button"
               onClick={() => {
                 setNextDraft(next?.title ?? '');
@@ -657,135 +620,89 @@ export function GoalFlow({
               Change
             </button>
           </div>
-        </div>
+        </section>
 
-        <p className={styles.eyebrow} style={{ margin: '20px 22px 8px' }}>
-          What you have confirmed
-        </p>
-        <div className={styles.goalTrail}>
-          {completed.length === 0 ? (
-            <p>Nothing confirmed yet. Quiet weeks take nothing away.</p>
-          ) : (
-            completed
+        <p className={`kgEyebrow ${styles.eyebrow}`}>What you have confirmed</p>
+        {completed.length === 0 ? (
+          <p className={styles.muted}>Nothing confirmed yet. Quiet weeks take nothing away.</p>
+        ) : (
+          <ul className={styles.trail}>
+            {completed
               .slice()
               .reverse()
               .map((row) => (
-                <div key={row.id}>
-                  <CheckCircle size={19} weight="fill" />
+                <li key={row.id} className={styles.trailRow}>
+                  <CheckCircle size={19} weight="fill" aria-hidden="true" />
                   <span>
                     <strong>{row.title}</strong>
-                    <small>
-                      {row.completed_at ? trailWhen(row.completed_at, timeZone) : ''}
-                    </small>
+                    <small>{row.completed_at ? trailWhen(row.completed_at, timeZone) : ''}</small>
                   </span>
                   <b>+{COMPANION_EVENT_POINTS.milestone_completed}</b>
-                </div>
-              ))
-          )}
-          {completed.length > 0 ? (
-            <p>Nothing here can be undone by a quiet week.</p>
-          ) : null}
-        </div>
+                </li>
+              ))}
+          </ul>
+        )}
 
-        <div className={styles.goalLinks}>
-          <button type="button" onClick={onChat}>
-            <ChatCircleDots size={19} />
+        <div className={styles.links}>
+          <button type="button" className={styles.link} onClick={onChat}>
+            <ChatCircleDots size={19} aria-hidden="true" />
             <span>Check in with Lis</span>
-            <CaretRight size={15} />
+            <CaretRight size={15} aria-hidden="true" />
           </button>
-          <button type="button" onClick={() => setSetdownOpen(true)}>
-            <HandPalm size={19} />
-            <span>Pause or set it down</span>
-            <CaretRight size={15} />
-          </button>
-          {goal.status === 'paused' || goal.status === 'released' ? (
-            <button type="button" onClick={() => void setStatus('active')}>
-              <Compass size={19} />
-              <span>Pick this back up</span>
-              <CaretRight size={15} />
+          {setdownOpen ? null : (
+            <button type="button" className={styles.link} onClick={() => setSetdownOpen(true)}>
+              <HandPalm size={19} aria-hidden="true" />
+              <span>Pause or set it down</span>
+              <CaretRight size={15} aria-hidden="true" />
             </button>
-          ) : null}
-          {onAddToStory &&
-          (goal.status === 'completed' || goal.status === 'released') &&
-          !storySourceIds.includes(goal.id) ? (
-            <button
-              type="button"
-              onClick={() =>
-                void onAddToStory(
-                  goal,
-                  goal.status === 'released' ? 'released' : 'completed',
-                )
-              }
-            >
-              <BookOpenText size={19} />
-              <span>Keep in Life Story</span>
-              <CaretRight size={15} />
+          )}
+          {goal.status === 'paused' || goal.status === 'released' ? (
+            <button type="button" className={styles.link} onClick={() => void setStatus('active')}>
+              <Compass size={19} aria-hidden="true" />
+              <span>Pick this back up</span>
+              <CaretRight size={15} aria-hidden="true" />
             </button>
           ) : null}
         </div>
-      </div>
 
-      {setdownOpen ? (
-        <div className={styles.sheetScrim}>
-          <button
-            type="button"
-            className={styles.sheetBackdrop}
-            aria-label="Close"
-            data-kayamo-back-dismiss="true"
-            onClick={() => setSetdownOpen(false)}
-          />
-          <div
-            className={styles.bottomSheet}
-            role="dialog"
-            aria-label="Pause or set down this goal"
+        {setdownOpen ? (
+          <section
+            ref={setdownRef}
+            className={`${styles.setdown} kgRise`}
+            aria-labelledby="goal-setdown-title"
           >
-            <div className={styles.sheetHandle} aria-hidden="true" />
-            <p>This does not have to be a failure.</p>
-            <small>
+            <h3 id="goal-setdown-title">This does not have to be a failure.</h3>
+            <p className={styles.muted}>
               Confirmed steps stay in Goals either way. Nothing is deducted, and you can
               pick this up any week.
-            </small>
-            <div className={styles.goalSetdown}>
-              <button type="button" onClick={() => void setStatus('paused')}>
-                <Pause size={20} />
-                <span>
-                  <strong>Pause it</strong>
-                  <small>Off Home, still in Goals. No check-ins.</small>
-                </span>
-              </button>
-              <button type="button" onClick={() => void setStatus('released')}>
-                <HandPalm size={20} />
-                <span>
-                  <strong>Set it down</strong>
-                  <small>Closed, with the trail kept. Not marked as failed.</small>
-                </span>
-              </button>
-              <button type="button" onClick={() => void setStatus('completed')}>
-                <CheckCircle size={20} weight="fill" />
-                <span>
-                  <strong>It actually happened</strong>
-                  <small>
-                    {doneLooks.trim() || next?.title || 'Close it as reached.'}
-                  </small>
-                </span>
-              </button>
-            </div>
-            <button
-              className={styles.textLink}
-              type="button"
-              onClick={() => setSetdownOpen(false)}
-            >
+            </p>
+            <button type="button" className={styles.option} disabled={busy} onClick={() => void setStatus('paused')}>
+              <Pause size={20} aria-hidden="true" />
+              <span>
+                <strong>Pause it</strong>
+                <small>Off Home, still in Goals. No check-ins.</small>
+              </span>
+            </button>
+            <button type="button" className={styles.option} disabled={busy} onClick={() => void setStatus('released')}>
+              <HandPalm size={20} aria-hidden="true" />
+              <span>
+                <strong>Set it down</strong>
+                <small>Closed, with the trail kept. Not marked as failed.</small>
+              </span>
+            </button>
+            <button type="button" className={styles.option} disabled={busy} onClick={() => void setStatus('completed')}>
+              <CheckCircle size={20} weight="fill" aria-hidden="true" />
+              <span>
+                <strong>It actually happened</strong>
+                <small>{doneLooks.trim() || next?.title || 'Close it as reached.'}</small>
+              </span>
+            </button>
+            <button type="button" className={styles.textLink} onClick={() => setSetdownOpen(false)}>
               Keep going for now
             </button>
-          </div>
-        </div>
-      ) : null}
-
-      {notice ? (
-        <div className={styles.toast} role="status">
-          {notice}
-        </div>
-      ) : null}
+          </section>
+        ) : null}
+      </div>
     </div>
   );
 }

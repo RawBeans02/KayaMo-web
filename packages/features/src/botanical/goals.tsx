@@ -7,7 +7,7 @@ import {
 } from '@kayamo/offline';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDeskClock } from '../desk/use-desk-clock';
-import { GoalFlow } from '../journey/goal-flow';
+import { GoalEditor } from './goal-editor';
 import { BotanicalIcon } from './icons';
 import { useRecords } from './use-records';
 import styles from './botanical.module.css';
@@ -171,8 +171,7 @@ export function BotanicalGoals({ userId }: { userId: string }) {
       )}
       <dialog
         ref={dialog}
-        className={styles.dialog}
-        data-botanical-goal-flow=""
+        className={`${styles.dialog} ${styles.dialogFlush}`}
         aria-label="Goal editor"
         onKeyDown={trapDialogTab}
         onCancel={(event) => {
@@ -181,14 +180,13 @@ export function BotanicalGoals({ userId }: { userId: string }) {
         }}
       >
         {open && data && (
-          <GoalFlow
+          <GoalEditor
             userId={userId}
             logicalDate={today}
             {...clock}
             goals={data.goals}
             todayTasks={data.tasks}
             initialGoalId={selected}
-            persistDraft
             onClose={() => closeDialog(dialog.current, () => setOpen(false))}
             onChat={() => {
               window.location.href = '/mus';

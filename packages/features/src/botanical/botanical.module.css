@@ -4,10 +4,10 @@
    these four screens do not share with anything else; it never re-declares a
    glass recipe.
 
-   One documented exception: `.primary` and `.secondary`. The task editor and
-   the goal flow compose those by name from outside this group, so they have to
-   stand on their own rather than expecting `kgAccent` / `kgGhost` in the
-   markup. They mirror the global recipes exactly.
+   One documented exception: `.primary` and `.secondary`. The task editor
+   composes those by name, so they have to stand on their own rather than
+   expecting `kgAccent` / `kgGhost` in the markup. They mirror the global
+   recipes exactly. The goal editor has its own module (goal-editor.module.css).
 
    No `backdrop-filter` is written on content surfaces on purpose: content sits
    IN the page, so it takes `kgSurface` (no blur). Only the dialog, which
@@ -721,6 +721,20 @@
 .dialog::backdrop {
   background: rgba(0, 0, 0, 0.4);
 }
+
+/* An editor that lays out its own top bar, scroll region and footer owns the
+   padding and the scrolling; the dialog only frames it. Keyed on [open]: a
+   bare `display: flex` here would override the UA's `dialog:not([open])
+   { display: none }` and leave a blank glass panel over the page. */
+.dialogFlush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.dialogFlush[open] {
+  display: flex;
+  flex-direction: column;
+}
 .dialog h2 {
   margin: 0 0 20px;
   font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
@@ -820,60 +834,10 @@
   .dialog {
     padding: 22px 18px;
   }
+  .dialogFlush {
+    padding: 0;
+  }
   .ask {
     padding: 0 14px 0 6px;
   }
-}
-
-/* ── Goal editor bridge ─────────────────────────────────────
-   GoalFlow still renders the phone editor (kayamo-app.module.css, --km-*
-   tokens) inside this glass dialog. Until it has its own module, map its tokens
-   onto the glass palette here and fix the two layout collisions. These rules
-   lived in src/app/botanical.css as [class*=] overrides from the root app; they
-   belong with the dialog that mounts the editor. */
-.dialog[data-botanical-goal-flow] {
-  --km-bg: var(--color-surface);
-  --km-wash: var(--color-surface-2);
-  --km-surface: var(--color-surface-2);
-  --km-surface-2: var(--color-surface-2);
-  --km-text: var(--color-text);
-  --km-muted: var(--color-muted);
-  --km-action: var(--color-accent);
-  --km-action-fg: var(--color-accent-fg);
-  --km-growth: var(--color-proposal);
-  --km-growth-fg: var(--color-text);
-  --km-danger: var(--color-warning);
-  --km-glass: var(--color-surface);
-  --km-glass-clear: var(--color-surface);
-  --km-glass-edge: var(--color-line-strong);
-  --km-hairline: var(--color-line-strong);
-  --km-shadow: none;
-  --km-scrim: var(--color-overlay);
-}
-
-.dialog[data-botanical-goal-flow] [class*='flowWash'] {
-  display: none;
-}
-
-.dialog[data-botanical-goal-flow] button {
-  min-height: 44px;
-}
-
-.dialog[data-botanical-goal-flow] [class*='flowFooter'] {
-  position: relative;
-  inset: auto;
-  flex: 0 0 auto;
-  padding: 12px 14px max(16px, env(safe-area-inset-bottom));
-  border-top: 1px solid var(--color-line);
-  background: var(--color-surface);
-}
-
-.dialog[data-botanical-goal-flow] [class*='flowScroll'] {
-  padding-bottom: 20px;
-}
-
-.dialog[data-botanical-goal-flow] :is([class*='goalDraft'] label > span, [class*='eyebrow']) {
-  font-size: 0.875rem;
-  letter-spacing: 0;
-  text-transform: none;
 }

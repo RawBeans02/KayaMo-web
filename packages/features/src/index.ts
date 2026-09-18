@@ -38,4 +38,3 @@ export {
 } from './food/filter-food-history';
 export { MusThread } from './mus/mus-thread';
 export { installDemoCatalog } from './food/demo-catalog';
-export { GoalFlow } from './journey/goal-flow';

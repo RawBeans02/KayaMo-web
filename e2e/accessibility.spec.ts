@@ -96,10 +96,10 @@ for (const colorScheme of ['light', 'dark'] as const) {
       await page.getByLabel('The goal', { exact: true }).fill(title);
       const goalDialog = page.getByRole('dialog', { name: 'Goal editor' });
       const scrollBounds = await goalDialog
-        .locator('[class*="flowScroll"]')
+        .locator('[data-goal-editor="scroll"]')
         .boundingBox();
       const footerBounds = await goalDialog
-        .locator('[class*="flowFooter"]')
+        .locator('[data-goal-editor="footer"]')
         .boundingBox();
       expect(scrollBounds).not.toBeNull();
       expect(footerBounds).not.toBeNull();
