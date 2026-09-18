@@ -1,61 +1,129 @@
 # Botanical redesign — implementation QA
 
-final result: blocked
+final result: passed
+
+September 14 audit implementation and local visual QA passed. This is not production
+release approval. Remaining release gates: hosted verification, native zoom/screen-reader
+review, provider rollback retention and user preview approval.
 
 ## Scope and visual truth
 
-The selected direction is the daily timeline/priorities layout, with only the botanical texture carried over from concept 3. This is a working website redesign, not an Apple approval claim. Native assets and defaults are outside this release.
+Selected direction: daily timeline/priorities from concept 2, with only the botanical
+texture from concept 3. Apple-inspired quality is the goal, not an Apple approval claim.
+Native artwork and defaults remain outside scope.
 
-- Source: `docs/design/botanical/evidence/reference.png`, copied from `/Users/rovs/.codex/generated_images/01a06373-5b0e-7231-b583-5ae731ec9c7d/exec-db002b69-8095-41e4-b55a-e4a7aae33b44.png`.
-- Implementation: `docs/design/botanical/evidence/home-v3.png`, local `/today`.
-- Source pixels: 1487 × 1058. Reference normalized to 1440 × 1024 for comparison (negligible aspect-ratio difference).
-- Implementation: Chromium, 1440 × 1024 CSS pixels, device scale factor 1. The earlier WebKit v2 capture was scale factor 2 and normalized before full-view comparison.
-- State: light theme, September 11, 2026, three illustrative tasks and time blocks stored in the isolated test guest's IndexedDB. No production sample activity is inserted.
-- Full-view evidence: `docs/design/botanical/evidence/comparison-v3.png` contains source and implementation together.
-- Focused evidence: `docs/design/botanical/evidence/detail-v3.png` aligns the plan panels after accounting for the real demo disclosure. The v2 detail image was incorrectly density-normalized and is not acceptance evidence.
-- Supplemental evidence: `home-320.png`, `mus-390.png`, `settings-390.png`, `verify-320.png` in the same evidence directory. Also inspected Home and Mus in the in-app browser.
+- Source: `docs/design/botanical/evidence/reference.png`, 1487×1058.
+- Current: `docs/design/botanical/evidence/home-motion-v6.png`, Chromium at 1440×1024,
+  device scale factor 1.
+- Original-direction comparison: `docs/design/botanical/evidence/comparison-v5.png`,
+  source normalized to 1440×1024 beside the pre-audit implementation.
+- Audit regression comparison: `docs/design/botanical/evidence/motion-comparison-v6.png`,
+  2880×1024, pre-audit v5 left and final audit v6 right, each at native 1440×1024.
+  Focused brand/header comparison: `motion-detail-v6.png`, two 700×260 crops at 1:1.
+- Same state: light theme, September 11, 2026, three illustrative tasks/time blocks
+  in isolated test-guest IndexedDB. No production sample records are inserted.
+- Additional evidence in that directory: `mus-family-v5.png`,
+  `goal-editor-320-v5.png`, `task-editor-dark-320-v5.png`,
+  `settings-large-text-v5.png`.
+- Live in-app browser review: Mus conversation/history and light/dark settings;
+  audit follow-up reviewed narrow Home, Goals and editor open/close/focus restoration.
 
-## Findings that still block full-design acceptance
+## September 14 audit findings and post-fix comparison
 
-1. **[P1] Mus asset family is unfinished.** Home/login use the new transparent neutral character, but the conversation and expression gallery still show the older detailed artwork on black circles. This visibly breaks the approved identity. Thinking, happy, and concerned candidates contain baked checkerboards. Clean and validate their alpha, then supply web-scoped asset overrides without replacing native defaults. Local background-removal permission is still pending.
-2. **Verification gaps remain.** The full matrix of zoom, long text, open editors, worst-case glass contrast, reduced motion/transparency, dark screenshots, and screen-reader behavior is not yet documented. Passing overflow assertions is not equivalent to completing that review.
+No actionable P0/P1/P2 visual differences remain in the reviewed audit scope.
+The audit's AD-01–08 implementation is recorded in
+`docs/audits/2026-09-13-apple-design-implementation.md`; the source audit is unchanged.
 
-## Required fidelity surfaces
+- Fonts/typography: same system-sans family, weights, hierarchy and wrapping at default
+  text size. Optical sizing is enabled; no replacement typeface or decorative labels.
+- Spacing/layout: same columns, card dimensions, corners and content rhythm. The demo
+  banner is intentionally 13px taller to accommodate a true 44px sign-in target;
+  content shifts down accordingly. Brand/link padding no longer relies on overlap.
+  Equivalent rem dimensions preserve default density and scale with text preferences.
+- Colors/tokens: botanical palette, opaque reading cards and navigation texture remain
+  unchanged. Reduced transparency now becomes opaque immediately, including on theme changes.
+- Images: existing sprout and transparent Mus assets retain scale, crop and sharpness;
+  no artwork was regenerated or replaced in this interaction pass.
+- Copy/content: the same saved-record test content and public labels remain; no invented
+  activity or audit instructions appear in the interface.
 
-- **Typography:** system sans replaces the former family mixture as explicitly requested. Date hierarchy and plan headings were enlarged after comparison. Body text remains 16px by design rather than copying all enlarged mock text. The small-screen Home label was corrected in v4.
-- **Spacing/layout:** the two-column timeline/priorities structure, opaque reading surfaces, compact sidebar and labeled bottom navigation are implemented. The production demo notice adds vertical space absent from the mock; this is intentional, not an attempt at exact coordinate matching. All five destinations now have real pages. Timeline dot/icon refinements are minor follow-up polish.
-- **Colors/tokens:** pearl, charcoal and botanical green are web-scoped. Glass is reserved for shell/compact controls; content panels are opaque. Dark and reduced-transparency preferences persist. Worst-case contrast testing is still a release gate, not claimed as passed.
-- **Images:** generated seed mark, neutral Mus and sidebar texture are real raster assets, not CSS drawings. App favicon, browser install artwork and social-preview metadata are web-only. The remaining Mus states are explicitly not approved.
-- **Copy/content:** no sample tasks, invented XP or fabricated streaks are inserted into user records. Generic saved tasks use neutral category labels/icons instead of guessing life areas from their text. Demo data boundaries and unavailable areas are stated. Goal pause/resume text was corrected so it does not falsely promise automatic removal/addition of ordinary daily tasks.
+The full-view and focused comparisons were opened together as before/after images.
+The focused crop confirms unchanged brand/nav typography and the intentional banner
+spacing correction. The enlarged dark settings screenshot was also reviewed at 200%
+root text size: content remains readable and scrollable without horizontal overflow.
+
+Iteration history: motion checks caught reduced-motion selector specificity and an
+unreachable read-only timetable; those were corrected in implementation. An intermediate
+full run found four Reduce Transparency checks sampling a fading translucent background.
+The preference now excludes background from transitions rather than weakening assertions.
+The final full run passes all 132 checks, including the original failed states.
+Final screenshots are in `/private/tmp/kayamo-apple-audit-verified/`; the durable Home
+comparison above was regenerated from that final run.
+
+## Visual review outcome
+
+Home preserves the selected two-column plan/priorities layout, opaque reading
+surfaces, botanical palette and textured navigation. Typography is system sans.
+The demo disclosure adds vertical space absent from the mock. Generic saved tasks
+use neutral icons/categories rather than guessing life areas from their text.
+These are intentional functional differences.
+
+All four Mus expressions now use the transparent seed/two-leaf family, reviewed on
+light/dark backgrounds. Web overrides preserve native assets and non-shaming rules.
+Old black-circle artwork and checkerboard candidates are no longer used by the web.
+
+Visual review caught overlapping actions in the 320px goal editor. The footer now
+occupies a reserved opaque area; the scrollable form ends above it. A regression
+assertion checks their bounds. Goal labels and conversation titles were made
+readable, and history controls no longer squeeze titles into a tiny column.
+
+Non-blocking polish: the mock's timeline icons/markers are more prominent. Retain
+honest saved-field semantics if refining them.
+
+## Verification
+
+- Full browser suite: **132/132 passed**, Chromium, Firefox and WebKit, retaining
+  original behaviors and adding accessibility/recovery and motion coverage.
+- Unit suite: **529/529 passed**. Typecheck, lint and production build passed after
+  the full browser run. Existing AI SDK and local Node 20 warnings remain.
+- Final affected-screen rerun/build checks are recorded in
+  `docs/design/botanical/release-candidate.md` when complete.
+- Disposable database: **32/32 integration tests passed** after all migrations
+  replayed in a separate local Supabase project. Temporary data was removed after
+  testing; the existing local project and production were untouched.
+- Goal save is now one account-scoped IndexedDB transaction including the outbox.
+  Injected failure/reload/retry is tested. Remote sync remains eventually consistent,
+  not an invented atomic server transaction.
+- See `docs/design/botanical/accessibility-state-matrix.md` for exact route/state,
+  width, theme, reduced-preference, focus and contrast coverage, and its limits.
+
+## Release checklist
+
+- [x] Selected layout, responsive five-destination shell and working core journeys.
+- [x] Complete transparent Mus family and web-only integration.
+- [x] Observed table/timeline, contrast, modal-focus and editor-overlap fixes.
+- [x] Document automated accessibility and workflow-state matrix.
+- [x] Atomic local goal-plan save and partial-write recovery tests.
+- [x] Disposable database integration.
+- [x] Audit interaction pass AD-01–08 and final visual comparison.
+- [x] Final full browser checks 132/132; unit tests 529/529; typecheck, lint and build passed.
+- [ ] Hosted preview and candidate smoke checks.
+- [ ] Native browser zoom and actual screen-reader review.
+- [ ] Verify provider rollback retention.
+- [ ] User preview approval, promotion and post-promotion smoke.
 
 ## Comparison history
 
-1. **v1:** `comparison-v1.png` showed undersized date/navigation hierarchy and weak sidebar texture. Enlarged sidebar/typography and increased texture presence; restored functional previous/next week controls.
-2. **v2:** `comparison-v2.png` showed improved major proportions, but a high-specificity global font reset suppressed control typography and week controls lost their borders. Replaced that reset with zero-specificity defaults and corrected the week-action selector. Enlarged the plan heading and priority labels.
-3. **v3:** `comparison-v3.png` and `detail-v3.png` confirm those fixes. Remaining differences above are not silently accepted. Earlier responsive verification overflow and duplicate goal notices were fixed; browser regressions verify the changed behavior.
-4. **v4:** `home-320-v4.png` confirms the Home label is subordinate to the date. `mus-390-v4.png` confirms a visible demo-unavailability explanation in the conversation header and the expression gallery moved into a keyboard-accessible disclosure. The prior v3 captures provide the before evidence. The date advanced to September 12 for these empty-state captures; this is a date-label change, not layout drift. Eighteen affected browser checks passed after these fixes. The old artwork remains a separate blocker.
+September 14 global-positioning follow-up: public landing/login wording is no longer
+Filipino-first. Foods adds an opaque worldwide-search/review section using the existing
+palette and control system; `evidence/worldwide-review-390.png` records the narrow
+authenticated fixture. The app's demo gate was also inspected in the in-app browser.
+This is a functional addition, not a claim that the original Home mock included a food
+search design. Release limits and exact regression outcomes are in
+`docs/global-product-direction.md`; USDA access currently returns HTTP 403.
 
-## Functional verification
-
-- Full browser run: **105/105 passed** across Chromium, Firefox and WebKit (35 per browser), retaining the original 29 behaviors and adding six redesign regressions per browser. The subsequent Home/Mus refinement pass also passed **18/18** affected checks.
-- Covered: demo identity, email-link recovery/resend/cooldown, food entry and undo, task capture/edit/reload, workout continuation/results, goal first step and milestone history, server-confirmed Mus permissions/proposals, date isolation, recovered task drafts, primary navigation, appearance persistence, and narrow legacy-tool overflow.
-- Viewport checks include 320, 390, 768, 1024 and 1440px; tools additionally tested at 320/390/768px.
-- macOS Safari keyboard test uses native Option-Tab to reach buttons; the focus assertion is unchanged. An intermittent callback check passed in isolation and in the final full run without weakening its assertions.
-- Unit tests passed; final type checks, lint and production build also passed. Build warnings and release gates are recorded in `docs/design/botanical/implementation-status.md`.
-- Disposable database integration and hosted preview/live smoke checks have **not** passed for this redesign. No production deployment was replaced.
-
-## Implementation checklist
-
-- [x] Selected layout, web tokens, responsive five-destination shell, working Home/Goals/Life/Grove, settings and public entry.
-- [x] Canonical shared feature extraction and targeted updates, preserving unrelated mobile changes.
-- [x] Full cross-browser functional suite.
-- [x] Correct narrow Home hierarchy and make Mus expression guidance secondary.
-- [ ] Complete Mus asset family.
-- [ ] Resolve remaining visual findings and complete accessibility/state matrix.
-- [ ] Check partial-write recovery for multi-record goal creation; the inherited sequence is not an atomic transaction.
-- [ ] Run disposable database integration, preview deployment review and live smoke checks.
-- [ ] Preserve rollback deployment before production promotion.
-
-## Follow-up polish
-
-Increase timeline icon prominence and consider subtle timeline markers using the existing icon library. Keep task semantics grounded in saved fields. Do not add guessed categories just to resemble the sample picture.
+Earlier `comparison-v1/v2/v3.png` and `detail-v3.png` document typography/layout
+corrections. The v2 detail was incorrectly density-normalized and is not acceptance
+evidence. V4 corrected narrow Home hierarchy and moved expression guidance into
+a disclosure. V5 completes artwork, semantic/contrast fixes and same-state comparison.
+Earlier 105-test results precede the expanded suite.
