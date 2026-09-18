@@ -292,6 +292,7 @@ export {
 export {
   listLocalFoodEntries,
   listLocalFoodHistory,
+  FOOD_ENTRY_UNDO_MS,
   listLocalFoodLedger,
   listLocalMealTemplates,
   listLocalWeightLogs,

@@ -15,6 +15,7 @@ import {
   tombstoneLocalFoodEntry,
   useLiveFoodEntries,
   useLiveFoodLedger,
+  FOOD_ENTRY_UNDO_MS,
   type LocalFoodEntry,
 } from '@kayamo/offline';
 import { Toast } from '@kayamo/ui';
@@ -40,7 +41,6 @@ import { useDeskLocale } from '../i18n/desk-locale';
 import { DeskMusPane } from '../desk/desk-mus';
 import styles from './desk.module.css';
 
-const UNDO_MS = 8000;
 
 function formatTime(loggedAt: string, timeZone: string): string {
   try {
@@ -232,7 +232,7 @@ export function TodayTable({ userId }: { userId: string }) {
     await tombstoneLocalFoodEntry({ id: row.id, userId });
     if (undoTimer.current) clearTimeout(undoTimer.current);
     setUndo({ id: row.id, name: row.food_name_snapshot });
-    undoTimer.current = setTimeout(() => setUndo(null), UNDO_MS);
+    undoTimer.current = setTimeout(() => setUndo(null), FOOD_ENTRY_UNDO_MS);
   }
 
   async function onUndo() {

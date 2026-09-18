@@ -11,10 +11,21 @@ import { notifySyncStatus } from './status';
 export const DEAD_LETTER_ATTEMPTS = 12;
 export const DEAD_LETTER_HOLD_MS = 10 * 365 * 24 * 60 * 60 * 1000;
 
+export type EnqueueOptions = {
+  /**
+   * Hold the item back from the drain for this long. The queue id is
+   * (table, entity, owner), and `put` replaces, so a later write to the same
+   * entity inside the window supersedes this one before it ever ships. That is
+   * how a food-entry undo works: the tombstone waits, the restore overwrites it.
+   */
+  delayMs?: number;
+};
+
 export async function enqueueUpsert(
   table: SyncableTable,
   entityId: string,
   payload: Record<string, unknown>,
+  options: EnqueueOptions = {},
 ): Promise<void> {
   const db = getOfflineDb();
   const owner = payload.user_id ?? payload.created_by;
@@ -29,7 +40,7 @@ export async function enqueueUpsert(
     entityId,
     payload,
     attempt: 0,
-    nextAttemptAt: Date.now(),
+    nextAttemptAt: Date.now() + Math.max(0, options.delayMs ?? 0),
     lastError: null,
   };
   await db.sync_queue.put(item);

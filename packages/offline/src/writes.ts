@@ -219,6 +219,16 @@ export async function restoreLocalFoodEntry(params: {
   return next;
 }
 
+/**
+ * How long a deleted food entry can be undone. The diary shows an Undo for this
+ * long, and the tombstone is held back from the server for the same time. The
+ * two must agree: server tombstones are irreversible (the update policy hides
+ * deleted rows and a trigger keeps deleted_at), so a tombstone that ships before
+ * the person taps Undo cannot be taken back, and the restore that follows is
+ * silently rejected and re-deleted on the next pull.
+ */
+export const FOOD_ENTRY_UNDO_MS = 8000;
+
 export async function tombstoneLocalFoodEntry(params: {
   id: string;
   userId: string;
@@ -233,8 +243,16 @@ export async function tombstoneLocalFoodEntry(params: {
     updated_at: updatedAt,
   };
   await db.food_entries.put(next);
-  await enqueueUpsert('food_entries', next.id, toFoodEntryPayload(next));
+  // Held for the undo window. A restore inside it replaces this queue item
+  // (same id) with the live row, so the server never sees the delete.
+  await enqueueUpsert('food_entries', next.id, toFoodEntryPayload(next), {
+    delayMs: FOOD_ENTRY_UNDO_MS,
+  });
   void drainQueue();
+  // The drain only takes due items and does not re-arm itself for future ones,
+  // so make sure something drains once the window closes. If the tab is gone by
+  // then, the item is still in the queue and ships on the next drain trigger.
+  setTimeout(() => void drainQueue(), FOOD_ENTRY_UNDO_MS + 50);
 }
 
 export async function listLocalFoodEntries(
