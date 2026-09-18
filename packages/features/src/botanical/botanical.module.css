@@ -1,6 +1,6 @@
 /* ── KayaMo · Liquid Glass — Home, Life, Goals, Grove ─────────────────────
    Materials come from the global `kg*` classes (glass.css and
-   glass-materials.module.css). This module owns layout, type and the shapes
+   glass-materials.css). This module owns layout, type and the shapes
    these four screens do not share with anything else; it never re-declares a
    glass recipe.
 

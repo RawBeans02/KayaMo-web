@@ -3,6 +3,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { cx } from '../cx';
+import { useWebSheetMotion } from '../use-web-sheet-motion';
 
 export type SheetProps = {
   open: boolean;
@@ -14,8 +15,9 @@ export type SheetProps = {
 };
 
 export function Sheet({ open, onClose, title, children, footer, className }: SheetProps) {
+  const { ref, visible } = useWebSheetMotion(open);
   useEffect(() => {
-    if (!open) return;
+    if (!visible) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
@@ -26,9 +28,9 @@ export function Sheet({ open, onClose, title, children, footer, className }: She
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = previous;
     };
-  }, [open, onClose]);
+  }, [visible, onClose]);
 
-  if (!open || typeof document === 'undefined') return null;
+  if (!visible || typeof document === 'undefined') return null;
 
   return createPortal(
     <div className="fixed inset-0 z-50" role="presentation">
@@ -43,6 +45,7 @@ export function Sheet({ open, onClose, title, children, footer, className }: She
         aria-modal="true"
         aria-labelledby="kayamo-sheet-title"
         data-kayamo-sheet=""
+        ref={ref}
         className={cx(className)}
       >
         <div className="flex flex-col">

@@ -37,7 +37,7 @@ export function Button({
       type={type}
       className={cx(
         'inline-flex w-full items-center justify-center rounded-md font-body font-semibold tracking-wide',
-        'transition-[filter,background-color] duration-[var(--duration-fast)] ease-[var(--ease-out)]',
+        'transition-[transform,filter,background-color] duration-[var(--duration-fast)] ease-[var(--ease-out)]',
         'disabled:cursor-not-allowed',
         variantClass[variant],
         sizeClass[size],
