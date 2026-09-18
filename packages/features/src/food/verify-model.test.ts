@@ -100,7 +100,12 @@ describe('overlay and batch gate', () => {
       updatedAt: '2026-09-02T00:00:00.000Z',
     });
     expect(next.verified_by_user).toBe(true);
-    expect(next.confidence).toBe('1.00');
+    // This used to expect '1.00'. A verification made in one browser is the
+    // person's own check, not new certainty about the source, and stamping
+    // 1.00 under source=ph_core made logged entries claim server provenance
+    // for numbers only this device had. The base confidence is what the row
+    // honestly carries. Product decision, 2026-09-18; see the commit.
+    expect(next.confidence).toBe('0.52');
     expect(next.kcal).toBe('165');
     expect(next.source_note).toBe('USDA chicken + soy, fat rounded');
   });
@@ -142,3 +147,27 @@ describe('overlay and batch gate', () => {
     ).toBe(true);
   });
 });
+
+describe('overlay provenance', () => {
+  // The overlay lives in this browser. Marking a row verified used to also set
+  // its confidence to 1.00 while leaving source = ph_core, so entries logged
+  // afterwards claimed server-grade certainty for numbers only this device had.
+  it('keeps the base confidence when the user verifies locally', () => {
+    const row = food({ confidence: '0.52' });
+    const draft = { ...draftFromFood(row), kcal: '170' };
+    const entry = overlayFromFood(row, draft, { verified: true, skipped: false });
+    const patched = applyOverlayToFood(row, entry);
+    expect(patched.kcal).toBe('170');
+    expect(patched.verified_by_user).toBe(true);
+    expect(patched.confidence).toBe('0.52');
+  });
+
+  it('never reports 1.00 from an overlay, verified or not', () => {
+    const row = food({ confidence: '0.80' });
+    const unverified = applyOverlayToFood(row, overlayFromFood(row, draftFromFood(row), { verified: false, skipped: false }));
+    const verified = applyOverlayToFood(row, overlayFromFood(row, draftFromFood(row), { verified: true, skipped: false }));
+    expect(unverified.confidence).toBe('0.80');
+    expect(verified.confidence).toBe('0.80');
+  });
+});
+

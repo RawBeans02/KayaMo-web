@@ -116,7 +116,11 @@ export function applyOverlayToFood<T extends VerifyFoodLike>(
     fat_g: entry.fat_g,
     source_note: entry.source_note,
     verified_by_user: entry.verified,
-    confidence: entry.verified ? '1.00' : entry.baseConfidence,
+    // The overlay lives in this browser. A local verification is the person's
+    // own check, not a change in how certain the source is, so the confidence
+    // stays what the catalog said. Setting 1.00 here made every entry logged
+    // from the row claim server-grade certainty for numbers only this device had.
+    confidence: entry.baseConfidence,
   };
 }
 

@@ -10,11 +10,19 @@ import { cacheFoodWithServings, listCachedFoodsWithServings } from '@kayamo/offl
 import { applyOverlayToFood } from './verify-model';
 import { readVerifyOverlay } from './verify-overlay';
 
+/** A row whose numbers came from this browser's overlay says so on the candidate. */
+function flagLocalEdit<T extends CatalogFood>(row: T, edited: boolean): T {
+  return edited ? { ...row, locallyEdited: true } : row;
+}
+
 export async function catalogFromCache(): Promise<CatalogFood[]> {
   const overlay = readVerifyOverlay();
   const cached = await listCachedFoodsWithServings();
   return cached.map(({ food, servings }) =>
-    foodRowToCatalog(applyOverlayToFood(food, overlay[food.id]), servings, food.name_tl ?? []),
+    flagLocalEdit(
+      foodRowToCatalog(applyOverlayToFood(food, overlay[food.id]), servings, food.name_tl ?? []),
+      Boolean(overlay[food.id]),
+    ),
   );
 }
 
@@ -33,10 +41,13 @@ export async function hydrateVisibleCatalog(): Promise<CatalogFood[]> {
     await cacheFoodWithServings(patched, servingsById.get(food.id) ?? []);
   }
   return rows.map((food) =>
-    foodRowToCatalog(
-      applyOverlayToFood(food, overlay[food.id]),
-      servingsById.get(food.id) ?? [],
-      aliases.get(food.id) ?? [],
+    flagLocalEdit(
+      foodRowToCatalog(
+        applyOverlayToFood(food, overlay[food.id]),
+        servingsById.get(food.id) ?? [],
+        aliases.get(food.id) ?? [],
+      ),
+      Boolean(overlay[food.id]),
     ),
   );
 }

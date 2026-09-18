@@ -315,3 +315,35 @@ describe('command log helpers', () => {
     expect(leaveHrefFromPaletteKey({ metaKey: true, ctrlKey: false, shiftKey: false, key: 'k' })).toBeNull();
   });
 });
+
+describe('locally edited catalog rows', () => {
+  // A row whose numbers came from this browser's Verify overlay still belongs
+  // to its catalog source, but the numbers were resolved by the person, not by
+  // the source. resolved_via says so; source keeps the food's identity.
+  it('logs an overlaid candidate as resolved by the user', () => {
+    const input = toLogInputFromCandidate({
+      userId: 'u',
+      mealSlot: 'tanghalian',
+      candidate: candidate({ locallyEdited: true, confidence: 0.52 }),
+      servingId: null,
+      timeZone: 'Asia/Manila',
+      dayStartsAt: '05:00:00',
+    });
+    expect(input?.source).toBe('ph_core');
+    expect(input?.resolvedVia).toBe('user');
+    expect(input?.confidence).toBe('0.52');
+  });
+
+  it('leaves an untouched catalog row resolved by its source', () => {
+    const input = toLogInputFromCandidate({
+      userId: 'u',
+      mealSlot: 'tanghalian',
+      candidate: candidate(),
+      servingId: null,
+      timeZone: 'Asia/Manila',
+      dayStartsAt: '05:00:00',
+    });
+    expect(input?.resolvedVia).toBe('ph_core');
+  });
+});
+

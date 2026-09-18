@@ -146,7 +146,9 @@ export function toLogInputFromCandidate(params: {
     grams: qty.grams,
     ...nutrients,
     source: asLogSource(params.candidate.source),
-    resolvedVia: asResolvedVia(params.candidate.source),
+    // The food keeps its catalog identity; who resolved the numbers is separate.
+    // A row edited in this browser's Verify overlay was resolved by the person.
+    resolvedVia: params.candidate.locallyEdited ? 'user' : asResolvedVia(params.candidate.source),
     inputMethod: 'search',
     servingId: params.servingId,
     servingLabel: qty.servingLabel,
@@ -264,6 +266,7 @@ export function candidateFromCatalogFood(
       kcal: (food.per100g.kcal * grams) / 100,
     },
     ...(food.verified ? { verified: true } : {}),
+    ...(food.locallyEdited ? { locallyEdited: true } : {}),
   };
 }
 

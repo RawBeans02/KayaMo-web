@@ -31,6 +31,8 @@ export type FoodCandidate = {
   attribution?: string;
   estimate?: boolean;
   verified?: boolean;
+  /** Carried from CatalogFood: the person edited these numbers on this device. */
+  locallyEdited?: boolean;
 };
 
 export type ResolveNetwork = {
