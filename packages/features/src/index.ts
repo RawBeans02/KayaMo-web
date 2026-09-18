@@ -29,8 +29,6 @@ export {
 } from './auth/paths';
 export { LOCAL_DEV_EMAIL, isLocalDevLoginEnabled } from './auth/local-dev';
 export { LoginForm } from './auth/login-form';
-export { CompleteAuthSession } from './auth/complete-session';
-export { SetAuthSession } from './auth/set-session';
 export { DailyLoop } from './daily-loop/daily-loop';
 export { AddProductForm } from './food/add-product-form';
 export { FoodSearch } from './food/food-search';

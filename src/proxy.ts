@@ -1,28 +1,11 @@
 import { createCookieSupabase, isSupabaseConfigured } from '@kayamo/db';
 import { type NextRequest, NextResponse } from 'next/server';
-import { GUEST_COOKIE, isValidGuestId } from '@/lib/guest';
-
-const PROTECTED = new Set([
-  '/today',
-  '/calories',
-  '/gym',
-  '/todos',
-  '/foods',
-  '/verify',
-  '/goals',
-  '/life',
-  '/grove',
-  '/mus',
-]);
-
-function isProtected(pathname: string): boolean {
-  if (pathname === '/app' || pathname.startsWith('/app/')) return true;
-  return PROTECTED.has(pathname);
-}
+import { GUEST_COOKIE, isValidGuestId } from './lib/guest';
+import { isProtectedPath } from './lib/protected-routes';
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const gated = isProtected(pathname);
+  const gated = isProtectedPath(pathname);
   const isLogin = pathname === '/login';
   // The demo carries no Supabase session, so it can read and write nothing on
   // the server. It only unlocks the routes so the shell can render locally.
@@ -73,6 +56,13 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
+/**
+ * Next parses this object at compile time and requires `matcher` to be a
+ * literal array of static strings. A spread of PROTECTED_ROUTES reads the same
+ * but fails that analysis and every request 500s. So the list is repeated here
+ * verbatim, and src/lib/protected-routes.test.ts asserts it equals
+ * [...PROTECTED_ROUTES, '/app/:path*', '/login'] so the two cannot drift.
+ */
 export const config = {
   matcher: [
     '/today',
@@ -85,6 +75,7 @@ export const config = {
     '/life',
     '/grove',
     '/mus',
+    '/settings',
     '/app/:path*',
     '/login',
   ],
