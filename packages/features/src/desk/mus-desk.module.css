@@ -732,3 +732,30 @@
     margin: 0 16px 14px;
   }
 }
+
+/* ── Desk frame (from src/app/botanical.css, 2026-09-18) ── */
+.desk[data-mus-desk] {
+  min-height: 650px;
+  height: calc(100dvh - 140px);
+  border-radius: 20px;
+  border: 1px solid var(--color-line);
+}
+
+@media (max-width: 1000px) {
+  .desk[data-mus-desk] {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
+  }
+
+  .desk[data-mus-desk] > :first-child {
+    min-height: 600px;
+  }
+
+  .thread[data-mus-thread='page'] {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: 650px;
+  }
+}

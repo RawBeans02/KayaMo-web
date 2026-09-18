@@ -408,3 +408,46 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
     0 6px 18px var(--accent-glow);
 }
+
+/* ── Page variant and permission rows (from src/app/botanical.css, 2026-09-18) ── */
+.page[data-mus-rail='page'] {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.page[data-mus-rail='page'] > * {
+  flex: none;
+}
+
+.page[data-mus-rail='page'] .context {
+  overflow: visible;
+}
+
+.page[data-mus-rail='page'] :is(.note, .mono) {
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.permToggle {
+  min-height: 2.75rem;
+  padding-block: 0.75rem;
+}
+
+.perms {
+  grid-template-columns: 1fr;
+}
+
+.perm {
+  min-height: 52px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+@media (max-width: 1000px) {
+  .page[data-mus-rail='page'] {
+    height: auto;
+    overflow: visible;
+    display: block;
+  }
+}

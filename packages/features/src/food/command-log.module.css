@@ -490,3 +490,16 @@
   border: 1px solid var(--color-line);
   border-radius: 0.4rem;
 }
+
+/* ── Phone widths (from src/app/botanical.css, 2026-09-18) ── */
+@media (max-width: 767px) {
+  .dialog[data-palette='log'] {
+    width: calc(100% - 16px);
+    max-width: 100%;
+  }
+
+  .dialog[data-palette='log'] [role='option'] {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+}

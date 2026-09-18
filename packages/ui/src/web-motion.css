@@ -38,9 +38,12 @@ html[data-kayamo-web] :is([role='menu'], [popover]) {
 html[data-kayamo-web] [data-kayamo-sheet] {
   transform-origin: var(--overlay-origin, bottom center);
 }
-html[data-kayamo-web] [data-mus-rail] [class*='permToggle'] {
-  min-height: 2.75rem;
-  padding-block: 0.75rem;
+/* Desk surfaces: every button is a 44px target. Attribute hooks are the
+   surfaces' public contract; their class names are not. */
+html[data-kayamo-web]
+  :is([data-todos], [data-gym], [data-foods], [data-verify], [data-calories-log])
+  button {
+  min-height: 44px;
 }
 @media (prefers-reduced-motion: reduce) {
   html[data-kayamo-web] {

@@ -133,8 +133,10 @@ html[data-kayamo-theme='night'] {
   [data-kayamo-sheet] {
     position: fixed;
     inset: auto 0 0;
-    width: min(100%, 28rem);
-    max-height: 88dvh;
+    /* 36rem / 90dvh is the web sheet; the phone's 28rem / 88dvh lived here
+       until the packages were forked and the web override folded in. */
+    width: min(100%, 36rem);
+    max-height: 90dvh;
     margin: 0 auto;
     border: 0;
     padding: 0;

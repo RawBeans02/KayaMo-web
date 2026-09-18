@@ -48,13 +48,75 @@ html[data-kayamo-web] {
   --sheet-in: 320ms;
   --swap: 180ms;
 
+  /* ── type and shape scale ──
+     tokens.css declares a cream-palette type ramp with Source Sans, Barlow and
+     Plex faces the web never loads; these override it with the glass system's
+     values. They lived in src/app/botanical.css until 2026-09-18 and were the
+     only part of that file still doing anything. */
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: var(--font-body);
+  --font-numeral: var(--font-body);
+  --font-data: var(--font-body);
+  --font-source-sans: var(--font-body);
+  --font-source-serif: var(--font-body);
+  --font-barlow: var(--font-body);
+  --font-plex: var(--font-body);
+  --text-body: 1rem;
+  --text-caption: 0.875rem;
+  --text-caption--letter-spacing: 0;
+  --text-mono-3xs: 12px;
+  --text-mono-2xs: 12px;
+  --text-mono-xs: 13px;
+  --text-mono-sm: 13px;
+  --text-mono-md: 14px;
+  --text-mono-lg: 14px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
   color-scheme: light;
   background: var(--bg0);
   color: var(--ink);
   font-optical-sizing: auto;
   font-family:
     -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Manrope', system-ui, sans-serif;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
+}
+
+/* ── Base resets ─────────────────────────────────────────────
+   Controls inherit the page type; buttons look pressable; a disabled control
+   says so with the cursor rather than pretending to wait for something. */
+:where(html[data-kayamo-web]) :where(button, input, select, textarea) {
+  font: inherit;
+}
+
+html[data-kayamo-web] button {
+  cursor: pointer;
+}
+
+html[data-kayamo-web] button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* A food name rendered as a button, reset to read as text. */
+html[data-kayamo-web] [data-food-select] {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+/* Lis's expressions are transparent WebP; never letterbox or round them. */
+html[data-kayamo-web] img[src^='/botanical/mus-'] {
+  object-fit: contain;
+  object-position: center;
+  border-radius: 0;
+  background: transparent;
 }
 
 html[data-kayamo-web][data-kayamo-theme='night'] {
@@ -331,8 +393,14 @@ html[data-kayamo-web][data-reduce-transparency='true'] .kgWash {
   display: none;
 }
 
+/* Honour the preference at once: no fade through a translucent fill. */
+html[data-kayamo-web][data-reduce-transparency='true'] * {
+  transition-property: opacity, scale, color, border-color !important;
+}
+
 @media (prefers-contrast: more) {
   html[data-kayamo-web] {
+    --stroke: currentColor;
     --stroke2: currentColor;
     --ink2: var(--ink);
     --glass: var(--bg0);
@@ -359,7 +427,9 @@ html[data-kayamo-web][data-reduce-transparency='true'] .kgWash {
    `--color-*` names. Alias them onto the glass tokens so every
    surface adopts the new palette in one step; screens then get
    their structure converted individually without a flash of the
-   old look in between. Remove an alias once nothing reads it. */
+   old look in between. Remove an alias once nothing reads it.
+   These aliases are also what made src/app/botanical.css's colour
+   palette dead: every value it set was re-declared here, later. */
 html[data-kayamo-web] {
   --color-bg: var(--bg0);
   --color-surface: var(--glass);

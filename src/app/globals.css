@@ -1,7 +1,7 @@
 @import '@kayamo/config/tailwind.css';
 @import '@kayamo/ui/tokens.css';
-@import './botanical.css';
-/* Liquid Glass loads after the legacy layer so its tokens win. */
+/* Liquid Glass: tokens, type scale, base resets. Loads after tokens.css so its
+   values win. The botanical layer that sat between them was retired 2026-09-18. */
 @import '@kayamo/ui/glass.css';
 @import '@kayamo/ui/web-motion.css';
 /* Material tiers load last so a tier wins over base component styling. */
