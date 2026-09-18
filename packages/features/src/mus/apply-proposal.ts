@@ -41,7 +41,7 @@ import { exerciseBySlug } from '../gym/library';
 import { labelToMinutes } from '../todo/timetable';
 import {
   catalogForCommandLog,
-  PREFILL_LOG_EVENT,
+  prefillLogPalette,
   servingIdForLabel,
   toLogInputFromCandidate,
 } from '../food/command-log-model';
@@ -61,7 +61,7 @@ export async function musMayEdit(taskId: string): Promise<boolean> {
 
 export function prefillLogQuery(query: string): void {
   if (typeof window === 'undefined') return;
-  window.dispatchEvent(new CustomEvent(PREFILL_LOG_EVENT, { detail: { query } }));
+  prefillLogPalette(query);
 }
 
 async function activeOrDraftSessionId(userId: string): Promise<string> {

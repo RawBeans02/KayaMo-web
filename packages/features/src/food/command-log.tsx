@@ -42,6 +42,7 @@ import {
   paletteView,
   plateTotalKcal,
   PREFILL_LOG_EVENT,
+  readPrefillLogEvent,
   previewQtyKcal,
   readyCatalogFoods,
   servingCaption,
@@ -255,7 +256,7 @@ export function CommandLog({
 
   useEffect(() => {
     function onPrefill(event: Event) {
-      const query = (event as CustomEvent<{ query?: string }>).detail?.query?.trim();
+      const query = readPrefillLogEvent(event);
       if (!query) return;
       openPalette(query);
     }

@@ -24,6 +24,30 @@ export function openLogPalette(mealSlot?: MealSlot): void {
   );
 }
 
+type PrefillLogDetail = { query: string };
+
+/**
+ * The only way to ask the palette to open with text. Two dispatchers built the
+ * event by hand and disagreed on the payload: one sent `{ query }`, the shell
+ * sent the bare string, and the listener read `detail.query`, so the log
+ * sheet's "Meal → Find this food" silently did nothing. Build it here, read it
+ * with readPrefillLogEvent, and the shape cannot drift again.
+ */
+export function prefillLogPalette(query: string, target: EventTarget = window): void {
+  const detail: PrefillLogDetail = { query };
+  target.dispatchEvent(new CustomEvent<PrefillLogDetail>(PREFILL_LOG_EVENT, { detail }));
+}
+
+/** The trimmed query, or null when the event carries none. A string detail is null. */
+export function readPrefillLogEvent(event: Event): string | null {
+  const detail: unknown = (event as CustomEvent<unknown>).detail;
+  if (!detail || typeof detail !== 'object') return null;
+  const query = (detail as { query?: unknown }).query;
+  if (typeof query !== 'string') return null;
+  const trimmed = query.trim();
+  return trimmed ? trimmed : null;
+}
+
 export function asLogSource(value: string): LogFoodEntryInput['source'] {
   if (
     value === 'ph_core' ||

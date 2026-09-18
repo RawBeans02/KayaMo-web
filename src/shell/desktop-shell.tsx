@@ -6,7 +6,7 @@ import {
   GymRestBar,
   GymSessionProvider,
   OPEN_LOG_EVENT,
-  PREFILL_LOG_EVENT,
+  prefillLogPalette,
   type BotanicalIconName,
 } from '@kayamo/features/desktop';
 import { SyncStatusBar } from '@kayamo/features';
@@ -98,7 +98,7 @@ export function DesktopShell({
 
   // Meal text goes to the food palette, which owns catalog resolution.
   const onMeal = useCallback((draft: string) => {
-    window.dispatchEvent(new CustomEvent(PREFILL_LOG_EVENT, { detail: draft }));
+    prefillLogPalette(draft);
   }, []);
 
   const onWorkout = useCallback(() => router.push('/gym'), [router]);
