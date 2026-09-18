@@ -122,6 +122,23 @@ Things only the owner can do. Most of the release is waiting on these.
       decision. `src/shell/desktop-shell.tsx` still lists `/gym` in `RAIL` and
       both routes in `LIFE_ROUTES`.
 
+## Design-system work deferred out of Phase 4
+
+- **Retire the `--color-*` alias bridge per surface.** glass.css maps the legacy
+  names onto glass tokens so every surface adopts the palette at once. About 360
+  reads remain (desk.module.css 93, shell.module.css 62, command-log 44,
+  proposal-card 43, login 23). Each surface converts to the glass names when it is
+  restyled in Phase 5; the bridge goes when the count is zero.
+- **GoalFlow's own module.** journey/goal-flow.tsx still imports the 4,817-line
+  phone stylesheet, which is why an 83 KB CSS chunk ships on the goals route. The
+  editor rewrite on glass primitives (Phase 5) retires that import.
+- **Desk stylesheet split by owner**, per surface as each is restyled, under the
+  CSS-reference test. Usage map in commit 2ced47a.
+- **tokens.css's cream `@theme` palette.** It remains the Tailwind theme source for
+  the six `@kayamo/ui` primitives and is pinned by tokens.test.ts; the glass bridge
+  overrides its runtime values. Consolidating the two into one palette is churn
+  until the primitives themselves are on glass.
+
 ## Structural work deferred out of Phase 3
 
 Recorded so the refactor's remaining shape is knowable. None blocks the ship.

@@ -476,3 +476,38 @@ Deferred, with reasons, in `docs/RELEASE.md`: server LWW consolidation (server w
 semantics, CI-only guard, its own gated slice), the `db.ts` and `contracts.ts` splits,
 the desk stylesheet split by owner (per surface in Phase 4), and decomposing the two
 desks that are off the v1 rail.
+
+## Phase 4 outcome — 2026-09-18
+
+Four commits, `756a31f` through `2a7534c`, on Fable 5.1 at high effort. Because
+this phase changes how every route looks, eighteen full-page screenshots of every
+demo route at 1440 and 390 were captured before the first change and every slice
+was compared against them; all still match within 0.2% at the end.
+
+- **Glass tokens and materials live in `packages/ui`** (`@kayamo/ui/glass.css`,
+  `@kayamo/ui/glass-materials.css`). Package stylesheets no longer depend on files
+  outside any package.
+- **Two cascade bugs fixed at the source.** The focus ring no longer forces
+  `border-radius: 4px`; a new e2e tabs to a pill and asserts it stays round on three
+  engines, and fails on the old rule. Press feedback fires once: `web-motion.css`
+  is the only press contract, `glass.css`'s duplicate is gone, thirteen component
+  transforms are removed, and the rail and tab bar's richer presses are written as
+  `scale` so they override the magnitude instead of compounding.
+- **`botanical.css` is gone.** The review called its palette dead; the colours
+  were, but its type and radius scale was live, and deleting the file whole would
+  have swapped the body font. Those tokens moved to `glass.css`. Its 48 substring
+  overrides moved into the modules that own the classes, as ordinary rules;
+  eighteen targeted the phone thread's stylesheet or classes that no longer exist
+  and were dropped. The two accessibility intents `glass.css` lacked were carried.
+- **Type in rem, no root pin, forced colours.** 290 font sizes converted; the 200%
+  text check now scales real type and still passes; Windows High Contrast gets real
+  borders on every material tier.
+
+Not done, and recorded in `docs/RELEASE.md`: retiring the `--color-*` bridge (per
+surface in Phase 5), GoalFlow's own module, the desk stylesheet split, and merging
+the Tailwind theme palette into glass.
+
+One process note: the shell spec run during the final verification is
+authenticated and used the local skip-login against the hosted project, which the
+release checklist asks the owner to stop pointing local development at. The
+account it used already existed from earlier runs; nothing new was created.
