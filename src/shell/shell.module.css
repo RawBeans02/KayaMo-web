@@ -113,7 +113,7 @@
 .navCount {
   color: var(--color-muted-2);
   font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -219,7 +219,7 @@
   border-radius: 3px;
   background: var(--color-surface);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
 }
 
 .syncLine {
@@ -454,7 +454,7 @@
 .mono {
   color: var(--color-muted-2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -540,7 +540,7 @@
   border-top: 1px solid var(--color-line);
   color: var(--color-muted-2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   letter-spacing: 0.02em;
 }
 
@@ -548,7 +548,7 @@
   margin: 0;
   color: var(--color-muted-2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -576,7 +576,7 @@
   border: 1px solid var(--color-line);
   border-radius: 0.2rem;
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
 }
 
 @media (min-width: 960px) and (max-width: 1199px) {

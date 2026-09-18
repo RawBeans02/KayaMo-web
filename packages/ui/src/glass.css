@@ -80,7 +80,10 @@ html[data-kayamo-web] {
   font-optical-sizing: auto;
   font-family:
     -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Manrope', system-ui, sans-serif;
-  font-size: 16px;
+  /* No root font-size pin: the browser's text-size setting is the person's
+     choice, and every font-size in the web stylesheets is in rem so it follows
+     that choice. A 16px pin lived here until 2026-09-18, and the 200% text
+     check passed without a single glyph growing. */
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }
@@ -208,7 +211,7 @@ html[data-kayamo-web] body {
   background: var(--accent);
   color: var(--accent-ink);
   font: inherit;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 700;
   cursor: pointer;
   box-shadow:
@@ -231,7 +234,7 @@ html[data-kayamo-web] body {
   backdrop-filter: blur(20px) saturate(160%);
   color: var(--ink);
   font: inherit;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
   box-shadow: inset 0 0 0 1px var(--stroke);
@@ -258,7 +261,7 @@ html[data-kayamo-web] body {
   background: var(--field);
   color: inherit;
   font: inherit;
-  font-size: 17px;
+  font-size: 1.0625rem;
   outline: none;
   box-shadow: inset 0 0 0 1px var(--stroke2);
 }
@@ -269,7 +272,7 @@ html[data-kayamo-web] body {
 .kgTitle {
   margin: 0;
   font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
-  font-size: 34px;
+  font-size: 2.125rem;
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.05;
@@ -284,7 +287,7 @@ html[data-kayamo-web] body {
 
 .kgEyebrow {
   margin: 0;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -293,12 +296,12 @@ html[data-kayamo-web] body {
 
 .kgMeta {
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 @media (min-width: 900px) {
   .kgTitle {
-    font-size: 40px;
+    font-size: 2.5rem;
     letter-spacing: -0.035em;
     line-height: 1;
   }
@@ -405,6 +408,38 @@ html[data-kayamo-web][data-reduce-transparency='true'] * {
     --ink2: var(--ink);
     --glass: var(--bg0);
     --glass-strong: var(--bg0);
+  }
+}
+
+/* ── Forced colours ─────────────────────────────────────────
+   Windows High Contrast and similar modes drop backgrounds and box-shadows.
+   Glass draws its edges, dividers and control rings with box-shadow on
+   border: 0, so every surface would lose its outline. Give each tier a real
+   border in the system colours, and keep the accent legible as a button. */
+@media (forced-colors: active) {
+  .kgSurface,
+  .kgPanel,
+  .kgPanelStrong,
+  .kgHeavy,
+  .kgField {
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+
+  .kgAccent,
+  .kgGhost {
+    border: 1px solid ButtonText;
+    forced-color-adjust: none;
+    background: ButtonFace;
+    color: ButtonText;
+  }
+
+  html[data-kayamo-web] :focus-visible {
+    outline: 3px solid Highlight;
+  }
+
+  .kgWash {
+    display: none;
   }
 }
 

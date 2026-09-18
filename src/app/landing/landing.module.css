@@ -51,9 +51,6 @@
   transition: transform 120ms var(--ease-glass);
 }
 
-.brandRow:active {
-  transform: scale(0.97);
-}
 
 .brandMark {
   width: 22px;
@@ -66,7 +63,7 @@
 
 .brand {
   font-family: var(--display);
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
@@ -90,7 +87,7 @@
   padding: 0 14px;
   border-radius: 999px;
   color: var(--ink2);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
   transition:
@@ -104,9 +101,6 @@
   color: var(--ink);
 }
 
-.navLink:active {
-  transform: scale(0.97);
-}
 
 /* The shell's theme toggle ships at 32px; the landing needs a 44px target. */
 .navActions > button {
@@ -128,7 +122,7 @@
 
 .page .eyebrow {
   margin: 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
   letter-spacing: 0.1em;
 }
 
@@ -165,7 +159,7 @@
   padding: 0 24px;
   background: var(--glass-strong);
   color: var(--ink);
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   text-decoration: none;
   box-shadow:
@@ -176,7 +170,7 @@
 .heroNote {
   margin: 16px 0 0;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 /* ── CTA buttons (shared with StartDemo) ──────────────────── */
@@ -190,7 +184,7 @@
 .ctaWrap .ctaPrimary {
   min-height: 54px;
   padding: 0 26px;
-  font-size: 16px;
+  font-size: 1rem;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.45),
     0 10px 30px var(--accent-glow);
@@ -200,13 +194,13 @@
   min-height: 52px;
   padding: 0 22px;
   background: var(--glass-strong);
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 .navCtaWrap .ctaNav {
   min-height: 44px;
   padding: 0 18px;
-  font-size: 14px;
+  font-size: 0.875rem;
   white-space: nowrap;
 }
 
@@ -299,21 +293,18 @@
 
 .faq summary {
   padding-block: 15px;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transform-origin: left center;
   transition: transform 120ms var(--ease-glass);
 }
 
-.faq summary:active {
-  transform: scale(0.99);
-}
 
 .faq p {
   margin: 0 0 16px;
   color: var(--ink2);
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.6;
 }
 
@@ -333,7 +324,7 @@
   padding-block: 1.5rem 2.5rem;
   border-top: 1px solid var(--stroke2);
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .foot a {

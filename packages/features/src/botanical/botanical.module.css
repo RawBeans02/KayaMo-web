@@ -39,19 +39,19 @@
   margin: 10px 0 0;
   max-width: 58ch;
   color: var(--ink2);
-  font-size: 15px;
+  font-size: 0.9375rem;
   line-height: 1.5;
 }
 .muted {
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.55;
 }
 
 /* The date sits above the title, the way a day view names itself. */
 .homeDate {
   margin: 0 0 6px;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--ink2);
 }
@@ -106,12 +106,12 @@
   border-radius: 18px;
   background: transparent;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 .week button b {
   font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
-  font-size: 19px;
+  font-size: 1.1875rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
@@ -144,7 +144,7 @@
 .panel h2,
 .sectionTitle {
   margin: 0;
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.015em;
 }
@@ -193,14 +193,14 @@
 }
 .nextUpTitle {
   margin: 6px 0 0;
-  font-size: 22px;
+  font-size: 1.375rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   overflow-wrap: anywhere;
 }
 .nextUpMeta {
   margin: 3px 0 0;
-  font-size: 14px;
+  font-size: 0.875rem;
   color: var(--ink2);
 }
 .nextUpActions {
@@ -237,19 +237,19 @@
 }
 .planTitle {
   margin: 0;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   overflow-wrap: anywhere;
 }
 .planMeta {
   margin: 1px 0 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--ink2);
 }
 .planTime {
   flex: none;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--ink2);
   font-variant-numeric: tabular-nums;
@@ -274,7 +274,7 @@
   border: 0;
   background: transparent;
   color: var(--ink);
-  font-size: 16px;
+  font-size: 1rem;
 }
 .capture input::placeholder {
   color: var(--ink2);
@@ -343,7 +343,7 @@
   background: transparent;
   color: inherit;
   text-align: left;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.4;
@@ -366,7 +366,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 700;
 }
 .glanceHead svg:first-child {
@@ -379,19 +379,19 @@
 }
 .glanceNum {
   display: block;
-  font-size: 34px;
+  font-size: 2.125rem;
   line-height: 1.05;
 }
 .glanceUnit {
   margin-left: 6px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0;
   color: var(--ink2);
 }
 .glanceMeta {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--ink2);
 }
 .bar {
@@ -419,7 +419,7 @@
   border-radius: 20px;
   color: inherit;
   text-decoration: none;
-  font-size: 16px;
+  font-size: 1rem;
 }
 .tool + .tool {
   box-shadow: inset 0 1px 0 var(--stroke2);
@@ -430,14 +430,14 @@
 }
 .tool strong {
   display: block;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 .tool small {
   display: block;
   margin-top: 2px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--ink2);
 }
 .tool svg:first-child {
@@ -466,14 +466,14 @@
 }
 .goalHead h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
   letter-spacing: -0.015em;
   overflow-wrap: anywhere;
 }
 .goalProgress {
   flex: none;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--ink2);
   font-variant-numeric: tabular-nums;
 }
@@ -510,7 +510,7 @@
 .msTitle {
   flex: 1;
   min-width: 0;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   overflow-wrap: anywhere;
 }
@@ -535,13 +535,13 @@
 .streakNum {
   display: block;
   margin: 6px 0 0;
-  font-size: 44px;
+  font-size: 2.75rem;
   line-height: 1;
 }
 .streakUnit {
   margin-left: 8px;
   font-family: inherit;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   letter-spacing: 0;
   color: var(--ink2);
@@ -549,7 +549,7 @@
 .streakNote {
   margin: 12px 0 0;
   max-width: 44ch;
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.55;
   color: var(--ink2);
 }
@@ -574,13 +574,13 @@
 .stat {
   display: block;
   margin: 10px 0 6px;
-  font-size: 34px;
+  font-size: 2.125rem;
   line-height: 1.05;
 }
 .statUnit {
   margin-left: 6px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0;
   color: var(--ink2);
@@ -598,14 +598,14 @@
 }
 .history strong {
   display: block;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   overflow-wrap: anywhere;
 }
 .history p {
   margin: 2px 0 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--ink2);
 }
 
@@ -616,14 +616,14 @@
 }
 .empty h3 {
   margin: 0 0 8px;
-  font-size: 19px;
+  font-size: 1.1875rem;
   font-weight: 700;
   letter-spacing: -0.015em;
 }
 .empty p {
   margin: 0 0 18px;
   color: var(--ink2);
-  font-size: 15px;
+  font-size: 0.9375rem;
   line-height: 1.55;
 }
 .notice {
@@ -636,7 +636,7 @@
   border-radius: 20px;
   background: var(--glass-strong);
   box-shadow: inset 0 0 0 1px var(--stroke2);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .actions {
   display: flex;
@@ -675,7 +675,7 @@
   padding: 0 22px;
   border: 0;
   border-radius: 999px;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 700;
   text-decoration: none;
 }
@@ -723,7 +723,7 @@
 .dialog h2 {
   margin: 0 0 20px;
   font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
-  font-size: 26px;
+  font-size: 1.625rem;
   font-weight: 800;
   letter-spacing: -0.025em;
 }
@@ -734,7 +734,7 @@
 .form label {
   display: grid;
   gap: 8px;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 .form input,
@@ -747,7 +747,7 @@
   border-radius: 18px;
   background: var(--field);
   color: var(--ink);
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 400;
   box-shadow: inset 0 0 0 1px var(--stroke2);
 }
@@ -790,7 +790,7 @@
   }
   .week button {
     min-height: 62px;
-    font-size: 12px;
+    font-size: 0.75rem;
     padding: 8px 2px;
   }
   .side,
@@ -807,14 +807,14 @@
     padding: 18px;
   }
   .nextUpTitle {
-    font-size: 19px;
+    font-size: 1.1875rem;
   }
   .glanceNum,
   .stat {
-    font-size: 30px;
+    font-size: 1.875rem;
   }
   .streakNum {
-    font-size: 38px;
+    font-size: 2.375rem;
   }
   .dialog {
     padding: 22px 18px;

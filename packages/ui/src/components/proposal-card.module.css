@@ -33,7 +33,7 @@
 .risk {
   color: var(--color-muted);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   font-weight: 500;
   letter-spacing: 0.11em;
   text-transform: uppercase;
@@ -50,7 +50,7 @@
 .action {
   color: var(--color-muted-2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -97,7 +97,7 @@
 .rowLabel {
   color: var(--color-muted-2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -169,7 +169,7 @@
 .touchesLabel {
   color: var(--color-muted-2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -181,7 +181,7 @@
   border-radius: 3px;
   color: var(--color-muted);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   letter-spacing: 0.06em;
 }
 
@@ -280,7 +280,7 @@
   border-radius: 999px;
   background: var(--color-accent);
   color: var(--color-accent-fg);
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 700;
 }
 

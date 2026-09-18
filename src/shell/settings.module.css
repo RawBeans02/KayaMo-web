@@ -5,9 +5,8 @@
  * glass recipe — the panels compose `kgPanel` / `kgPanelStrong` from
  * glass-materials.css.
  *
- * Keep class names clear of substrings that src/app/botanical.css overrides
- * by `[class*=…]` (see its 48 bridge selectors). Those are scheduled to move
- * into their owning modules; until they do, a careless name inherits them.
+ * Press feedback comes from @kayamo/ui/web-motion.css, once, for every
+ * interactive element; nothing here adds its own transform.
  */
 
 .page {
@@ -51,9 +50,6 @@ a.account {
   transition: transform 120ms var(--ease-glass);
 }
 
-a.account:active {
-  transform: scale(0.99);
-}
 
 .avatar {
   display: grid;
@@ -64,7 +60,7 @@ a.account:active {
   border-radius: 999px;
   background: var(--track);
   font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
@@ -78,7 +74,7 @@ a.account:active {
 .accountName {
   display: block;
   margin: 0;
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
@@ -87,7 +83,7 @@ a.account:active {
   display: block;
   margin: 1px 0 0;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   overflow-wrap: anywhere;
 }
 
@@ -137,9 +133,9 @@ label.row:hover {
   background: var(--glass);
 }
 
-button.row:active,
-a.row:active,
-summary.row:active,
+/* Buttons, links and summaries get their press from web-motion.css. A label
+   wrapping a switch is not in that contract, so it keeps its own; it is the one
+   press transform in the web stylesheets that is not the shared one. */
 label.row:active {
   transform: scale(0.98);
 }
@@ -154,7 +150,7 @@ label.row:active {
 .rowLabel {
   flex: 1 1 140px;
   min-width: 0;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
@@ -163,7 +159,7 @@ label.row:active {
   display: block;
   margin-top: 3px;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 400;
   letter-spacing: 0;
   line-height: 1.4;
@@ -172,7 +168,7 @@ label.row:active {
 .rowValue {
   flex: none;
   color: var(--ink2);
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 
 .caret {
@@ -281,7 +277,7 @@ label.row:active {
   background: transparent;
   color: var(--ink2);
   font: inherit;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -293,9 +289,6 @@ label.row:active {
   color: var(--ink);
 }
 
-.seg button:active {
-  transform: scale(0.97);
-}
 
 .seg button:disabled {
   cursor: default;
@@ -397,7 +390,7 @@ label.row:active {
   gap: 10px;
   padding: 2px 16px 16px;
   color: var(--ink2);
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.5;
 }
 
@@ -423,14 +416,14 @@ label.row:active {
   margin: 0;
   padding: 14px;
   color: var(--ink2);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .error {
   margin: 0;
   padding: 0 14px 12px;
   color: var(--danger-text);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .signOut {
@@ -450,7 +443,7 @@ label.row:active {
   background: transparent;
   color: var(--ink2);
   font: inherit;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   text-align: center;
   cursor: pointer;
@@ -466,7 +459,9 @@ label.row:active {
 }
 
 .signOut button:active {
-  transform: scale(0.97);
+  /* Richer press than the shared contract: same property, so it overrides the
+     magnitude instead of compounding with web-motion.css's scale: 0.98. */
+  scale: 0.97;
 }
 
 .signOut button:disabled {
@@ -516,7 +511,7 @@ label.row:active {
 }
 
 .companionRow label {
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 
@@ -529,7 +524,7 @@ label.row:active {
   background: var(--field);
   color: inherit;
   font: inherit;
-  font-size: 15px;
+  font-size: 0.9375rem;
   box-shadow: inset 0 0 0 1px var(--stroke2);
   resize: vertical;
 }
@@ -546,7 +541,7 @@ label.row:active {
 
 .companionGroup legend {
   padding: 0;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 
@@ -556,7 +551,7 @@ label.row:active {
   align-items: center;
   gap: 7px;
   min-height: 44px;
-  font-size: 14px;
+  font-size: 0.875rem;
   color: var(--ink2);
   cursor: pointer;
 }

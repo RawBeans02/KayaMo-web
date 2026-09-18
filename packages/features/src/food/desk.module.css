@@ -31,14 +31,14 @@
 .eyebrow {
   margin: 0;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .header h1,
 .title {
   margin: 0;
   font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
-  font-size: 34px;
+  font-size: 2.125rem;
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.05;
@@ -47,7 +47,7 @@
 @media (min-width: 900px) {
   .header h1,
   .title {
-    font-size: 40px;
+    font-size: 2.5rem;
     letter-spacing: -0.035em;
     line-height: 1;
   }
@@ -56,7 +56,7 @@
 .statLabel {
   margin: 0;
   color: var(--ink2);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -72,14 +72,14 @@
 .statNote {
   margin: 6px 0 0;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.4;
 }
 
 .ghost {
   min-height: 44px;
   padding: 0 16px;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .ghost:disabled {
@@ -96,7 +96,7 @@
   background: var(--field);
   color: var(--ink);
   font: inherit;
-  font-size: 15px;
+  font-size: 0.9375rem;
   box-shadow: inset 0 0 0 1px var(--stroke2);
 }
 
@@ -105,13 +105,13 @@
 .status {
   margin: 0;
   color: var(--ink2);
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.45;
 }
 
 .aliases {
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .k {
@@ -120,7 +120,7 @@
   padding: 1px 7px;
   border-radius: 8px;
   background: var(--track);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
@@ -149,7 +149,7 @@
   display: grid;
   gap: 5px;
   color: var(--ink2);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -164,7 +164,7 @@
   background: var(--field);
   color: var(--ink);
   font: inherit;
-  font-size: 16px;
+  font-size: 1rem;
   text-transform: none;
   letter-spacing: 0;
   box-shadow: inset 0 0 0 1px var(--stroke2);
@@ -175,7 +175,7 @@
 .primary {
   min-height: 44px;
   padding: 0 18px;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .primary:disabled {
@@ -189,7 +189,7 @@
   background: transparent;
   color: var(--accent-text);
   font: inherit;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   text-align: left;
   cursor: pointer;
@@ -241,7 +241,7 @@
 .restBarLabel {
   margin: 0;
   color: var(--accent-text);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -250,7 +250,7 @@
 .restBarClock {
   margin: 0;
   font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
-  font-size: 34px;
+  font-size: 2.125rem;
   font-weight: 800;
   letter-spacing: -0.035em;
   line-height: 1;
@@ -265,7 +265,7 @@
   grid-column: 1 / -1;
   margin: 0;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .restBar[data-embed] {
@@ -308,7 +308,7 @@
   background: var(--field);
   color: inherit;
   font: inherit;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   box-shadow: inset 0 0 0 1px var(--stroke2);
@@ -341,7 +341,7 @@
   top: 3px;
   left: 10px;
   color: var(--ink2);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -384,7 +384,7 @@
   background: transparent;
   color: inherit;
   font: inherit;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   text-align: left;
@@ -393,7 +393,7 @@
 
 .timeBlockHit small {
   color: var(--ink2);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
@@ -412,7 +412,7 @@
   gap: 8px;
   min-height: 44px;
   font-family: inherit;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   letter-spacing: 0;
   text-transform: none;
@@ -438,7 +438,7 @@
   margin: 0;
   max-width: 34ch;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.45;
   text-align: right;
 }
@@ -487,7 +487,7 @@
 
 .weekDow {
   color: var(--ink2);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -499,13 +499,13 @@
 
 .weekNum {
   color: var(--ink2);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
 
 .weekKcal {
   font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
-  font-size: 22px;
+  font-size: 1.375rem;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.03em;
@@ -534,7 +534,7 @@
 
 .weekNote {
   color: var(--ink2);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 /* ── This week ─────────────────────────────────────────────────────────── */
@@ -559,7 +559,7 @@
 
 .weekAvg {
   font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
-  font-size: 34px;
+  font-size: 2.125rem;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.035em;
@@ -568,13 +568,13 @@
 
 .weekUnit {
   color: var(--ink2);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 
 .weekDelta {
   color: var(--accent-text);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -615,7 +615,7 @@
   gap: 4px 16px;
   margin-top: 10px;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 /* Three readings, not three cards: a list where the value leads. */
@@ -651,7 +651,7 @@
   grid-column: 2;
   margin: 0;
   font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -674,7 +674,7 @@
 }
 
 .mealLabel {
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
@@ -684,7 +684,7 @@
   align-items: baseline;
   gap: 8px;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .mealCount {
@@ -718,7 +718,7 @@
 
 .logName strong {
   overflow: hidden;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   text-overflow: ellipsis;
@@ -749,7 +749,7 @@
   background: var(--field);
   color: inherit;
   font: inherit;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   text-align: center;
   font-variant-numeric: tabular-nums;
@@ -759,7 +759,7 @@
 .logKcal {
   display: flex;
   justify-content: flex-end;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -772,7 +772,7 @@
 
 .sourceBadge {
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .sourceBadge[data-kind='ph'],
@@ -795,7 +795,7 @@
   border-radius: 999px;
   background: transparent;
   color: var(--ink2);
-  font-size: 17px;
+  font-size: 1.0625rem;
   line-height: 1;
   cursor: pointer;
 }
@@ -838,7 +838,7 @@
   align-items: center;
   gap: 10px;
   min-height: 44px;
-  font-size: 15px;
+  font-size: 0.9375rem;
   box-shadow: inset 0 1px 0 var(--stroke2);
 }
 
@@ -848,7 +848,7 @@
 
 .provValue {
   font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
@@ -860,7 +860,7 @@
   width: 18px;
   height: 18px;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 700;
   color: var(--ink2);
   background: var(--track);
@@ -883,7 +883,7 @@
   padding-top: 12px;
   border-top: 1px solid var(--stroke2);
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.45;
 }
 
@@ -936,7 +936,7 @@
   align-items: center;
   gap: 7px 14px;
   color: var(--color-muted);
-  font-size: 12.5px;
+  font-size: 0.78125rem;
 }
 
 .verifyJump {
@@ -954,7 +954,7 @@
   background: var(--color-surface);
   color: inherit;
   font: inherit;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .verifyProgress {
@@ -998,7 +998,7 @@
   padding-bottom: 3px;
   color: var(--color-muted);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -1007,7 +1007,7 @@
   max-width: 62ch;
   margin: 8px 0 0;
   color: var(--color-muted);
-  font-size: 13.5px;
+  font-size: 0.84375rem;
   line-height: 1.5;
 }
 
@@ -1036,7 +1036,7 @@
   background: transparent;
   color: var(--color-muted);
   font: inherit;
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   cursor: pointer;
 }
 
@@ -1103,7 +1103,7 @@
   background: var(--color-surface-2);
   color: var(--color-muted);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 9.5px;
+  font-size: 0.59375rem;
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1151,7 +1151,7 @@
 
 .verifyName strong {
   overflow: hidden;
-  font-size: 14.5px;
+  font-size: 0.90625rem;
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1161,7 +1161,7 @@
   overflow: hidden;
   color: var(--color-muted-2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1176,20 +1176,20 @@
 .verifyPcf {
   padding-right: 12px;
   color: var(--color-muted);
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 500;
   text-align: right;
 }
 
 .verifyKcal {
   padding-right: 12px;
-  font-size: 19px;
+  font-size: 1.1875rem;
   font-weight: 600;
   text-align: right;
 }
 
 .verifyConf {
-  font-size: 16px;
+  font-size: 1rem;
   color: var(--color-muted);
   text-align: center;
 }
@@ -1202,7 +1202,7 @@
   border-radius: 4px;
   color: var(--color-muted);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1233,7 +1233,7 @@
 .verifyInspectorHead h2 {
   margin: 5px 0 0;
   font-family: var(--font-display), ui-serif, Georgia, serif;
-  font-size: 21px;
+  font-size: 1.3125rem;
   font-weight: 600;
   letter-spacing: -0.015em;
 }
@@ -1242,7 +1242,7 @@
   margin: 6px 0 0;
   color: var(--color-muted);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   line-height: 1.5;
 }
 
@@ -1267,7 +1267,7 @@
 .verifyField span {
   color: var(--color-muted-2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 9px;
+  font-size: 0.5625rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -1288,7 +1288,7 @@
   height: 34px;
   padding: 0 8px;
   font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
-  font-size: 19px;
+  font-size: 1.1875rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -1300,12 +1300,12 @@
 .verifyField input {
   height: 34px;
   padding: 0 9px;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .verifyField textarea {
   padding: 9px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.5;
   resize: none;
 }
@@ -1328,13 +1328,13 @@
 
 .verifyAtwater strong {
   display: block;
-  font-size: 13.5px;
+  font-size: 0.84375rem;
 }
 
 .verifyAtwater span span {
   color: var(--color-muted);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   line-height: 1.45;
 }
 
@@ -1353,7 +1353,7 @@
   background: var(--color-accent);
   color: var(--color-accent-fg);
   font: inherit;
-  font-size: 14.5px;
+  font-size: 0.90625rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -1370,14 +1370,14 @@
   background: transparent;
   color: var(--color-muted);
   font: inherit;
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   cursor: pointer;
 }
 
 .verifyFoot {
   margin: 9px 0 0;
   color: var(--color-muted-2);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.45;
 }
 
@@ -1393,7 +1393,7 @@
   margin: 0;
   max-width: 34ch;
   color: var(--color-muted);
-  font-size: 13.5px;
+  font-size: 0.84375rem;
   line-height: 1.5;
   text-align: right;
 }
@@ -1440,7 +1440,7 @@
 
 .foodsLegendCount {
   font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -1448,7 +1448,7 @@
 .foodsLegendSub {
   color: var(--color-muted-2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 9.5px;
+  font-size: 0.59375rem;
 }
 
 .foodsToolbar {
@@ -1468,7 +1468,7 @@
   background: var(--color-surface);
   color: inherit;
   font: inherit;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .foodsPills {
@@ -1488,7 +1488,7 @@
   background: transparent;
   color: var(--color-muted);
   font: inherit;
-  font-size: 13px;
+  font-size: 0.8125rem;
   cursor: pointer;
 }
 
@@ -1501,7 +1501,7 @@
 
 .foodsPillCount {
   font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-variant-numeric: tabular-nums;
   opacity: 0.7;
 }
@@ -1510,7 +1510,7 @@
   margin-left: auto;
   color: var(--color-muted-2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
 }
 
 .foodsGrid {
@@ -1534,7 +1534,7 @@
   background: var(--color-surface-2);
   color: var(--color-muted);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 9.5px;
+  font-size: 0.59375rem;
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1574,7 +1574,7 @@
 }
 
 .foodsName strong {
-  font-size: 14.5px;
+  font-size: 0.90625rem;
   font-weight: 500;
 }
 
@@ -1582,7 +1582,7 @@
   overflow: hidden;
   color: var(--color-muted-2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1600,7 +1600,7 @@
   border: 1px solid var(--color-line-strong);
   color: var(--color-muted);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1638,7 +1638,7 @@
   gap: 4px;
   padding-right: 16px;
   font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
-  font-size: 19px;
+  font-size: 1.1875rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -1646,7 +1646,7 @@
 .foodsKcalUnit {
   color: var(--color-muted-2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -1654,7 +1654,7 @@
 .foodsServing {
   overflow: hidden;
   color: var(--color-muted);
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1662,7 +1662,7 @@
 .foodsConf {
   color: var(--color-muted);
   font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -1693,7 +1693,7 @@
   margin: 0;
   max-width: 34ch;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.45;
   text-align: right;
 }
@@ -1717,7 +1717,7 @@
 
 .sessionClockNum {
   font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
-  font-size: 36px;
+  font-size: 2.25rem;
   font-weight: 800;
   letter-spacing: -0.035em;
   line-height: 1;
@@ -1726,14 +1726,14 @@
 
 .sessionClockUnit {
   color: var(--ink2);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 
 .sessionNote {
   margin: 8px 0 0;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.45;
 }
 
@@ -1760,7 +1760,7 @@
 .deskScreen .completeBtn {
   min-height: 44px;
   padding: 0 16px;
-  font-size: 14px;
+  font-size: 0.875rem;
   white-space: nowrap;
 }
 
@@ -1770,7 +1770,7 @@
 .deskScreen .energyChip {
   min-height: 40px;
   padding: 0 14px;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .deskScreen .energyChip[data-on='true'] {
@@ -1795,7 +1795,7 @@
 
 .busyLabel {
   color: var(--ink2);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1805,7 +1805,7 @@
   flex: 1 1 16rem;
   min-width: 0;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.45;
 }
 
@@ -1873,7 +1873,7 @@
   border-radius: 999px;
   background: var(--track);
   color: var(--ink2);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
 }
 
@@ -1904,7 +1904,7 @@
 
 .liftName {
   overflow: hidden;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   text-overflow: ellipsis;
@@ -1914,26 +1914,26 @@
 .liftLock {
   flex: none;
   color: var(--accent-text);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .liftSource {
   flex: none;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .liftMeta {
   overflow: hidden;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .liftSets {
   flex: none;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -1945,7 +1945,7 @@
 .liftChevron {
   flex: none;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 /* Numbered set toggles: the fast path. Filled accent once the set is in. */
@@ -1976,7 +1976,7 @@
 
 .setHead span {
   color: var(--ink2);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1995,7 +1995,7 @@
 
 .setLabel {
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .setPlan,
@@ -2005,12 +2005,12 @@
 }
 
 .setPlan {
-  font-size: 14px;
+  font-size: 0.875rem;
   color: var(--ink2);
 }
 
 .setPrior {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--ink2);
 }
 
@@ -2028,14 +2028,14 @@
 }
 
 .setSavedNum {
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
 .setSavedRir {
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .setDraft {
@@ -2059,7 +2059,7 @@
 
 .setNum {
   width: 62px;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -2070,12 +2070,12 @@
 
 .setRir {
   width: 58px;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .setMul {
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .setActs {
@@ -2087,7 +2087,7 @@
 
 .savedTag {
   color: var(--ink2);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -2115,7 +2115,7 @@
 
 .swapLabel {
   color: var(--ink2);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -2125,7 +2125,7 @@
 .swapHint {
   flex: 1 1 14rem;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.45;
 }
 
@@ -2147,14 +2147,14 @@
   background: var(--field);
   color: inherit;
   font: inherit;
-  font-size: 14px;
+  font-size: 0.875rem;
   box-shadow: inset 0 0 0 1px var(--stroke2);
 }
 
 .catalogNote {
   margin-left: auto;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   white-space: nowrap;
 }
 
@@ -2177,7 +2177,7 @@
   background: transparent;
   color: var(--ink2);
   font: inherit;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: background var(--swap) linear, color var(--swap) linear;
@@ -2211,7 +2211,7 @@
   background: var(--field);
   box-shadow: inset 0 0 0 1px var(--stroke2);
   color: var(--ink);
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.5;
 }
 
@@ -2237,14 +2237,14 @@
 }
 
 .ttHead span:first-child {
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 
 .ttHead span:last-child {
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2278,7 +2278,7 @@
   border-radius: 999px;
   background: var(--accent);
   color: var(--accent-ink);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -2296,7 +2296,7 @@
   align-items: center;
   gap: 7px;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .legendSwatch {
@@ -2346,7 +2346,7 @@
   background: var(--field);
   color: inherit;
   font: inherit;
-  font-size: 16px;
+  font-size: 1rem;
   box-shadow: inset 0 0 0 1px var(--stroke2);
 }
 
@@ -2365,7 +2365,7 @@
 }
 
 .bucketLabel {
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
@@ -2376,7 +2376,7 @@
 
 .bucketCount {
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2409,7 +2409,7 @@
   border-radius: 999px;
   background: transparent;
   color: var(--accent-ink);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   cursor: pointer;
   box-shadow: inset 0 0 0 1.5px var(--ink2);
@@ -2439,7 +2439,7 @@
 
 .taskTitle {
   overflow: hidden;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   text-overflow: ellipsis;
@@ -2454,14 +2454,14 @@
 .taskSub {
   overflow: hidden;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .taskTag {
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   white-space: nowrap;
 }
 
@@ -2474,7 +2474,7 @@
   margin: 0;
   padding: 4px 14px 14px;
   color: var(--ink2);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 /* ── Inspector ─────────────────────────────────────────────────────────── */
@@ -2491,7 +2491,7 @@
 .inspectEyebrow {
   margin: 0;
   color: var(--accent-text);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -2499,7 +2499,7 @@
 
 .inspectTitle {
   margin: 6px 0 0;
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.015em;
 }
@@ -2521,7 +2521,7 @@
 
 .inspectField > :first-child {
   color: var(--ink2);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -2536,7 +2536,7 @@
   background: var(--field);
   color: inherit;
   font: inherit;
-  font-size: 15px;
+  font-size: 0.9375rem;
   text-transform: none;
   letter-spacing: 0;
   box-shadow: inset 0 0 0 1px var(--stroke2);
@@ -2552,7 +2552,7 @@
 .inspectNote {
   margin: 12px 0 0;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.5;
 }
 
@@ -2596,7 +2596,7 @@
 .weekDayName {
   margin: 0;
   color: var(--ink2);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -2609,7 +2609,7 @@
 .weekDayNum {
   margin: 4px 0 0;
   font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
-  font-size: 22px;
+  font-size: 1.375rem;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.03em;
@@ -2634,12 +2634,12 @@
 
 .weekChipTime {
   color: var(--ink2);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
 
 .weekChipTitle {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   line-height: 1.3;
 }
@@ -2647,7 +2647,7 @@
 .weekQuiet {
   padding: 0 10px;
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 /* ── Agenda ────────────────────────────────────────────────────────────── */
@@ -2697,7 +2697,7 @@
 
 .timeBlockFlag {
   color: var(--ink2);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 @media (max-width: 1100px) {
@@ -2742,7 +2742,7 @@
   gap: 10px;
   padding: 14px 14px 8px;
   color: var(--ink2);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -2764,7 +2764,7 @@
 
 .diaryFootLabel {
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .diaryFootKcal {
@@ -2772,7 +2772,7 @@
   align-items: baseline;
   gap: 6px;
   font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
-  font-size: 26px;
+  font-size: 1.625rem;
   font-weight: 800;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
@@ -2780,7 +2780,7 @@
 
 .diaryFootUnit {
   font-family: inherit;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0;
   color: var(--ink2);
@@ -2804,7 +2804,7 @@
 .liftPlan,
 .liftLast {
   color: var(--ink2);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -2819,7 +2819,7 @@
   background: var(--accent);
   color: var(--accent-ink);
   font: inherit;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 700;
   cursor: pointer;
   box-shadow:
@@ -2835,7 +2835,7 @@
   background: var(--glass);
   color: var(--ink);
   font: inherit;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
   box-shadow: inset 0 0 0 1px var(--stroke);
@@ -2878,7 +2878,7 @@
   background: var(--accent);
   color: var(--accent-ink);
   font: inherit;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
@@ -2991,7 +2991,7 @@
     .savedTag,
     .taskTag
   ) {
-  font-size: 13px;
+  font-size: 0.8125rem;
   letter-spacing: 0;
 }
 

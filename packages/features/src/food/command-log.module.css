@@ -157,7 +157,7 @@
 
 /* Results rows step the name and numeral up one notch from the suggestions. */
 .row[data-kind='results'] .name {
-  font-size: 15.5px;
+  font-size: 0.96875rem;
 }
 
 .row[data-active='true'] {
@@ -171,7 +171,7 @@
 
 .name {
   display: block;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 500;
 }
 
@@ -317,7 +317,7 @@
 .qty label {
   color: var(--color-muted);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -356,7 +356,7 @@
 .qtyUnit {
   color: var(--color-muted);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -408,7 +408,7 @@
   border-radius: 999px;
   background: var(--color-surface-2);
   color: var(--color-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1;
   cursor: pointer;
 }
@@ -424,7 +424,7 @@
 .plateUnit {
   color: var(--color-muted);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -466,7 +466,7 @@
   border-radius: 3px;
   background: var(--color-surface);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
 }
 
 .status {

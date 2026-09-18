@@ -83,7 +83,7 @@
 
 .spine {
   color: var(--ink2);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -120,7 +120,7 @@
 
 .title > p:first-child {
   font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.15;
@@ -130,7 +130,7 @@
    rather than a second label shouting in caps. */
 .title > p + p {
   font-family: inherit;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0;
   line-height: 1.35;
@@ -147,7 +147,7 @@
   border-radius: 999px;
   background: transparent;
   color: var(--ink2);
-  font-size: 17px;
+  font-size: 1.0625rem;
   line-height: 1;
   cursor: pointer;
   transition:
@@ -193,7 +193,7 @@
 
 .mono {
   color: var(--ink2);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.07em;
   line-height: 1.3;
@@ -221,7 +221,7 @@
 
 .context dd {
   margin: 0;
-  font-size: 13.5px;
+  font-size: 0.84375rem;
   font-weight: 600;
   line-height: 1.35;
 }
@@ -229,7 +229,7 @@
 .note {
   margin: 12px 0 0;
   color: var(--ink2);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.5;
 }
 
@@ -254,7 +254,7 @@
 
 .permToggle .mono {
   color: var(--ink);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0;
   text-transform: none;
@@ -280,7 +280,7 @@
   background: transparent;
   color: inherit;
   font: inherit;
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   font-weight: 600;
   line-height: 1.3;
   text-align: left;
@@ -302,7 +302,7 @@
   border-radius: 999px;
   color: var(--ink2);
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   line-height: 1.4;
@@ -336,7 +336,7 @@
   background: color-mix(in srgb, var(--danger) 10%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 30%, transparent);
   color: var(--ink);
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   line-height: 1.45;
 }
 
@@ -354,7 +354,7 @@
   background: var(--field);
   color: var(--ink);
   font: inherit;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   box-shadow: inset 0 0 0 1px var(--stroke);
@@ -388,7 +388,7 @@
   padding: 12px 16px 16px;
   border-top: 1px solid var(--stroke2);
   color: var(--ink2);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.4;
 }
 
@@ -425,7 +425,7 @@
 }
 
 .page[data-mus-rail='page'] :is(.note, .mono) {
-  font-size: 13px;
+  font-size: 0.8125rem;
   letter-spacing: 0;
   text-transform: none;
 }

@@ -23,7 +23,7 @@
   border-radius: 999px;
   background: var(--color-accent);
   color: var(--color-accent-fg);
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 700;
   vertical-align: middle;
 }
@@ -43,7 +43,7 @@
   align-items: baseline;
   gap: 0.3rem;
   font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
-  font-size: 21px;
+  font-size: 1.3125rem;
   font-weight: 600;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
@@ -60,5 +60,5 @@
 
 /* Results rows in the palette set the numeral one step larger. */
 .kcalLarge {
-  font-size: 23px;
+  font-size: 1.4375rem;
 }
