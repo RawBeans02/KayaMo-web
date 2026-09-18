@@ -5,7 +5,9 @@ import styles from './botanical.module.css';
 /**
  * Life is a hub, not a workspace: every card is a destination and none of them
  * carry controls. The grouping follows the real shape of the desk build, so
- * nothing here points at a section that does not exist yet.
+ * nothing here points at a section that does not exist yet, and nothing here
+ * describes what is not on the web: roadmap copy belongs in docs, not in a hub.
+ * Workouts are off this hub for the first release (owner decision, 2026-09-18).
  */
 const physical: { href: string; icon: BotanicalIconName; title: string; meta: string }[] =
   [
@@ -14,12 +16,6 @@ const physical: { href: string; icon: BotanicalIconName; title: string; meta: st
       icon: 'food',
       title: 'Food diary',
       meta: 'What you ate, with the source kept on every entry',
-    },
-    {
-      href: '/gym',
-      icon: 'workout',
-      title: 'Workouts',
-      meta: 'Sessions, sets and the weights you actually lifted',
     },
     {
       href: '/foods',
@@ -58,7 +54,7 @@ export function BotanicalLife() {
           <h1 id="life-title" className="kgTitle">
             Life
           </h1>
-          <p className={styles.lede}>Food, movement and growth, in one place.</p>
+          <p className={styles.lede}>What you eat and what you are growing toward.</p>
         </div>
       </header>
       <div className={styles.cards}>
@@ -97,11 +93,6 @@ export function BotanicalLife() {
               <BotanicalIcon name="next" size={18} />
             </a>
           ))}
-          <p className={styles.muted} style={{ marginTop: 18 }}>
-            Dedicated tools for study, work, relationships and faith are not on the web
-            yet. You can still set a goal for any of them. Circles are deferred for this
-            release.
-          </p>
         </section>
       </div>
     </section>

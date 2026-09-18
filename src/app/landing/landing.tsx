@@ -82,8 +82,8 @@ export function Landing({ demoStarted = false }: { demoStarted?: boolean }) {
           <div>
             <dt>Yours, offline too</dt>
             <dd>
-              Every entry is written to your device first and syncs when you are back.
-              Export it whenever you want.
+              Every entry is written to your device first and syncs when you are back
+              online. Your diary is readable without a connection.
             </dd>
           </div>
         </dl>

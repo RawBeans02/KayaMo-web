@@ -67,7 +67,7 @@ test('all five destinations and appearance remain usable at narrow widths', asyn
     // Below 900px the desktop rail gives way to the floating tab bar, so each
     // width asserts whichever navigation that width is supposed to show.
     if (width >= 900) {
-      for (const name of ['Home', 'Life', 'Food', 'Movement', 'Goals', 'Grove', 'Lis']) {
+      for (const name of ['Home', 'Life', 'Food', 'Goals', 'Grove', 'Lis']) {
         await expect(
           page
             .getByRole('navigation', { name: 'Sections' })

@@ -20,12 +20,15 @@ import styles from './glass-shell.module.css';
 /**
  * Desktop rail: the full map. Profile is pinned to the bottom, away from the
  * content nav, matching the platform convention.
+ *
+ * Gym and Todos are off the rail and the Life hub for the first release
+ * (owner decision, 2026-09-18): both routes still resolve, but they render the
+ * legacy desk skin and are not offered as destinations until converted.
  */
 const RAIL: Array<{ href: string; label: string; icon: BotanicalIconName }> = [
   { href: '/today', label: 'Home', icon: 'home' },
   { href: '/life', label: 'Life', icon: 'life' },
   { href: '/calories', label: 'Food', icon: 'food' },
-  { href: '/gym', label: 'Movement', icon: 'workout' },
   { href: '/goals', label: 'Goals', icon: 'goals' },
   { href: '/grove', label: 'Grove', icon: 'grove' },
   { href: '/mus', label: 'Lis', icon: 'lis' },
@@ -33,7 +36,7 @@ const RAIL: Array<{ href: string; label: string; icon: BotanicalIconName }> = [
 
 /**
  * Phone tab bar: five slots, Home far left, Profile far right, create in the
- * centre. Food, Movement, Goals and Grove live one level down under Life.
+ * centre. Food, Goals and Grove live one level down under Life.
  */
 const TABS: Array<{ href: string; label: string; icon: BotanicalIconName }> = [
   { href: '/today', label: 'Home', icon: 'home' },
@@ -43,7 +46,7 @@ const TABS: Array<{ href: string; label: string; icon: BotanicalIconName }> = [
 ];
 
 /** Routes that live under the Life hub, so the hub stays lit while inside. */
-const LIFE_ROUTES = ['/life', '/calories', '/gym', '/foods', '/verify', '/goals', '/grove'];
+const LIFE_ROUTES = ['/life', '/calories', '/foods', '/verify', '/goals', '/grove'];
 
 function isActive(pathname: string, href: string, hubAware: boolean): boolean {
   if (href === '/today') return ['/today', '/todos'].includes(pathname);
