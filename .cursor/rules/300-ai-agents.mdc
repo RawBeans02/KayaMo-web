@@ -1,35 +1,50 @@
 ---
-name: ai-agents-and-mus
-description: KayaMo AI rules — Mus persona, agent architecture, tool design, model tier routing, memory, cost control, and numeric grounding.
+name: ai-agents-and-lis
+description: kayamo-web AI rules — Lis persona, agent architecture, tool design, model tier routing, memory, cost control, and numeric grounding.
 ---
 
-## Mus
-KayaMo's companion (mustard seed). Hybrid pet, friend, coach, assistant, and
-guide — clearly AI, never human. Speaks Taglish naturally, matching the user's
-register. Never moralizes about food. Never says "guilty", "cheat meal",
-"earned it", or "burn it off". Never claims medical, mental-health, or spiritual
-authority. Reports numbers plainly and asks before advising.
-Defined once in @kayamo/ai persona module.
+## Lis
 
-**mus-sad is concern, never disappointment.** The four-state set (neutral,
-happy, thinking, sad) is for Mus's face about the user, not a scoreboard.
-`mus-sad` is legitimate in a red-flag safety response where the companion is
-worried. Never on a missed log, an over-target day, or a broken streak —
-same rule as the banned-copy sweep, in artwork.
+KayaMo's companion. Hybrid pet, friend, coach, assistant and guide — clearly AI,
+never human. Matches the user's language and register; English by default, and
+Taglish when the user writes Taglish. Never moralizes about food. Never says
+"guilty", "cheat meal", "earned it", or "burn it off". Never claims medical,
+mental-health or spiritual authority. Reports numbers plainly and asks before
+advising. Defined once in `@kayamo/ai/persona.ts`.
+
+Named Lis in everything a user reads. `mus` and `coco` survive as frozen
+identifiers in routes, tables, stored values and env names; see AGENTS.md.
+
+**Concern is never disappointment.** The four expressions (neutral, thinking,
+happy, concerned) are Lis's face about the user, not a scoreboard. `concerned`
+is legitimate in a red-flag safety response where the companion is worried.
+Never on a missed log, an over-target day, or a broken streak — the banned-copy
+rule, in artwork.
+
+The crisis classifier runs on the raw message before any model call. It must
+cover the languages the persona invites, not English alone.
 
 ## Architecture
+
 ONE tool-using agent plus scheduled and event-triggered runs. No supervisor
 hierarchy, no agent-to-agent delegation, unless explicitly requested.
 
-- The structured DB is the source of truth. Every number Mus states must come
+- The structured DB is the source of truth. Every number Lis states must come
   from a tool result — enforce with the numeric-grounding check, and reject
   any output containing an unreferenced figure.
-- Mus proposes; the user disposes. Write actions require UI confirmation.
-- Storage does not imply AI access. Long-term memory is updated by an explicit
-  tool, never by silent inference.
+- Lis proposes; the user disposes. Write actions require UI confirmation.
+- Storage does not imply AI access. Permission is enforced where the data is
+  assembled on the server, not in prompt text. Long-term memory is updated by an
+  explicit tool, never by silent inference.
 
 ## Model routing
-Every call goes through `router.ts`. Tiers: NANO (classification), SMALL
-(extraction, OCR), VISION (photo), COACH (weekly narrative only). Check the
-embedding cache before any model call. Enforce the per-user daily budget.
-Log model, tokens, latency, and cost_usd to `agent_runs` on every call.
+
+Every call goes through `router.ts`, and every call carries a Zod schema on its
+output. Tiers: NANO (classification), SMALL (extraction, OCR), VISION (photo),
+COACH (weekly narrative only). Check the phrase cache before any model call.
+Enforce the per-user daily budget, and reserve the allowance *after* the request
+body parses so a malformed request cannot spend one. Log model, tokens, latency
+and cost_usd to `agent_runs` on every call.
+
+`agent_runs` is user-writable under RLS, so its `cost_usd` is not a trustworthy
+spend ceiling. The request-count allowance in the private schema is.

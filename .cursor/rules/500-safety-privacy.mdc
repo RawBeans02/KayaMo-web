@@ -1,30 +1,58 @@
 ---
 name: safety-and-privacy
-description: KayaMo safety guardrails and Philippine data privacy rules — calorie floors, disordered eating red flags, banned copy, RA 10173 compliance, health data handling.
+description: kayamo-web safety guardrails and data-protection rules — calorie floors, disordered eating red flags, banned copy, health data handling.
 ---
 
 ## Safety — enforced in code, not prompts
+
 - Calorie floors 1200 (female) / 1500 (male). No override, no advanced mode.
 - Max weekly loss target 1% bodyweight. Max deficit 25% below TDEE.
 - Clamp any request that breaches a floor and surface `clamped: true` honestly.
 - Red-flag detection on input: extreme restriction, purging, appetite
   suppression, "how little can I eat", BMI-below-17.5 goals, body-image
   distress. When flagged: do not provide the plan, respond warmly and briefly,
-  surface PH support resources from the config file, do not lecture, do not
+  surface support resources from the config file, do not lecture, do not
   end the conversation.
+- The classifier must not fire on ordinary food-logging talk. "I haven't eaten
+  yet" and "I stopped eating rice this week" are not red flags; require a
+  duration or intent qualifier. A false positive sends someone to a clinician
+  message for saying they are hungry.
+- The classifier must cover the languages the persona invites, not English
+  alone. An unmatched language means the message reaches the model unscreened.
 - Never comment on appearance. Never use guilt framing.
 - If a medical condition is mentioned (diabetes, PCOS, kidney, pregnancy,
   ED history), defer to their clinician and do not generate a plan.
 - KayaMo is not a medical device. No diagnosis, treatment, or prescription.
 
-## Privacy — RA 10173 (Data Privacy Act of 2012)
-Health data is SENSITIVE personal information — the highest-risk category.
+## Support resources
+
+The product is global. Crisis resources must not assume the user is in the
+Philippines. Until a vetted per-region list exists, prefer a neutral,
+non-region-specific response over naming hotlines that do not serve the user.
+Do not invent numbers for a region no one has checked.
+
+## Privacy — health data
+
+Health data is sensitive personal information: the highest-risk category in
+every regime that applies to it.
+
 - Granular, versioned, opt-in consent per purpose. Nothing pre-ticked.
 - Photos deleted from storage after analysis unless the user saves them.
 - Calendar event titles are never sent to a model. Only derived time blocks.
 - No health data in application logs, analytics, or error reports.
   Analytics track EVENTS, never content.
-- Export and hard-delete must both work in-app.
-- Breach notification to the NPC within 72 hours (see docs/breach-response.md).
-- NPC registration is triggered at 1,000 users processing sensitive personal
-  information — see docs/compliance.md.
+- Export and hard-delete must both work in-app. Neither does on the web today,
+  and the landing copy promises export. That contradiction is a release gate,
+  not a known-acceptable gap. See `docs/RELEASE.md`.
+- Do not publish a retention period, a deletion timeline or a vendor guarantee
+  that nobody has verified against the actual hosting configuration.
+
+## Jurisdiction — unresolved
+
+`docs/compliance.md` analyses RA 10173 (Philippine Data Privacy Act) only, and
+was written when the product was Philippines-first. The product is now global and
+no GDPR, UK GDPR or CCPA assessment exists. Treat the regulatory scope as an open
+owner decision requiring professional review. Do not write compliance claims,
+lawful-basis statements or breach timelines for a regime that has not been
+assessed. The RA 10173 material stays as the one completed analysis; the NPC
+breach runbook in `docs/breach-response.md` applies to that regime.

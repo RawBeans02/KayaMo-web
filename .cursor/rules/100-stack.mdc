@@ -1,18 +1,29 @@
 ---
 name: stack-and-tooling
-description: KayaMo tech stack, build commands, dependency rules, Next.js and Supabase conventions, turbo and pnpm workspace usage.
+description: kayamo-web tech stack, build commands, dependency rules, Next.js and Supabase conventions, pnpm workspace usage.
 ---
 
-Next.js 15 App Router · TypeScript strict · Tailwind v4 · Supabase
-(Postgres, Auth, Storage, Edge Functions) · Drizzle ORM · Dexie ·
-Vercel AI SDK · Zod · Vitest · Playwright · Capacitor · pnpm + turbo.
+Next.js 16 App Router · React 19 · TypeScript strict · Tailwind v4 ·
+CSS Modules · Supabase (Postgres, Auth, Storage) · Drizzle ORM · Dexie ·
+Vercel AI SDK · Zod · Vitest · Playwright · pnpm workspaces.
+
+No turbo. No Capacitor in this repository; native lives in `../kayamo-mobile`.
+
+Tailwind is effectively preflight plus `@theme` tokens for the shared primitives
+in `@kayamo/ui`. Route styling is CSS Modules over the Liquid Glass layer. Do not
+reach for utility classes in new route code.
 
 Do not substitute a library without asking.
 
-Commands: `pnpm dev:pwa`, `pnpm dev:web`, `pnpm dev:admin`, `pnpm build`, `pnpm test`,
-`pnpm typecheck`, `pnpm db:migrate`, `pnpm ph-core:build`.
+Commands: `pnpm dev` (port 3002), `pnpm build`, `pnpm test`, `pnpm typecheck`,
+`pnpm lint`, `pnpm test:e2e`, `pnpm test:security`, `pnpm ph-core:build`.
 
 - Server Components by default; "use client" only where interaction requires it.
-- Route handlers validate input with Zod at the boundary.
-- Migrations are generated, reviewed, and committed — never applied ad hoc.
+- Route handlers validate input with Zod at the boundary, authenticate before
+  doing work, and set `private, no-store` on authenticated responses.
+- Migrations are hand-written SQL under `supabase/migrations/`, reviewed and
+  committed, then applied with the Supabase CLI — never ad hoc. Record what was
+  applied in `docs/releases/`.
 - Add a dependency to the package that uses it, not to the root.
+- `next build` uses webpack; `next dev` uses Turbopack. They disagree — notably
+  on CSS Modules. A green dev server is not evidence that the build passes.
