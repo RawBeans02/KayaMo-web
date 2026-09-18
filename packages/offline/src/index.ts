@@ -259,6 +259,7 @@ export {
 export {
   useLiveFoodEntries,
   useLiveFoodHistory,
+  useLiveFoodLedger,
   useLiveMealTemplates,
   useLivePlanningSnapshot,
   useSyncStatus,
@@ -291,6 +292,7 @@ export {
 export {
   listLocalFoodEntries,
   listLocalFoodHistory,
+  listLocalFoodLedger,
   listLocalMealTemplates,
   listLocalWeightLogs,
   logFoodEntries,

@@ -250,6 +250,12 @@ export async function listLocalFoodEntries(
     .sort((a, b) => a.logged_at.localeCompare(b.logged_at));
 }
 
+/**
+ * Foods the user has logged before, for re-logging: palette recents, the search
+ * fallback, the Foods page. Only rows with a catalog `food_id` qualify, because
+ * a row with none cannot be re-logged from the catalog. Do not use this for
+ * totals; see listLocalFoodLedger.
+ */
 export async function listLocalFoodHistory(userId: string): Promise<LocalFoodEntry[]> {
   const rows = await getOfflineDb()
     .food_entries.where('user_id')
@@ -257,6 +263,23 @@ export async function listLocalFoodHistory(userId: string): Promise<LocalFoodEnt
     .toArray();
   return rows
     .filter((row) => !row.deleted_at && row.food_id)
+    .sort((a, b) => a.logged_at.localeCompare(b.logged_at));
+}
+
+/**
+ * Every live entry the user has logged, catalogued or not. This is what a
+ * total, an average or a presence grid must read. The diary used the history
+ * query for its week statistics, so every worldwide-search and personal food
+ * (which carry no catalog food_id) vanished from the week average, the strip
+ * and the presence grid while still appearing in the day's own list.
+ */
+export async function listLocalFoodLedger(userId: string): Promise<LocalFoodEntry[]> {
+  const rows = await getOfflineDb()
+    .food_entries.where('user_id')
+    .equals(userId)
+    .toArray();
+  return rows
+    .filter((row) => !row.deleted_at)
     .sort((a, b) => a.logged_at.localeCompare(b.logged_at));
 }
 

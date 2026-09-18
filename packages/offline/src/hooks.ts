@@ -4,7 +4,7 @@ import type { LocalFoodEntry, LocalMealTemplate } from './db';
 import { isDatabaseClosedError, recoverClosedOfflineDb, reviveClosedOfflineDb } from './db';
 import { getPlanningSnapshot, type PlanningSnapshot } from './planning-snapshot';
 import { bindStatusStore, getSyncStatusSnapshot, type SyncStatus } from './sync';
-import { listLocalFoodEntries, listLocalFoodHistory, listLocalMealTemplates } from './writes';
+import { listLocalFoodEntries, listLocalFoodHistory, listLocalFoodLedger, listLocalMealTemplates } from './writes';
 
 const SSR_STATUS: SyncStatus = { kind: 'synced' };
 
@@ -71,6 +71,34 @@ export function useLiveFoodHistory(userId: string | null): LocalFoodEntry[] {
     let cancelled = false;
     const stop = observeLive(
       () => listLocalFoodHistory(userId),
+      setRows,
+      () => {
+        if (!cancelled) setGeneration((current) => current + 1);
+      },
+      () => setRows([]),
+    );
+    return () => {
+      cancelled = true;
+      stop();
+    };
+  }, [userId, generation]);
+
+  return rows;
+}
+
+/** Every live entry, catalogued or not. For totals; see listLocalFoodLedger. */
+export function useLiveFoodLedger(userId: string | null): LocalFoodEntry[] {
+  const [rows, setRows] = useState<LocalFoodEntry[]>([]);
+  const [generation, setGeneration] = useState(0);
+
+  useEffect(() => {
+    if (!userId) {
+      setRows([]);
+      return;
+    }
+    let cancelled = false;
+    const stop = observeLive(
+      () => listLocalFoodLedger(userId),
       setRows,
       () => {
         if (!cancelled) setGeneration((current) => current + 1);

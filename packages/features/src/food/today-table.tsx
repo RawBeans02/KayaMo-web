@@ -14,7 +14,7 @@ import {
   reviseLocalFoodEntry,
   tombstoneLocalFoodEntry,
   useLiveFoodEntries,
-  useLiveFoodHistory,
+  useLiveFoodLedger,
   type LocalFoodEntry,
 } from '@kayamo/offline';
 import { Toast } from '@kayamo/ui';
@@ -85,7 +85,9 @@ export function TodayTable({ userId }: { userId: string }) {
   const clockToday = logicalDateFromInstant(new Date(nowMs).toISOString(), clock.timeZone, clock.dayStartsAt);
   const today = viewDate ?? clockToday;
   const entries = useLiveFoodEntries(userId, today);
-  const history = useLiveFoodHistory(userId);
+  // The ledger, not the catalog-only history: week totals must count every
+  // entry, including worldwide-search and personal foods with no food_id.
+  const history = useLiveFoodLedger(userId);
 
   useEffect(() => {
     const client = createBrowserSupabase();
