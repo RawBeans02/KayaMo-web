@@ -16,12 +16,16 @@ Audit date: 2026-09-18
 Auditor: Claude (Fable 5.1), on evidence from the same-day codebase review
 
 Blocking findings:
-- Production build fails (CSS-module :global selector); committed HEAD imports 11 untracked files
+- [RESOLVED in Phase 0] Production build fails (CSS-module :global selector); committed HEAD imports untracked files
 - Hosted database behind migrations 0018/0021/0022; Lis permission routes 500 in production
 - No error boundary, no 404 page, no monitoring sink
 - No privacy/terms/accessibility routes; landing promises an export that does not exist
 - Lighthouse / Core Web Vitals never measured on a production build
 - Sensitive-column write: users can UPDATE any column of agent_runs, including cost_usd
+
+Phase 0 (2026-09-18, commits d29b30c..789a233) resolved the build blocker and the
+untracked-import blocker, and closed the "scripts write to whatever DATABASE_URL names"
+risk with a loopback guard. The remaining blocking findings stand.
 
 Accepted exceptions / N/A rationale:
 - Native iOS/Android sections: native is deferred; audited only where a rule also binds the web

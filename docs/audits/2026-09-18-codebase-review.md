@@ -47,7 +47,7 @@ in below. P2/P3 findings (236) were not re-checked. Baseline commands were run d
 | `pnpm typecheck` | pass |
 | `pnpm lint` | pass, 1 warning (unused eslint-disable in `packages/ai/src/evals/live.test.ts`) |
 | `pnpm test` | 713 passed, 30 skipped (live-DB and live-eval suites) |
-| `pnpm build` | **fails**: `src/app/glass-materials.module.css:27` `:global(.kgSurface)` is not a pure CSS-module selector |
+| `pnpm build` | **failed** at audit time: `src/app/glass-materials.module.css:27` `:global(.kgSurface)` is not a pure CSS-module selector. Fixed in Phase 0, see below |
 | `pnpm audit --prod` | 0 advisories, 133 dependencies |
 | Playwright smoke/shell/entry/metadata, Chromium | 14/14 against `next dev`; server logged `Lis permission read failed (PGRST205)` twice |
 | Untracked files imported by tracked code | 11 (`git ls-files` empty; importers tracked) |
@@ -344,3 +344,50 @@ Code actions: everything in Ship blockers, the confirmed-defects table, and Phas
 13. Which jurisdictions' privacy law applies to the global launch, and who reviews the drafts?
 14. Is `contact@kayamo.ph` (Open Food Facts user agent) and `kayamo.ph` (API origin allow-list)
     still owned?
+
+## Phase 0 outcome — 2026-09-18
+
+Phase 0 ran on this branch. Eight commits, `d29b30c` through `789a233`.
+
+Resolved:
+
+- **Build failure.** `glass-materials.module.css` became `glass-materials.css`, a
+  plain global stylesheet imported last from `globals.css`. The premise behind the
+  module was tested and disproved: `backdrop-filter` survives the Tailwind pipeline,
+  and all five material tiers ship intact in `.next/static/css`. Verified in the
+  browser against the production server, including the reduced-transparency toggle.
+- **Untracked imports.** Fourteen files plus three one-line export additions
+  (`@kayamo/ui` exports map, `@kayamo/food/search-ui`, `@kayamo/offline`) are tracked.
+  Proved by stashing everything else and running the suite on the bare commit:
+  typecheck, lint, build and 713 unit tests all pass.
+- **Working tree.** 89 entries became eight self-contained commits: build repair,
+  dependency remediation, nutrition correctness, global-direction tests, motion,
+  e2e specs, design docs, project docs, repository hygiene.
+- **Scripts that could write to production.** `requireDatabaseUrl` now refuses a
+  non-loopback host unless `KAYAMO_ALLOW_REMOTE_DB=1`. `web-ai-allowance.mjs` and
+  `run-disposable-db-tests.mjs` are gone.
+- **Repository hygiene.** `next-env.d.ts` untracked; raw drops and tooling output
+  ignored; `.claude/launch.json` corrected from port 3012 to 3002.
+
+Verification on the final tree: typecheck, lint, 713 unit tests, `test:security`,
+production build and `pnpm audit --prod` all pass. 36 guest-safe Playwright tests
+pass on Chromium.
+
+Two things Phase 0 found that the review did not:
+
+- **The e2e suite cannot run against a production build.** A leftover `next start`
+  on port 3002 was reused by Playwright and 16 of 22 tests failed. The cause is
+  `src/app/api/demo/route.ts:24`, `secure: process.env.NODE_ENV === 'production'`:
+  over plain HTTP the guest cookie is rejected, so the demo never reaches `/today`.
+  Correct on real HTTPS, but the production-build e2e job planned for Phase 2 needs
+  HTTPS or a cookie accommodation. Set `reuseExistingServer: false`, or stop stray
+  servers, before trusting a local run.
+- **`gym_knowledge_base_v1/` at the repo root is not a duplicate of `data/gym/`.**
+  It is newer and richer: its `BUILD_SUMMARY.json` carries `app_workflow_steps`,
+  `app_builder_actions`, `app_ai_session_rules` and `app_rest_timer_rules`, and
+  exercise flags differ. The build scripts read `data/gym/csv`, so nothing consumes
+  it. The path is ignored, not deleted. Promoting it is a content decision.
+
+Not done in Phase 0, deliberately: nothing is pushed, and the two migration runners
+are untouched because that interacts with the hosted-schema and package-ownership
+decisions in Phase 1.
