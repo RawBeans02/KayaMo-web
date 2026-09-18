@@ -13,6 +13,11 @@ export default defineConfig({
   // OTP and fail as "Could not complete local sign-in." Hosted runs skip
   // those specs, so they may use Playwright's default worker count.
   workers: hostedBaseURL ? undefined : 1,
+  // `trace: 'on-first-retry'` records nothing when retries is 0, which it was,
+  // so no CI failure ever had a trace. One retry in CI turns the setting on and
+  // separates a flake from a failure in the report; locally a failure stays a
+  // failure so it is noticed.
+  retries: process.env.CI ? 1 : 0,
   use: {
     baseURL,
     trace: 'on-first-retry',

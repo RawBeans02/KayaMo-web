@@ -34,7 +34,6 @@ const describeLive = isLisEvalConfigured() ? describe : describe.skip;
 const RECORDING = Boolean(process.env.LIS_EVAL_RECORD?.trim());
 
 if (!isLisEvalConfigured()) {
-  // eslint-disable-next-line no-console -- the only useful thing a skip can say.
   console.info(`[lis-eval] live tier skipped: ${lisEvalSkipReason()}`);
 }
 
