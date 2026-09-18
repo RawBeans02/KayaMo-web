@@ -4,4 +4,6 @@
 /* Liquid Glass loads after the legacy layer so its tokens win. */
 @import './glass.css';
 @import '@kayamo/ui/web-motion.css';
+/* Material tiers load last so a tier wins over base component styling. */
+@import './glass-materials.css';
 @source "../**/*.{ts,tsx}";

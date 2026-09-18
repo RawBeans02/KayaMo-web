@@ -1,0 +1,15 @@
+.section { margin: 1.5rem; padding: 1.5rem; border: 1px solid var(--color-line); border-radius: 20px; background: var(--color-surface); color: var(--color-text); }
+.section h2 { font-size: 1.5rem; font-weight: 650; margin: 0 0 .5rem; }
+.section h3 { font-weight: 650; margin: 0 0 .5rem; }
+.section p { margin: .5rem 0 1rem; line-height: 1.5; }
+.section a { text-decoration: underline; }
+.form, .actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; }
+.form label { display: flex; flex: 1 1 14rem; min-width: 0; flex-direction: column; gap: .5rem; }
+.form input, .form select { min-width: 0; width: 100%; min-height: 44px; padding: .65rem .75rem; border: 1px solid var(--color-line-strong); border-radius: 12px; background: var(--color-surface); color: inherit; font: inherit; }
+.note { color: var(--color-muted); font-size: .875rem; }
+.results { list-style: none; padding: 0; margin: 0; max-height: 24rem; overflow-y: auto; }
+.results button { display: flex; flex-direction: column; text-align: left; gap: .3rem; width: 100%; padding: .85rem .25rem; border-bottom: 1px solid var(--color-line); background: transparent; color: inherit; overflow-wrap: anywhere; }
+.results span { color: var(--color-muted); font-size: .875rem; }
+.review { border-top: 1px solid var(--color-line); padding-top: 1rem; margin-top: 1rem; }
+.section :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+@media (max-width: 480px) { .section { margin: .75rem; padding: 1rem; } }

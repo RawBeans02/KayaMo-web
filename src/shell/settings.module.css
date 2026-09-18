@@ -3,12 +3,11 @@
  * Grouped list cards in the iOS Settings shape: a kgPanel with 6px padding,
  * 56px rows inside it, hairlines between rows. Nothing here redeclares a
  * glass recipe — the panels compose `kgPanel` / `kgPanelStrong` from
- * glass-materials.module.css, which is the only place `backdrop-filter`
- * survives this repo's CSS pipeline.
+ * glass-materials.css.
  *
- * Class names deliberately avoid the substrings `card`, `panel` and
- * `section`: the compatibility bridge in glass-materials targets those and
- * would stack a second blur on surfaces that already have one.
+ * Keep class names clear of substrings that src/app/botanical.css overrides
+ * by `[class*=…]` (see its 48 bridge selectors). Those are scheduled to move
+ * into their owning modules; until they do, a careless name inherits them.
  */
 
 .page {

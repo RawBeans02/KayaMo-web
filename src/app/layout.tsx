@@ -3,8 +3,6 @@ import type { ReactNode } from 'react';
 import { Manrope } from 'next/font/google';
 import { PRIVATE_ROBOTS, SITE_URL } from '@/lib/site-metadata';
 import './globals.css';
-// Glass materials live in a module: the globals pipeline strips backdrop-filter.
-import './glass-materials.module.css';
 
 // Display face for titles and numerals. System SF carries the UI text.
 const manrope = Manrope({

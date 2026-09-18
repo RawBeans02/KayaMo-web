@@ -1,4 +1,5 @@
 export const PACKAGE = '@kayamo/offline';
+export { createLocalGoalPlan, type CreateGoalPlanInput } from './goal-plan';
 
 export { backoffMs } from './backoff';
 export {
