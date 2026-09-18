@@ -152,9 +152,7 @@ html[data-kayamo-web] body {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.45),
     0 8px 24px var(--accent-glow);
-  transition:
-    transform 120ms var(--ease-glass),
-    opacity var(--swap) linear;
+  transition: opacity var(--swap) linear;
 }
 
 .kgGhost {
@@ -175,23 +173,15 @@ html[data-kayamo-web] body {
   font-weight: 600;
   cursor: pointer;
   box-shadow: inset 0 0 0 1px var(--stroke);
-  transition:
-    transform 120ms var(--ease-glass),
-    background var(--swap) linear;
+  transition: background var(--swap) linear;
 }
 
-.kgAccent:active,
-.kgGhost:active {
-  transform: scale(0.97);
-}
-
+/* Press feedback comes from @kayamo/ui/web-motion.css, once, for every
+   interactive element. These pills used to add their own transform: scale(0.97)
+   on top of that contract's scale: 0.98, so a press shrank twice. */
 .kgAccent:disabled {
   opacity: 0.45;
   cursor: default;
-}
-
-.kgAccent:disabled:active {
-  transform: none;
 }
 
 .kgGhost:hover {
@@ -278,10 +268,12 @@ html[data-kayamo-web] body {
   animation: kgRise var(--rise) var(--ease-glass) both;
 }
 
+/* The ring follows the element's own shape. This rule used to set
+   border-radius: 4px, so every pill snapped square the moment it took
+   keyboard focus. Outlines follow border-radius in every current engine. */
 html[data-kayamo-web] :focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
-  border-radius: 4px;
 }
 
 /* ── Accessibility ───────────────────────────────────────────
@@ -300,10 +292,6 @@ html[data-kayamo-web] :focus-visible {
     scroll-behavior: auto !important;
   }
 
-  html[data-kayamo-web] .kgAccent:active,
-  html[data-kayamo-web] .kgGhost:active {
-    transform: none;
-  }
 }
 
 /* Frostier, not transparent — raise opacity and drop the blur. */
@@ -427,24 +415,7 @@ html[data-kayamo-web] {
   mask-image: linear-gradient(to bottom, transparent 0, #000 28px);
 }
 
-/* ── §1 Response ─────────────────────────────────────────────
-   Press feedback is the foundation everything else builds on, so it is a
-   baseline for every interactive element — not something each component
-   remembers to add. Elements that own a richer press state override this. */
-html[data-kayamo-web] :is(button, a[href], [role='button'], summary):active {
-  transform: scale(0.98);
-}
-
-html[data-kayamo-web] :is(button, a[href], [role='button'], summary) {
-  transition: transform 120ms var(--ease-glass);
-}
-
-html[data-kayamo-web] :is(button, a[href], [role='button']):disabled:active {
-  transform: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html[data-kayamo-web] :is(button, a[href], [role='button'], summary):active {
-    transform: none;
-  }
-}
+/* Press feedback: see @kayamo/ui/web-motion.css. A second copy lived here with
+   transform: scale(0.98) and its own transition; both fired on every press, and
+   because the two selectors had equal specificity the later transition list won
+   and the transform snapped instead of animating. One contract now. */

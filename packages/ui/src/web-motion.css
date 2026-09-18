@@ -8,7 +8,9 @@ html[data-kayamo-web] {
 }
 html[data-kayamo-web]
   :is(button, a[href], summary, [role='button'], input, select, textarea) {
-  transition-property: opacity, scale;
+  /* This is the only press contract; component stylesheets do not add their
+     own transforms. background-color is here so hover fills still fade. */
+  transition-property: opacity, scale, background-color;
   transition-duration: var(--duration-fast);
   transition-timing-function: var(--motion-rest);
 }
