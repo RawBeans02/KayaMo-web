@@ -19,6 +19,7 @@ export function LoginView({ localDev }: { localDev: boolean }) {
       <LoginTheme />
       <header className={styles.nav}>
         <Link href="/" className={styles.wordmark} aria-label="KayaMo home">
+          <span className={styles.wordmarkTile} aria-hidden="true" />
           KayaMo
         </Link>
         <div className={styles.navActions}>
@@ -30,7 +31,7 @@ export function LoginView({ localDev }: { localDev: boolean }) {
         </div>
       </header>
       <div className={styles.shell}>
-        <section className={styles.signIn} aria-labelledby="login-title">
+        <section className={`${styles.signIn} kgSurface`} aria-labelledby="login-title">
           <h1 id="login-title">
             {locale === 'en' ? 'Sign in to KayaMo.' : 'Tuloy ka sa KayaMo.'}
           </h1>
@@ -55,7 +56,7 @@ export function LoginView({ localDev }: { localDev: boolean }) {
           </details>
         </section>
         <aside className={styles.welcome} aria-label="Welcome to KayaMo">
-          <p className={styles.eyebrow}>Small steps. One day at a time.</p>
+          <p className={`kgEyebrow ${styles.eyebrow}`}>Small steps. One day at a time.</p>
           <h2>
             A little more room
             <br />
