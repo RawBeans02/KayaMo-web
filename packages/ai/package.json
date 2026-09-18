@@ -13,8 +13,8 @@
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "eval:live": "KAI_EVAL_LIVE=1 vitest run src/evals/live.test.ts",
-    "eval:record": "KAI_EVAL_LIVE=1 KAI_EVAL_RECORD=1 vitest run src/evals/live.test.ts"
+    "eval:live": "LIS_EVAL_LIVE=1 vitest run src/evals/live.test.ts",
+    "eval:record": "LIS_EVAL_LIVE=1 LIS_EVAL_RECORD=1 vitest run src/evals/live.test.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2",
