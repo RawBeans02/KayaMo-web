@@ -86,8 +86,9 @@ Things only the owner can do. Most of the release is waiting on these.
       digest. 2026-09-18.
 - [ ] **Add `/privacy`, `/terms` and `/accessibility` routes** and link them.
       Nothing in the app links to any policy today.
-- [ ] **Fix the export claim.** The landing promises data export; Settings says
-      it is unavailable; the draft privacy notice forbids implying it exists.
+- [x] **Fix the export claim.** The landing promised data export while Settings
+      says it is unavailable and the draft privacy notice forbids implying it
+      exists. The claim now says the diary is readable offline. 2026-09-19.
 - [x] **Fix the safety classifier.** Eating patterns need totality or a span of
       days; Filipino and Taglish banks for all four categories; household abuse
       covered. 2026-09-18. The Filipino bank was written from everyday usage and
@@ -118,26 +119,51 @@ Things only the owner can do. Most of the release is waiting on these.
       2026-09-18.
 - [ ] **Settle the migration runners.** Two exist with divergent bookkeeping and
       the Drizzle journal stops at 0019 with no snapshots.
-- [ ] **Take Gym and Todos off the rail and the Life hub** per the v1 scope
-      decision. `src/shell/desktop-shell.tsx` still lists `/gym` in `RAIL` and
-      both routes in `LIFE_ROUTES`.
+- [x] **Take Gym and Todos off the rail and the Life hub** per the v1 scope
+      decision. 2026-09-19. **Owner call left open:** Home still deep-links to
+      both (Open planner, View all N tasks, the Movement glance card, a workout
+      Next-up) and the log sheet's Workout kind opens `/gym`. The decision named
+      the rail and the hub; say whether those entry points go too.
 
 ## Design-system work deferred out of Phase 4
 
-- **Retire the `--color-*` alias bridge per surface.** glass.css maps the legacy
-  names onto glass tokens so every surface adopts the palette at once. About 360
-  reads remain (desk.module.css 93, shell.module.css 62, command-log 44,
-  proposal-card 43, login 23). Each surface converts to the glass names when it is
-  restyled in Phase 5; the bridge goes when the count is zero.
-- **GoalFlow's own module.** journey/goal-flow.tsx still imports the 4,817-line
-  phone stylesheet, which is why an 83 KB CSS chunk ships on the goals route. The
-  editor rewrite on glass primitives (Phase 5) retires that import.
-- **Desk stylesheet split by owner**, per surface as each is restyled, under the
-  CSS-reference test. Usage map in commit 2ced47a.
+- **Retire the `--color-*` alias bridge.** glass.css maps the legacy names onto
+  glass tokens. Phase 5 converted 220 reads (the food modules, command-log,
+  provenance, worldwide search, the shared ProposalCard, login, the Lis modules).
+  What remains: `src/shell/shell.module.css` (60 reads, the theme toggle and
+  sign-out button; the rest of that file is dead since the glass shell) and the
+  `--km-*` half of the bridge, which only the Lis modules' comments mention.
+  The bridge cannot go until the Tailwind primitives below are on glass, because
+  tokens.css defines the same names as the cream palette and the bridge is what
+  makes Toast and Button render glass today.
+- ~~GoalFlow's own module~~ done 2026-09-19: `botanical/goal-editor.tsx` with its
+  own module; `journey/` and `screens/kayamo-app.module.css` deleted.
+- ~~Desk stylesheet split by owner~~ done 2026-09-19: `food/diary.module.css`,
+  `food/catalog.module.css`, `desk/desk.module.css`, pixel-identical.
 - **tokens.css's cream `@theme` palette.** It remains the Tailwind theme source for
-  the six `@kayamo/ui` primitives and is pinned by tokens.test.ts; the glass bridge
-  overrides its runtime values. Consolidating the two into one palette is churn
-  until the primitives themselves are on glass.
+  the `@kayamo/ui` primitives still in use on the web (Toast, Button) and is pinned
+  by tokens.test.ts; the glass bridge overrides its runtime values. Restyle those
+  two on glass tokens, then retire tokens.css's palette and the bridge together.
+
+## Design work deferred out of Phase 5
+
+- **Home's deep links into Gym and Todos** and the log sheet's Workout kind: an
+  owner call, above.
+- **`/settings`:** the export and delete rows are inert placeholders that say so;
+  demo guests see a companion editor whose save always fails. Both need a product
+  decision (ship export, or remove the row) before the route is finished.
+- **`/today`:** the review's four items (Next-up ordering, `en-PH` formatting in
+  four places, `<a href>` hard navigations, 5 s polling) are untouched.
+- **`shell.module.css`** still styles only the theme toggle and sign-out button;
+  the other 570 lines are the pre-glass shell and can go with the bridge.
+- **Grove** is text-only on the web by decision (2026-09-19); a tree illustration
+  is not planned for v1.
+- **Lis `happy` face** has no trigger on the web; the rule (a milestone the person
+  chose) is kept in mus-faces.ts for when Goals renders Lis.
+- **Guest 401s.** In the demo, the Lis screen and the dev gallery log repeated
+  401 responses from the API in the console (permission and conversation reads
+  for a guest). Harmless, pre-existing, noisy; gate those fetches on a signed-in
+  user.
 
 ## Structural work deferred out of Phase 3
 
@@ -189,9 +215,9 @@ Recorded so the refactor's remaining shape is knowable. None blocks the ship.
 
 Recorded so nobody treats them as missing work.
 
-- Gym and Todos. They function but render the legacy desk skin, so they come
-  off the rail and the Life hub for v1. Not yet implemented; see the code action
-  below.
+- Gym and Todos. They function but render the legacy desk skin, so they are
+  off the rail and the Life hub for v1 (done 2026-09-19). Home's deep links and
+  the log sheet's Workout kind still reach them; see the code action above.
 - Native iOS and Android. `../kayamo-mobile` owns that.
 - Circles, and any social surface.
 - Billing. There is no paywall, so the monetization items in the Build SOT are

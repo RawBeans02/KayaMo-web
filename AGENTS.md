@@ -57,32 +57,36 @@ where they are load-bearing, and renaming them is a migration, not a cleanup:
 | Table `lis_companion_profile` | lis | already current |
 | Stored origin `coco_confirmed`, env `MUS_*_MODEL` | coco / mus | frozen; stored data |
 
-Lis has a character: the four expressions in `public/botanical/mus-*.webp` ship.
-Non-shaming rules still apply, and concern is for wellbeing, never for a missed
-log.
-
-Nothing renders them yet, and two committed things assert the opposite:
-`e2e/mus.spec.ts:73-78` checks that no mascot image appears, and
-`packages/features/src/botanical/icons.tsx:41` says the assistant has no mascot.
-Both are accurate about today's code. When the wiring lands, update them in the
-same commit and say in the message that the product decision changed — that is
-not the same as bending a test to get to green.
+Lis has a character: the four expressions in `public/botanical/mus-*.webp` ship,
+drawn by `packages/features/src/mus/lis-face.tsx` on the Lis surface (thread
+header and rail). Which face shows is decided in `mus/mus-faces.ts` and nowhere
+else: neutral at rest, thinking while a reply is in flight, concerned when a
+reply's register or its safety verdict calls for it. Concern is for wellbeing,
+never for a missed log, an over-target day or a gap; `happy` is for a milestone
+the person chose and has no web trigger yet. In navigation and on buttons Lis
+is the `lis` sparkle icon, not the face. `e2e/mus.spec.ts` asserts a face is
+present; do not add an expressions gallery.
 
 ## Design
 
-One visual system: **Liquid Glass**. `src/app/glass.css` owns the tokens,
-`src/app/glass-materials.css` the `kg*` material tiers. Botanical is the palette
-source only; `src/app/botanical.css` retires once its `[class*=]` overrides move
-into the modules that own those classes. Do not start a third system.
+One visual system: **Liquid Glass**. `packages/ui/src/glass.css` owns the
+tokens (`--ink`, `--ink2`, `--stroke`, `--stroke2`, `--glass`, `--glass-strong`,
+`--field`, `--accent`, `--bg0`) and the type and radius scale;
+`packages/ui/src/glass-materials.css` owns the `kg*` material tiers. New styles
+read those tokens directly. The `--color-*` names still resolve through an alias
+bridge in glass.css for `src/shell/shell.module.css` and the Tailwind primitives
+in `packages/ui`; do not add new reads of them. `src/app/botanical.css` is gone
+(2026-09-18). Do not start a third system.
 
 ## Scope for v1
 
-**Decision, not yet implemented:** Gym and Todos come off the rail and the Life
-hub for the first release. They work, but they render the legacy desk skin. As
-of this writing `src/shell/desktop-shell.tsx` still lists `/gym` in `RAIL` and
-both routes in `LIFE_ROUTES`; removing them is scheduled with the rest of the
-route work. Do not convert them to glass just to keep them visible, and do not
-re-surface them later without converting them first.
+**Decision, implemented 2026-09-19:** Gym and Todos are off the rail and the
+Life hub for the first release. Both routes still resolve and work, but they
+render the legacy desk skin (`packages/features/src/desk/desk.module.css`). Home
+still deep-links to both (Open planner, View all tasks, the Movement glance) and
+the log sheet's Workout kind opens Gym; whether those entry points stay is an
+owner call recorded in `docs/RELEASE.md`. Do not convert them to glass just to
+keep them visible, and do not re-surface them without converting them first.
 
 ## Next.js
 

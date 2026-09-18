@@ -511,3 +511,39 @@ One process note: the shell spec run during the final verification is
 authenticated and used the local skip-login against the hosted project, which the
 release checklist asks the owner to stop pointing local development at. The
 account it used already existed from earlier runs; nothing new was created.
+
+## Phase 5 outcome — 2026-09-19
+
+Eight commits, `97bf106` through `8da9f52`, on Fable 5.1 at high effort. Per-route
+finish, in the order the review's table listed the routes.
+
+- **Rail and Life hub.** Gym and Todos are off both (owner decision). The Life hub
+  lost its roadmap paragraph; the landing's export promise is replaced with what is
+  true. Left as an owner call: Home still deep-links to both routes and the log
+  sheet's Workout kind opens Gym.
+- **Grove.** Stored keys are shown as words (Young tree, Milestone completed); the
+  streak card and the total card now tell one story about quiet days; the Life Story
+  panel, which nothing on the web could populate, is gone. Text-only by decision.
+- **Login.** The last public entry page off the system: one kgSurface card over the
+  landing's wash, Manrope titles, glass tokens throughout, and the shared form no
+  longer draws a card the route has to undo.
+- **Lis has a face.** The product decision changed and two committed assertions
+  changed with it, stated in the commit: `e2e/mus.spec.ts` now asserts a neutral,
+  decorative face is present, and `icons.tsx` no longer says there is no mascot.
+  `LisFace` draws one of the four shipped expressions; `mus-faces.ts` decides which,
+  reading the reply's tone and safety verdict that nothing had read before.
+- **Goal editor rewritten** on glass with its own module. Every pinned string kept;
+  the phone flow, its 4,817-line stylesheet and the dialog's substring bridge are
+  deleted. One regression caught before commit: a bare `display: flex` on the
+  dialog modifier overrode the UA's hidden state for closed dialogs.
+- **Food surfaces.** The 3,055-line desk stylesheet is split by owner into diary,
+  catalog and the legacy desk; 220 `--color-*` reads across the food modules, the
+  shared ProposalCard and the Lis modules are converted to glass tokens. Both steps
+  were checked as identity transformations against six full-page pixel baselines.
+  The review's "zero glass primitives" line predates Phase 4's override migration;
+  the surfaces already rendered the glass look, and now the stylesheets say so.
+  The shared ProposalCard is restyled onto glass (radius, pills, inset strokes).
+
+Not done, and recorded in `docs/RELEASE.md`: the `--color-*` bridge (blocked on
+Toast and Button), `/settings` placeholders, the `/today` items, and the owner call
+on Home's links into Gym and Todos.

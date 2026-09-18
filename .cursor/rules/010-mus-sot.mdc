@@ -27,9 +27,10 @@ it is the platform-familiar pattern and it creates, it does not navigate to a ne
 area. Do not add a sixth destination.
 
 **Out of web v1:** Gym and Todos. They work but render the legacy desk skin, so
-the decision is to take them off the rail and the Life hub until they are
-converted to glass. Not yet implemented — the rail still shows Movement. Their
-routes keep resolving; only the links go.
+they are off the rail and the Life hub (done 2026-09-19) until they are
+converted to glass. Their routes keep resolving. Home still deep-links to both
+and the log sheet's Workout kind opens Gym; that is an open owner call in
+docs/RELEASE.md.
 
 ## Product rules
 
