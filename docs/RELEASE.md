@@ -122,6 +122,29 @@ Things only the owner can do. Most of the release is waiting on these.
       decision. `src/shell/desktop-shell.tsx` still lists `/gym` in `RAIL` and
       both routes in `LIFE_ROUTES`.
 
+## Structural work deferred out of Phase 3
+
+Recorded so the refactor's remaining shape is knowable. None blocks the ship.
+
+- **Server LWW consolidation.** The update-if-older → insert → re-read sequence is
+  copied about sixteen times across `packages/db/src/queries/*` with three competing
+  generics and one behavioural divergence (a live-unique conflict returns `row: null`
+  and the offline push silently drops the write). Consolidating it changes server
+  write semantics and is guarded only by CI's live integration suite, so it is its own
+  gated slice, not a side effect of a refactor pass.
+- **`packages/offline/src/db.ts` split** (1,074 lines: row types, Dexie schema,
+  connection lifecycle, scope transitions, legacy migration). The push manifest
+  removed the worst of the hand-maintained lists; the split is now churn without a
+  behaviour change and can follow when a schema change needs it.
+- **`packages/ai/src/contracts.ts` split** (761 lines, five concerns). No ship impact.
+- **Desk stylesheet split by owner.** The usage map is in commit 2ced47a: 56 classes
+  belong to the diary alone, 63 to the two catalog tables, 65 to the todos surface,
+  62 to the gym, 15 shared. Each surface takes its own module when it is restyled in
+  Phase 4, under the new CSS-reference test.
+- **Desk decomposition** (todos-desk 1,116 lines, gym-desk 946). Both surfaces are off
+  the v1 rail; decompose them when they are converted, not before.
+- **Lis thread split** (mus-thread 937 lines) with its own module. Design-phase work.
+
 ## Follow-ups opened by Phase 2
 
 - `script-src` Content-Security-Policy with per-request nonces, Report-Only first.

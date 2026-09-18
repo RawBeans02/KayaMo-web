@@ -439,3 +439,40 @@ Not done in Phase 2, and recorded in `docs/RELEASE.md`: legal routes, the landin
 export claim, the cached USDA audit, e2e against a production build, preview
 smoke and Lighthouse, the migration-runner decision, and taking Gym and Todos off
 the rail. All belong to later phases.
+
+## Phase 3 outcome — 2026-09-18
+
+Seven commits, `8ac2efe` through `0347ca6`, on Fable 5.1 at high effort. Each slice
+was committed independently green: typecheck, lint, the affected unit suites, and
+where the change could show, a production build and the guest e2e specs.
+
+- **Features entry boundary.** Root code imports `@kayamo/features/desktop` only; a
+  test scans `src/` and fails on the main barrel. Measured on the production build,
+  this bought 4 KB of JS and 2.4 KB of CSS, not the phone stylesheet the review
+  attributed to it: webpack had already tree-shaken the phone screens, and
+  `kayamo-app.module.css` ships because `journey/goal-flow.tsx` imports it directly.
+  That is a goal-editor problem for Phase 4, and the review's attribution was wrong.
+- **API route kit.** `requireUser`, `json`, `jsonError`, `errorCode` in `src/lib/api.ts`;
+  nine routes migrated; every authenticated response now `private, no-store`.
+  Consolidating the env-number parser surfaced a shared latent defect: `Number('')`
+  is 0, so a blank budget variable would have zeroed the budget. Blank now means unset.
+- **Dead code.** Thirty-one files and the resolver's model-estimate rung, each
+  confirmed unreachable; the two name collisions the search produced were run down by
+  hand. The rung contradicted the constitution and had no caller.
+- **One SDK touchpoint.** `callOpenAIObject` in `router.ts` is the only import of the
+  model SDK; the chat provider calls it and now runs the nutrition-key guard. Writing
+  the provider's first unit test found that the guard threw on the chat schema's
+  transform; it now reads the schema's input side, which is the right question.
+- **Sync push manifest.** A 26-case switch and a 26-branch predicate became one
+  `satisfies Record<SyncableTable, PushHandler>` manifest, exhaustive at compile time,
+  with a test pinning it to the sync contract. 146 offline tests unchanged.
+- **Desk stylesheet.** 114 rules whose every class was unused removed (3,689 → 2,939
+  lines), plus a test that every `styles.<name>` reference across `packages/features`
+  and `src` is defined in its module. It corrects one review finding: the sign-out
+  button's class does exist.
+- **Lis thread** moved from the phone `screens/` directory to `mus/`.
+
+Deferred, with reasons, in `docs/RELEASE.md`: server LWW consolidation (server write
+semantics, CI-only guard, its own gated slice), the `db.ts` and `contracts.ts` splits,
+the desk stylesheet split by owner (per surface in Phase 4), and decomposing the two
+desks that are off the v1 rail.
