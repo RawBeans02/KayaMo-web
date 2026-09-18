@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { loadMusContextPermissions, updateMusContextPermission } from '../mus/context-permissions';
 import { BotanicalIcon } from '../botanical/icons';
 import { useMusBusy, useMusSelection } from '../mus/mus-selection';
-import { MusThread } from '../screens/mus-thread';
+import { MusThread } from '../mus/mus-thread';
 import { useDeskClock } from './use-desk-clock';
 import styles from './mus-rail.module.css';
 

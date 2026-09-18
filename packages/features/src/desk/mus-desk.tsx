@@ -1,7 +1,7 @@
 'use client';
 
 import { MusRail } from './mus-rail';
-import { MusThread } from '../screens/mus-thread';
+import { MusThread } from '../mus/mus-thread';
 import { useDeskClock } from './use-desk-clock';
 import styles from './mus-desk.module.css';
 

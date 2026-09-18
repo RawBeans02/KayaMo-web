@@ -36,6 +36,6 @@ export {
   foodHistorySince,
   type FoodHistoryRange,
 } from './food/filter-food-history';
-export { MusThread } from './screens/mus-thread';
+export { MusThread } from './mus/mus-thread';
 export { installDemoCatalog } from './food/demo-catalog';
 export { GoalFlow } from './journey/goal-flow';

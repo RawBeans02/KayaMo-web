@@ -35,19 +35,19 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { apiFetch } from '../api/api-origin';
 import { BotanicalIcon } from '../botanical/icons';
 import { hydrateFoodHistory } from '../food/hydrate-food-history';
-import { applyMusProposal } from '../mus/apply-proposal';
+import { applyMusProposal } from './apply-proposal';
 import {
   readActiveMusConversationId,
   writeActiveMusConversationId,
-} from '../mus/conversation-session';
-import { musReplyFromApi } from '../mus/mus-reply';
-import { setMusBusy } from '../mus/mus-selection';
+} from './conversation-session';
+import { musReplyFromApi } from './mus-reply';
+import { setMusBusy } from './mus-selection';
 import {
   musMayWrite,
   permModuleForAction,
   readMusPermLevels,
-} from '../mus/perm-levels';
-import { previewMusProposal } from '../mus/proposal-preview';
+} from './perm-levels';
+import { previewMusProposal } from './proposal-preview';
 import { applyCaptureItems } from '../todo/apply-plan';
 import {
   imageObservationSchema,
