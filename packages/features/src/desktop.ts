@@ -1,3 +1,17 @@
+/**
+ * The web app's entry into @kayamo/features. Root code imports from here and
+ * never from the main barrel: that barrel re-exports the phone screens
+ * (HomeScreen, MusHabitat, DayStrip and their 4,817-line stylesheet), and a
+ * client import of it pulls all of that into every route's graph even when
+ * nothing renders it. A test under src/lib pins the rule.
+ */
+// Shell plumbing the root app composes.
+export { SyncStatusBar } from './sync/sync-status-bar';
+export { configureApiClient } from './api/api-origin';
+export { installDemoCatalog } from './food/demo-catalog';
+export { LOCAL_DEV_EMAIL } from './auth/local-dev';
+export { LoginForm } from './auth/login-form';
+
 export {
   DESK_LOCALES,
   readDeskLocale,

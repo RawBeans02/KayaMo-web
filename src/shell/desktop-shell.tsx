@@ -9,7 +9,7 @@ import {
   prefillLogPalette,
   type BotanicalIconName,
 } from '@kayamo/features/desktop';
-import { SyncStatusBar } from '@kayamo/features';
+import { SyncStatusBar } from '@kayamo/features/desktop';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
