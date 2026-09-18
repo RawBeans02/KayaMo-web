@@ -174,7 +174,7 @@ export function MusRail({
           aria-expanded={permsOpen}
         >
           <span className={styles.mono}>
-            {permsOpen ? '▾' : '▸'} {guest ? 'Sign in to manage access' : loaded ? `${readable} of 4 context areas readable` : 'Context access unverified'}
+            {permsOpen ? '▾' : '▸'} {guest ? 'Sign in to manage access' : loaded ? `${readable} of ${PERMISSION_ROWS.length} context areas readable` : 'Context access unverified'}
           </span>
         </button>
         {permsOpen ? (

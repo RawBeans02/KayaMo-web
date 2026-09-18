@@ -152,6 +152,11 @@ test.describe('public entry pages', () => {
     await expect(
       page.getByRole('alert').filter({ hasText: 'This link has expired' }),
     ).toBeVisible();
+    // The alert is server-rendered, so its visibility says nothing about
+    // whether React has attached the onChange that dismisses it. Wait for the
+    // form's post-mount marker; WebKit in CI typed before hydration and lost
+    // the event.
+    await expect(page.locator('[data-hydrated]')).toBeVisible();
     await page
       .getByRole('textbox', { name: 'Email', exact: true })
       .fill('entry-review@example.com');

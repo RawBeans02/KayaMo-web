@@ -12,11 +12,14 @@ test.describe('Lis rail vocabulary', () => {
     page,
   }) => {
     test.setTimeout(90_000);
+    // Must match musContextPermissionsSchema exactly: it is .strict(), so a
+    // mock missing a domain fails to parse and every row renders "unverified".
     let permissions = {
       physical_self: false,
       goals_planning: false,
       memory: false,
       faith: false,
+      identity: false,
     };
     let failWrite = false;
     await page.route('**/api/mus/permissions', async (route) => {
