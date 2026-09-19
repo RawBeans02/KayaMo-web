@@ -4,6 +4,7 @@ import { listLocalCompanionEvents, listLocalGoals, listLocalTasks } from '@kayam
 import { useCallback } from 'react';
 import { useDeskClock } from '../desk/use-desk-clock';
 import { ProgressRing } from './charts';
+import { CountUp } from './count-up';
 import { BotanicalIcon } from './icons';
 import {
   achievementStandings,
@@ -121,7 +122,7 @@ export function BotanicalGrove({ userId }: { userId: string }) {
     { value: run, unit: run === 1 ? 'day' : 'days', label: 'in a row with a confirmed step' },
     { value: planted, unit: `of ${cells.length}`, label: 'days with a step this month' },
     { value: dates.size, unit: '', label: 'days with a step, in total' },
-    { value: `${reached}`, unit: `of ${standings.length}`, label: 'milestones reached' },
+    { value: reached, unit: `of ${standings.length}`, label: 'milestones reached' },
   ];
 
   const records = [
@@ -196,7 +197,7 @@ export function BotanicalGrove({ userId }: { userId: string }) {
             {readings.map((reading) => (
               <div key={reading.label} className={`${progressStyles.reading} kgSurface`} role="listitem">
                 <span className={`${progressStyles.readingNum} kgNum`}>
-                  {reading.value}
+                  <CountUp value={reading.value} />
                   {reading.unit ? (
                     <span className={progressStyles.readingUnit}>{reading.unit}</span>
                   ) : null}

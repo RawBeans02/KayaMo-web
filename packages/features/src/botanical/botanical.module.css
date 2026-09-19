@@ -242,6 +242,32 @@
 .planRow + .planRow {
   box-shadow: inset 0 1px 0 var(--stroke2);
 }
+/* Rows rise into place in order; past the sixth they simply appear, so a
+   long plan never waits on its own entrance. */
+.planRow,
+.priorities li {
+  animation: kgRise var(--rise) var(--ease-glass) both;
+}
+.planRow:nth-child(2),
+.priorities li:nth-child(2) {
+  animation-delay: 40ms;
+}
+.planRow:nth-child(3),
+.priorities li:nth-child(3) {
+  animation-delay: 80ms;
+}
+.planRow:nth-child(4),
+.priorities li:nth-child(4) {
+  animation-delay: 120ms;
+}
+.planRow:nth-child(5),
+.priorities li:nth-child(5) {
+  animation-delay: 160ms;
+}
+.planRow:nth-child(6),
+.priorities li:nth-child(6) {
+  animation-delay: 200ms;
+}
 .planText {
   flex: 1;
   min-width: 0;
@@ -396,6 +422,7 @@
     box-shadow 160ms linear;
 }
 .check:checked {
+  animation: kgPop 320ms var(--ease-spring) both;
   background-color: var(--accent);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.6 8.4l2.9 2.9 5.9-6.6' fill='none' stroke='%2304120a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;

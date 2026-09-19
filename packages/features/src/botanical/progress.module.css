@@ -166,6 +166,7 @@
 }
 
 .badge {
+  animation: kgRise var(--rise) var(--ease-glass) both;
   display: flex;
   align-items: center;
   gap: 12px;

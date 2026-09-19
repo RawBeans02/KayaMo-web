@@ -11,6 +11,7 @@ import {
 import { useCallback } from 'react';
 import { useDeskClock } from '../desk/use-desk-clock';
 import { BarChart } from './charts';
+import { CountUp } from './count-up';
 import { BotanicalIcon, type BotanicalIconName } from './icons';
 import {
   countByDay,
@@ -181,7 +182,7 @@ export function BotanicalLife({ userId }: { userId: string }) {
         {readings.map((reading) => (
           <div key={reading.label} className={`${progressStyles.reading} kgSurface`} role="listitem">
             <span className={`${progressStyles.readingNum} kgNum`}>
-              {data ? reading.value : '–'}
+              {data ? <CountUp value={reading.value} /> : '–'}
               {reading.unit ? <span className={progressStyles.readingUnit}>{reading.unit}</span> : null}
             </span>
             <span className={progressStyles.readingLabel}>{reading.label}</span>

@@ -2,7 +2,7 @@
 
 import { BotanicalIcon } from '@kayamo/features/desktop';
 import { createLocalTask } from '@kayamo/offline';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import styles from './glass-shell.module.css';
 
 export const OPEN_SHEET_EVENT = 'kayamo:open-log-sheet';
@@ -59,6 +59,9 @@ export function LogSheet({
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The sheet leaves the way it came: closing keeps it mounted for the exit
+  // animation, then the parent is told it is closed.
+  const [closing, setClosing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const fieldId = useId();
 
@@ -81,17 +84,30 @@ export function LogSheet({
     return () => window.clearTimeout(timer);
   }, [open]);
 
+  const leave = useCallback(() => {
+    if (closing) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      onOpenChange(false);
+      return;
+    }
+    setClosing(true);
+    window.setTimeout(() => {
+      setClosing(false);
+      onOpenChange(false);
+    }, 200);
+  }, [closing, onOpenChange]);
+
   useEffect(() => {
     if (!open) return;
     function onKey(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         event.preventDefault();
-        onOpenChange(false);
+        leave();
       }
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, onOpenChange]);
+  }, [open, leave]);
 
   if (!open) return null;
 
@@ -102,7 +118,7 @@ export function LogSheet({
   function close() {
     setDraft('');
     setError(null);
-    onOpenChange(false);
+    leave();
   }
 
   async function submit(event: React.FormEvent) {
@@ -138,6 +154,7 @@ export function LogSheet({
       <button
         type="button"
         className={styles.scrim}
+        data-closing={closing ? 'true' : undefined}
         aria-label="Close"
         onClick={close}
       />
@@ -146,6 +163,7 @@ export function LogSheet({
         aria-modal="true"
         aria-label="Log"
         className={`${styles.sheet} kgHeavy`}
+        data-closing={closing ? 'true' : undefined}
       >
         <div className={styles.grabber} aria-hidden="true" />
 
@@ -227,13 +245,24 @@ export function GlassToast({
   onUndo?: () => void;
   onDone: () => void;
 }) {
+  // Each toast is its own mount (the shell keys it by text), so `leaving`
+  // starts false for every new one without a reset inside the effect.
+  const [leaving, setLeaving] = useState(false);
   useEffect(() => {
+    const fade = window.setTimeout(() => setLeaving(true), 3960);
     const timer = window.setTimeout(onDone, 4200);
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(fade);
+      window.clearTimeout(timer);
+    };
   }, [text, onDone]);
 
   return (
-    <div role="status" className={`${styles.toast} kgPanelStrong kgFloat`}>
+    <div
+      role="status"
+      className={`${styles.toast} kgPanelStrong kgFloat`}
+      data-leaving={leaving ? 'true' : undefined}
+    >
       <span style={{ color: 'var(--accent-text)', display: 'grid' }}>
         <BotanicalIcon name="checkCircle" size={20} weight="fill" />
       </span>
