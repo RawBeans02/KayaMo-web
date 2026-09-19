@@ -18,7 +18,9 @@
     "./mus-server": "./src/mus/server-context.ts",
     "./mus-respond": "./src/mus/respond-handler.ts",
     "./mus-plan-server": "./src/mus/server-plan.ts",
-    "./app-shell.module.css": "./src/screens/kayamo-app.module.css"
+    "./icons": "./src/botanical/icons.tsx",
+    "./login-form": "./src/auth/login-form.tsx",
+    "./desk-locale": "./src/i18n/desk-locale.ts"
   },
   "scripts": {
     "lint": "eslint src",

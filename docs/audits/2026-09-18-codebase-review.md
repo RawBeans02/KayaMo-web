@@ -547,3 +547,35 @@ finish, in the order the review's table listed the routes.
 Not done, and recorded in `docs/RELEASE.md`: the `--color-*` bridge (blocked on
 Toast and Button), `/settings` placeholders, the `/today` items, and the owner call
 on Home's links into Gym and Todos.
+
+## Phase 6 outcome — 2026-09-19
+
+Six commits on Fable 5.1 at high effort, after the owner cleared the blockers
+the same day: the hosted database was ten migrations behind (0013–0019,
+0021–0023), not three as the checklist said, and was repaired and pushed with
+the Supabase CLI after backups; local development moved to a local Supabase in
+Docker; the hosted test account and its rows are gone; the legal identity was
+given.
+
+- **Home stands alone.** Every link into Gym and Todos is gone (owner decision),
+  the log sheet offers Task and Meal.
+- **Legal pages published as drafts.** `/privacy`, `/terms`, `/accessibility` from
+  the drafts with the owner's facts; every placeholder resolved into what is true
+  today; linked from the landing, login and Settings; in the sitemap.
+- **CI runs the suite against the production build** in a second job; the guest
+  cookie is `Secure` by request protocol, not by NODE_ENV, so that job's demo
+  works and production stays `Secure`.
+- **One migration runner.** drizzle-kit, its config, scripts and the stale
+  journal are removed.
+- **Bundle and Lighthouse.** The landing shipped 465 KB of gzipped JavaScript
+  because the desktop barrel came in through an icon import; public pages now
+  use leaf entries (197 KB) and a test pins it, a budget spec holds every public
+  page and Home in the production job, and the guest catalog fetch that produced
+  a console 401 on every Home visit is gated on a session. Lighthouse figures in
+  `docs/RELEASE.md`.
+- **USDA cache audit:** zero cached rows on the hosted catalog; nothing to fix.
+
+Left, and recorded: Home on mobile still loads 467 KB of shared app JavaScript;
+the hosted preview smoke and a Lighthouse run on the real deployment wait on
+the Vercel environment; the legal texts need professional review before the
+draft banner comes off.

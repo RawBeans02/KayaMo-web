@@ -1,6 +1,7 @@
 'use client';
 
-import { LOCAL_DEV_EMAIL, LoginForm as SharedLoginForm } from '@kayamo/features/desktop';
+import { LOCAL_DEV_EMAIL } from '@kayamo/features/auth';
+import { LoginForm as SharedLoginForm } from '@kayamo/features/login-form';
 
 const PORTS = {
   afterAuthPath: '/today',

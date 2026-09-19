@@ -26,9 +26,20 @@ export async function catalogFromCache(): Promise<CatalogFood[]> {
   );
 }
 
-/** Pulls visible foods into Dexie so Cmd+K / catalog screens share one cache. */
+/**
+ * Pulls visible foods into Dexie so Cmd+K / catalog screens share one cache.
+ *
+ * Only for a signed-in session. A guest has no session, so the request would go
+ * out with the anon key and come back 401 from RLS on every Home and Lis visit
+ * (Lighthouse counted it as a console error); the demo catalog is already in
+ * Dexie, and the callers re-read the cache either way.
+ */
 export async function hydrateVisibleCatalog(): Promise<CatalogFood[]> {
   const client = createBrowserSupabase();
+  const {
+    data: { session },
+  } = await client.auth.getSession();
+  if (!session) return [];
   const overlay = readVerifyOverlay();
   const rows = await listVisibleFoods(client);
   const ids = rows.map((row) => row.id);

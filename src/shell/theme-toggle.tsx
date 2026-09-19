@@ -1,7 +1,7 @@
 'use client';
 
 import { toggleKayamoTheme } from './theme';
-import { BotanicalIcon } from '@kayamo/features/desktop';
+import { BotanicalIcon } from '@kayamo/features/icons';
 import styles from './shell.module.css';
 
 export function ThemeToggle() {

@@ -109,9 +109,11 @@ Things only the owner can do. Most of the release is waiting on these.
 - [x] **Fix the Verify provenance rewrite.** A local verification keeps the base
       confidence, and an overlaid row logs `resolved_via: 'user'`. One test that
       pinned the 1.00 was corrected as a stated product decision. 2026-09-18.
-- [ ] **Audit cached USDA branded rows.** Rows cached before the per-100g fix
-      hold values divided by serving size, and `cacheOnFirstHit` returns an
-      existing row forever, so they will not self-correct.
+- [x] **Audit cached USDA branded rows.** Checked read-only on the hosted
+      catalog 2026-09-19: zero `usda_fdc` rows are cached (40 `ph_core`, 19
+      `off`), so nothing pre-dates the per-100g fix and nothing needs
+      correcting. Re-check once the USDA key is replaced and the first lookups
+      land; `cacheOnFirstHit` still returns an existing row forever.
 - [x] **Run e2e against a production build.** Done 2026-09-19: a
       `production-e2e` CI job builds with `next build --webpack`, serves it with
       `next start`, and runs the whole suite on three engines
@@ -122,8 +124,27 @@ Things only the owner can do. Most of the release is waiting on these.
       Authenticated specs self-skip there (the local skip-login is a
       development-only route). Still owed: no e2e exercises the AI routes
       authenticated.
-- [ ] **Add preview smoke, Lighthouse and a bundle budget.** No production bundle
-      has ever been measured.
+- [~] **Add preview smoke, Lighthouse and a bundle budget.** Measured 2026-09-19
+      against the local production build (`next build` + `next start`, not the
+      hosted preview, which needs the Vercel environment first):
+
+      | Page | Perf | A11y | Best | SEO | LCP | CLS | TBT |
+      | --- | --- | --- | --- | --- | --- | --- | --- |
+      | Landing, mobile | 98 | 100 | 100 | 100 | 2.4 s | 0 | 60 ms |
+      | Landing, desktop | 100 | 100 | 100 | 100 | 0.5 s | 0 | 0 |
+      | Privacy, mobile | 96 | 100 | 100 | 100 | 2.4 s | 0 | 150 ms |
+      | Login, desktop | 99 | 100 | 100 | 63* | 1.0 s | 0 | 10 ms |
+      | Home (demo), desktop | 98 | 100 | 100 | 63* | 1.0 s | 0.02 | 10 ms |
+      | Home (demo), mobile | 77 | 100 | 100 | 63* | 4.8 s | 0.06 | 260 ms |
+
+      *SEO 63 is the `noindex` on private pages, by design. Before the fix the
+      landing shipped 465 KB of gzipped JavaScript because its icons came
+      through the desktop barrel (mobile perf 81, LCP 4.4 s); it is 197 KB now.
+      `e2e/bundle-budget.spec.ts` holds every public page and Home to a ceiling
+      in the production-build CI job. Still owed: Home on mobile (467 KB of
+      shared app JavaScript, LCP 4.8 s throttled) needs the Lis thread and the
+      palette split out of the first load; the hosted preview smoke and a
+      Lighthouse run on the real deployment once the Vercel environment is set.
 - [x] **Add `pnpm check:copy` to CI.** Also: a concurrency group, a read-only
       token, one retry in CI so traces record, and the report kept on failure.
       2026-09-18.
@@ -173,10 +194,10 @@ Things only the owner can do. Most of the release is waiting on these.
   is not planned for v1.
 - **Lis `happy` face** has no trigger on the web; the rule (a milestone the person
   chose) is kept in mus-faces.ts for when Goals renders Lis.
-- **Guest 401s.** In the demo, the Lis screen and the dev gallery log repeated
-  401 responses from the API in the console (permission and conversation reads
-  for a guest). Harmless, pre-existing, noisy; gate those fetches on a signed-in
-  user.
+- ~~Guest 401s~~ fixed 2026-09-19: the catalog hydration ran for guests with the
+  anon key and RLS answered 401 on every Home and Lis visit; it now returns
+  early without a session. (The Settings companion editor still calls the
+  profile route for a guest; that panel is on the Settings list above.)
 
 ## Structural work deferred out of Phase 3
 

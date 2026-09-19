@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { ThemeToggle } from '@/shell/theme-toggle';
 import { useSearchParams } from 'next/navigation';
-import { useDeskLocale } from '@kayamo/features/desktop';
+import { useDeskLocale } from '@kayamo/features/desk-locale';
 import { LoginForm } from './login-form';
 import { LoginTheme } from './login-theme';
 import { LEGAL_ROUTES } from '@/lib/legal';

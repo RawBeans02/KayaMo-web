@@ -21,4 +21,23 @@ describe('root app entry into @kayamo/features', () => {
     );
     expect(offenders).toEqual([]);
   });
+
+  // The web entry pulls the whole app (tables, the Lis thread, the palette,
+  // Supabase, Dexie) into the client graph. A public page, which a visitor
+  // pays for before deciding anything, imports leaf entries instead: on
+  // 2026-09-19 the landing shipped 465 KB of gzipped JavaScript because its
+  // icons came from the desktop barrel.
+  it('public pages never import the desktop barrel', () => {
+    const publicDirs = ['src/app/landing', 'src/app/login', 'src/app/legal', 'src/app/privacy', 'src/app/terms', 'src/app/accessibility'];
+    const publicFiles = [
+      ...publicDirs.flatMap((dir) => sourceFiles(join(process.cwd(), dir))),
+      join(process.cwd(), 'src/shell/theme-toggle.tsx'),
+      join(process.cwd(), 'src/app/not-found.tsx'),
+      join(process.cwd(), 'src/app/error.tsx'),
+    ];
+    const offenders = publicFiles.filter((file) =>
+      /from\s+['"]@kayamo\/features\/desktop['"]/.test(readFileSync(file, 'utf8')),
+    );
+    expect(offenders).toEqual([]);
+  });
 });

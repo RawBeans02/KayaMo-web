@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ThemeToggle } from '@/shell/theme-toggle';
-import { BotanicalIcon } from '@kayamo/features/desktop';
+import { BotanicalIcon } from '@kayamo/features/icons';
 import { StartDemo } from './start-demo';
 import { LEGAL_ROUTES } from '@/lib/legal';
 import styles from './landing.module.css';
