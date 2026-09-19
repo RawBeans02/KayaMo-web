@@ -62,7 +62,17 @@ Things only the owner can do. Most of the release is waiting on these.
       deployment.
 - [ ] **Confirm rollback.** Check the recorded deployment is still retained in
       Vercel and rehearse restoring it.
-- [ ] **Approve the preview** after the hosted smoke below.
+- [ ] **Approve the preview** after the hosted smoke below. The automated part
+      ran 2026-09-19 against the PR #1 preview through the automation bypass
+      (see *Add preview smoke* under Code actions); still owner-only: sign in
+      with a real inbox, send Lis one message and get a reply, open Profile.
+- [ ] **Move the Vercel functions next to the database.** The preview's
+      functions run in `iad1` (Washington) while the KayaMo Supabase project is
+      in `ap-south-1` (Mumbai) and the audience is in the Philippines, so every
+      server round trip crosses two oceans: opening the demo took 3.5 s on
+      WebKit from Manila in the smoke. Set the function region to `bom1` in
+      Vercel's project settings (or `"regions": ["bom1"]` in `vercel.json`)
+      before promotion; one region is enough for the plan in use.
 
 ## Code actions
 
@@ -143,8 +153,37 @@ Things only the owner can do. Most of the release is waiting on these.
       `e2e/bundle-budget.spec.ts` holds every public page and Home to a ceiling
       in the production-build CI job. Still owed: Home on mobile (467 KB of
       shared app JavaScript, LCP 4.8 s throttled) needs the Lis thread and the
-      palette split out of the first load; the hosted preview smoke and a
-      Lighthouse run on the real deployment once the Vercel environment is set.
+      palette split out of the first load.
+
+      Hosted preview smoke, 2026-09-19, PR #1 preview with the Vercel
+      environment set and the automation bypass in place. Every public route
+      answered 200, `/today` signed out 307 to login, an unknown path a real
+      404; HSTS, the CSP frame-ancestors rule, nosniff, Referrer-Policy and
+      Permissions-Policy were present; the preview is `noindex` and its
+      robots disallows, which is right for a preview and explains the SEO
+      score below; the guest cookie is `Secure`, `HttpOnly`, `SameSite=Lax`;
+      the API routes answer 401 signed out. The Playwright suite in hosted
+      mode: Chromium clean; Firefox and WebKit failed only on timing (the demo
+      opens in about 3.5 s there against a 5 s expectation), and pass with the
+      hosted-mode timeouts in `playwright.config.ts`. A WebKit-only failure of
+      `web-release.spec.ts` turned out to be the rail's route prefetches being
+      cancelled by the spec's own hard navigation, which WebKit reports as an
+      "access control" rejection; the spec now lets them settle first, and the
+      markup assertion is unchanged. Lighthouse on the preview, run idle (an
+      earlier pass ran while the e2e suite was hammering the same machine and
+      is not recorded):
+
+      | Page | Perf | A11y | Best | SEO | LCP | CLS | TBT |
+      | --- | --- | --- | --- | --- | --- | --- | --- |
+      | Landing, mobile | 97 | 100 | 100 | 58* | 2.1 s | 0 | 140 ms |
+      | Landing, desktop | 100 | 100 | 100 | 58* | 0.6 s | 0 | 0 |
+      | Privacy, mobile | 97 | 100 | 100 | 58* | 1.2 s | 0 | 210 ms |
+      | Login, mobile | 99 | 100 | 100 | 54* | 1.3 s | 0 | 130 ms |
+      | Home (demo), desktop | 92 | 100 | 100 | 54* | 1.1 s | 0.02 | 60 ms |
+      | Home (demo), mobile | 69 | 100 | 100 | 54* | 4.2 s | 0.06 | 480 ms |
+
+      *The preview is `noindex`, so SEO is meaningless there; production keeps
+      the local numbers' meaning. Home on mobile stays the open item above.
 - [x] **Add `pnpm check:copy` to CI.** Also: a concurrency group, a read-only
       token, one retry in CI so traces record, and the report kept on failure.
       2026-09-18.
@@ -264,12 +303,17 @@ Recorded so the refactor's remaining shape is knowable. None blocks the ship.
 ## Verification before promotion
 
 - [ ] Typecheck, lint, unit tests, `test:security`, production build, `pnpm audit --prod`
-- [ ] Full Playwright suite, three engines, against a production build
+- [x] Full Playwright suite, three engines, against a production build (CI's
+      `production-e2e` job, green on PR #1; and in hosted mode against the
+      preview, 2026-09-19)
 - [ ] Database integration suite against a disposable Supabase
-- [ ] Lighthouse mobile and desktop on the preview: performance, accessibility,
-      best practices, SEO, LCP, INP, CLS, TBT, bundle sizes
+- [x] Lighthouse mobile and desktop on the preview: performance, accessibility,
+      best practices, SEO, LCP, INP, CLS, TBT, bundle sizes (2026-09-19, table
+      under *Add preview smoke*; INP is not measured by a lab run)
 - [ ] Manual screen-reader pass and native browser zoom to 200%
-- [ ] Hosted smoke: sign-in, demo, log a food, Lis replies, sign out
+- [~] Hosted smoke: demo, log a food and the guest AI boundary ran under
+      Playwright on the preview 2026-09-19; sign-in, a Lis reply and sign out
+      are the owner's manual pass
 - [ ] Apex and www redirect, HTTPS, and the production canonical
 
 ## Out of scope for v1
