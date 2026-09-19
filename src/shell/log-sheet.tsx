@@ -7,7 +7,7 @@ import styles from './glass-shell.module.css';
 
 export const OPEN_SHEET_EVENT = 'kayamo:open-log-sheet';
 
-export type LogKind = 'task' | 'meal' | 'workout';
+export type LogKind = 'task' | 'meal';
 
 const KINDS: Array<{
   id: LogKind;
@@ -27,12 +27,6 @@ const KINDS: Array<{
     placeholder: 'What did you eat?',
     chips: ['Coffee', 'Rice bowl', 'Salad'],
   },
-  {
-    id: 'workout',
-    label: 'Workout',
-    placeholder: 'What did you do?',
-    chips: ['Walk 30 min', 'Push day', 'Stretch'],
-  },
 ];
 
 export function openLogSheet(kind: LogKind = 'task'): void {
@@ -43,9 +37,10 @@ export function openLogSheet(kind: LogKind = 'task'): void {
  * The one create surface, reachable from anywhere: the `+` in the phone tab bar
  * and the Log button in the desktop header.
  *
- * Task writes straight to the local planner. Meal and Workout hand off to the
- * surfaces that already own that data rather than duplicating their logic —
- * the sheet is a router with a text field, not a second food logger.
+ * Task writes straight to the local planner. Meal hands off to the food
+ * palette, which owns catalog resolution — the sheet is a router with a text
+ * field, not a second food logger. A Workout kind opened the Gym desk until
+ * 2026-09-19; Gym is off the v1 rail, so the sheet no longer offers it.
  */
 export function LogSheet({
   userId,
@@ -53,14 +48,12 @@ export function LogSheet({
   onOpenChange,
   onToast,
   onMeal,
-  onWorkout,
 }: {
   userId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onToast: (text: string, undo?: () => void) => void;
   onMeal: (draft: string) => void;
-  onWorkout: () => void;
 }) {
   const [kind, setKind] = useState<LogKind>('task');
   const [draft, setDraft] = useState('');
@@ -120,11 +113,6 @@ export function LogSheet({
     if (kind === 'meal') {
       close();
       onMeal(text);
-      return;
-    }
-    if (kind === 'workout') {
-      close();
-      onWorkout();
       return;
     }
 
@@ -219,13 +207,7 @@ export function LogSheet({
           ) : null}
 
           <button type="submit" className="kgAccent" disabled={!canAdd}>
-            {kind === 'task'
-              ? busy
-                ? 'Adding…'
-                : 'Add task'
-              : kind === 'meal'
-                ? 'Find this food'
-                : 'Open workout'}
+            {kind === 'task' ? (busy ? 'Adding…' : 'Add task') : 'Find this food'}
           </button>
           <button type="button" className={styles.sheetCancel} onClick={close}>
             Cancel

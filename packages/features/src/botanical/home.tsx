@@ -94,7 +94,6 @@ export function BotanicalHome({ userId }: { userId: string }) {
   const nextMeta = leadBlock
     ? leadBlock.end_min - leadBlock.start_min + ' min · Scheduled'
     : 'No time set · Your daily plan';
-  const nextIsWorkout = leadBlock?.source_table === 'workouts';
   const doneCount = tasks.filter((task) => task.completed_at).length;
 
   /* ── Glance figures, read straight from confirmed records ────────── */
@@ -268,12 +267,8 @@ export function BotanicalHome({ userId }: { userId: string }) {
               <p>
                 {tasks.length
                   ? 'Your scheduled tasks are complete. You can leave it here, or add something new.'
-                  : 'Capture something that matters to you. Set a time in the full planner when you need one.'}
+                  : 'Capture something that matters to you. One small step is enough to begin.'}
               </p>
-              <a href="/todos" className="kgGhost">
-                Open planner
-                <BotanicalIcon name="arrow" size={18} />
-              </a>
             </div>
           ) : (
             <>
@@ -287,17 +282,12 @@ export function BotanicalHome({ userId }: { userId: string }) {
                       <p className={styles.nextUpTitle}>{nextTitle}</p>
                       <p className={styles.nextUpMeta}>{nextMeta}</p>
                     </div>
-                    <div className={styles.nextUpActions}>
-                      {nextIsWorkout ? (
-                        <a
-                          className="kgAccent"
-                          href="/gym"
-                          aria-label={'Start next step: ' + nextTitle}
-                        >
-                          Start
-                          <BotanicalIcon name="play" size={14} weight="fill" />
-                        </a>
-                      ) : leadTask ? (
+                    {/* Only a task can be started here. A workout block or a block
+                        with no task behind it is shown, not acted on: the surfaces
+                        that own those are off the v1 rail (owner decision,
+                        2026-09-19), and Home does not link into them. */}
+                    {leadTask ? (
+                      <div className={styles.nextUpActions}>
                         <button
                           className="kgAccent"
                           type="button"
@@ -310,24 +300,8 @@ export function BotanicalHome({ userId }: { userId: string }) {
                           Start
                           <BotanicalIcon name="play" size={14} weight="fill" />
                         </button>
-                      ) : (
-                        <a
-                          className="kgAccent"
-                          href="/todos"
-                          aria-label={'Start next step: ' + nextTitle}
-                        >
-                          Start
-                          <BotanicalIcon name="play" size={14} weight="fill" />
-                        </a>
-                      )}
-                      <a
-                        className={`${styles.overflow} kgGhost`}
-                        href="/todos"
-                        aria-label="Open the full planner"
-                      >
-                        <BotanicalIcon name="more" size={20} />
-                      </a>
-                    </div>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               )}
@@ -357,15 +331,7 @@ export function BotanicalHome({ userId }: { userId: string }) {
                       >
                         <BotanicalIcon name="next" size={18} />
                       </button>
-                    ) : (
-                      <a
-                        href={block.source_table === 'workouts' ? '/gym' : '/todos'}
-                        className={styles.iconButton}
-                        aria-label={'Open ' + block.title}
-                      >
-                        <BotanicalIcon name="next" size={18} />
-                      </a>
-                    )}
+                    ) : null}
                   </li>
                 ))}
                 {unscheduled.map((task) => (
@@ -453,12 +419,9 @@ export function BotanicalHome({ userId }: { userId: string }) {
               <p className={styles.muted}>Your daily tasks will appear here.</p>
             )}
             {tasks.length > 5 && (
-              <a href="/todos" className={styles.tool}>
-                <span>
-                  <strong>View all {tasks.length} tasks</strong>
-                </span>
-                <BotanicalIcon name="next" size={18} />
-              </a>
+              <p className={styles.muted}>
+                {tasks.length - 5} more in your plan.
+              </p>
             )}
             <div className={styles.actions}>
               <button
@@ -495,13 +458,10 @@ export function BotanicalHome({ userId }: { userId: string }) {
                 : 'Nothing logged yet'}
             </span>
           </a>
-          <a className={`${styles.glance} kgSurface`} href="/gym">
+          <section className={`${styles.glance} kgSurface`} aria-label="Movement">
             <span className={styles.glanceHead}>
               <BotanicalIcon name="workout" size={20} />
               Movement
-              <span className={styles.caret}>
-                <BotanicalIcon name="next" size={18} />
-              </span>
             </span>
             <span className={`${styles.glanceNum} kgNum`}>
               {activeDays}
@@ -518,9 +478,9 @@ export function BotanicalHome({ userId }: { userId: string }) {
                 ? 'Session in progress'
                 : completedWorkouts
                   ? completedWorkouts + ' completed today'
-                  : 'Ready when you are'}
+                  : 'From your recorded sessions'}
             </span>
-          </a>
+          </section>
         </div>
       </div>
       {editing && (

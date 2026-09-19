@@ -104,8 +104,6 @@ export function DesktopShell({
     prefillLogPalette(draft);
   }, []);
 
-  const onWorkout = useCallback(() => router.push('/gym'), [router]);
-
   return (
     <GymSessionProvider userId={userId}>
       <a href="#main-content" className={styles.skip}>
@@ -279,7 +277,6 @@ export function DesktopShell({
           onOpenChange={setSheetOpen}
           onToast={showToast}
           onMeal={onMeal}
-          onWorkout={onWorkout}
         />
 
         {toast ? (
