@@ -588,9 +588,10 @@ bar rebuilt as a composer pill; Goals' empty state turned into the onboarding
 with seeded suggestions and a Home nudge; Life given readings and four
 hand-drawn SVG charts from the local ledgers; Grove given a stage ring, the six
 milestones with dates, records, a labelled month and a trail by month, all from a
-pure progress model with unit tests; a motion vocabulary (route view transitions,
-sheet and toast exits, spring pops, staggered rows, count-ups) that honours
-Reduce Motion; and an audit against the 29-clip checklist, which re-scores what
+pure progress model with unit tests; a motion vocabulary (a route entrance, sheet
+and toast exits, spring pops, staggered rows, count-ups) that honours Reduce
+Motion, after React's ViewTransition cross-fade was reverted for breaking Linux
+WebKit in CI; and an audit against the 29-clip checklist, which re-scores what
 Phases 5–7 changed, scores the nine new sections, and found one spend gap on the
 food-parse route, fixed in the same series. Vocabulary held: milestones are
 reached, never earned; a quiet day is a grey cell.

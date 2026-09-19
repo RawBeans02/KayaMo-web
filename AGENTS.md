@@ -74,10 +74,10 @@ tokens (`--ink`, `--ink2`, `--stroke`, `--stroke2`, `--glass`, `--glass-strong`,
 `--field`, `--accent`, `--bg0`) and the type and radius scale;
 `packages/ui/src/glass-materials.css` owns the `kg*` material tiers. New styles
 read those tokens directly. Motion: `packages/ui/src/web-motion.css` is the only
-press contract; `glass.css` owns the keyframes (`kgRise`, `kgFall`, `kgPop`,
-the `kg-route` view-transition rules) and `--ease-spring` for replies to a
-state change, never for travel. Every shell page wraps its content in
-`src/shell/route-transition.tsx`. Reduce Motion keeps cross-fades and drops
+press contract; `glass.css` owns the keyframes (`kgRise`, `kgFall`, `kgPop`, `kgRouteIn`) and
+`--ease-spring` for replies to a state change, never for travel. Every shell
+page wraps its content in `src/shell/route-transition.tsx`, a CSS entrance;
+do not switch it to React's ViewTransition, which broke Linux WebKit in CI. Reduce Motion keeps cross-fades and drops
 travel; new animations inherit that rule. Progress readings, charts and
 achievements come from `packages/features/src/botanical/progress-model.ts`
 (pure, unit-tested) and `charts.tsx` (hand-drawn SVG, no chart library). The `--color-*` names still resolve through an alias

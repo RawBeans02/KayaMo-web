@@ -193,8 +193,10 @@ browser and by the affected specs on chromium:
   tasks, workouts) from the local ledgers.
 - Grove shows the stage ring, the six milestones with the date each was
   reached, personal records, a labelled month grid and the trail by month.
-- Motion: route transitions, sheet and toast exits, spring pops on state
-  changes, staggered row entrances, count-up readings; all reduced-motion aware.
+- Motion: a route entrance animation, sheet and toast exits, spring pops on
+  state changes, staggered row entrances, count-up readings; all
+  reduced-motion aware. (React's ViewTransition was tried for a cross-fade and
+  reverted: it left Linux WebKit in CI stuck on the shell's loading state.)
 - Audit against the 29-clip checklist: `docs/audits/2026-09-19-build-sot-audit-v2.md`.
   It found one spend gap (`/api/foods/parse` unmetered), fixed the same day.
 

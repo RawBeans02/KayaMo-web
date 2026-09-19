@@ -361,24 +361,13 @@ html[data-kayamo-web] body {
   }
 }
 
-/* ── Route transitions ───────────────────────────────────────
-   Pages wrap their content in <ViewTransition default="kg-route">
-   (src/shell/route-transition.tsx). The old page fades and drops a touch,
-   the new one rises into place; the shell around it does not move. Engines
-   without the API cut, and reduced motion asks for a cut too. */
-::view-transition-old(.kg-route) {
-  animation: kgRouteOut 160ms var(--ease-glass) both;
-}
-
-::view-transition-new(.kg-route) {
+/* ── Route entrance ──────────────────────────────────────────
+   Every shell page wraps its content in .kgRouteEnter
+   (src/shell/route-transition.tsx): the new page rises into place while the
+   shell around it stays put. The old page cuts. Plain CSS on purpose: the
+   View Transitions route (React <ViewTransition>) broke Linux WebKit in CI. */
+.kgRouteEnter {
   animation: kgRouteIn 260ms var(--ease-glass) both;
-}
-
-@keyframes kgRouteOut {
-  to {
-    opacity: 0;
-    transform: translateY(6px);
-  }
 }
 
 @keyframes kgRouteIn {
@@ -410,12 +399,6 @@ html[data-kayamo-web] :focus-visible {
     transition-property: opacity, background-color, border-color, color, box-shadow !important;
     transition-duration: 160ms !important;
     scroll-behavior: auto !important;
-  }
-
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation: none !important;
   }
 }
 
