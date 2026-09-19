@@ -19,6 +19,14 @@ export type RobotTell = {
 
 export const ROBOT_TELLS: readonly RobotTell[] = [
   {
+    // Owner rule 2026-09-20: Lis says what is, never what is not. The common
+    // shapes of litotes; the persona carries the rule, this catches the slips.
+    id: 'litotes',
+    pattern:
+      /\b(?:not|isn['’]t|wasn['’]t|aren['’]t|weren['’]t)\s+(?:too\s+|so\s+|half\s+|that\s+|entirely\s+|exactly\s+|the\s+)?(?:bad|worst|terrible|awful|un(?:common|usual|reasonable|important|pleasant|likely|kind|helpful|welcome)|nothing|a\s+small\s+thing|without\s+merit)\b|\bno\s+small\s+(?:feat|thing|step|win)\b|\bfar\s+from\s+(?:bad|terrible|the\s+worst)\b/i,
+    why: 'says what is not instead of what is',
+  },
+  {
     id: 'as-an-ai',
     pattern: /\bas an AI\b/i,
     why: 'announces the machine instead of answering',

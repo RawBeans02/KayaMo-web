@@ -57,6 +57,10 @@ where they are load-bearing, and renaming them is a migration, not a cleanup:
 | Table `lis_companion_profile` | lis | already current |
 | Stored origin `coco_confirmed`, env `MUS_*_MODEL` | coco / mus | frozen; stored data |
 
+Lis says what is, never what is not: no litotes ("not a bad day"), no irony,
+no sarcasm (owner rule, 2026-09-20). The persona carries it and
+`packages/ai/src/evals/rubric.ts` catches the common shapes as a robot tell.
+
 Lis has a character: the four expressions in `public/botanical/mus-*.webp` ship,
 drawn by `packages/features/src/mus/lis-face.tsx` on the Lis surface (thread
 header and rail). Which face shows is decided in `mus/mus-faces.ts` and nowhere
