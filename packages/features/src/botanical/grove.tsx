@@ -1,21 +1,30 @@
 'use client';
 import type { CompanionEventType, CompanionProgression } from '@kayamo/core';
-import {
-  getLocalCompanionProgression,
-  listLocalCompanionEvents,
-  listLocalTasks,
-  listLocalGoals,
-} from '@kayamo/offline';
+import { listLocalCompanionEvents, listLocalGoals, listLocalTasks } from '@kayamo/offline';
 import { useCallback } from 'react';
 import { useDeskClock } from '../desk/use-desk-clock';
+import { ProgressRing } from './charts';
+import { BotanicalIcon } from './icons';
+import {
+  achievementStandings,
+  bestWeek,
+  countByDay,
+  currentRun,
+  firstDate,
+  inMonth,
+  longDate,
+  longestRun,
+  progressionOf,
+  shortDate,
+  stageProgress,
+} from './progress-model';
 import { useRecords } from './use-records';
 import styles from './botanical.module.css';
+import progressStyles from './progress.module.css';
 
 /**
  * What a person reads for a stored key. The keys are frozen identifiers in the
- * ledger and the progression schema; printing them with the underscores
- * swapped for spaces showed "young tree" and "milestone completed" as if they
- * were sentences. These are the words.
+ * ledger and the progression schema; these are the words.
  */
 const STAGE_LABEL: Record<CompanionProgression['stageKey'], string> = {
   seed: 'Seed',
@@ -40,61 +49,104 @@ function eventLabel(type: string): string {
   return (EVENT_LABEL as Record<string, string>)[type] ?? type.replaceAll('_', ' ');
 }
 
-const day = (iso: string, offset: number) => {
-  const cursor = new Date(iso + 'T12:00:00Z');
-  cursor.setUTCDate(cursor.getUTCDate() + offset);
-  return cursor.toISOString().slice(0, 10);
-};
-
-/**
- * Consecutive days ending today that carry a confirmed step. A day still in
- * progress does not break the run, which is why an empty today falls through
- * to yesterday rather than resetting the count.
- */
-function currentStreak(dates: Set<string>, today: string) {
-  let cursor = dates.has(today) ? today : day(today, -1);
-  let streak = 0;
-  while (dates.has(cursor)) {
-    streak += 1;
-    cursor = day(cursor, -1);
-  }
-  return streak;
-}
-
 function monthCells(dates: Set<string>, today: string) {
   const month = today.slice(0, 7);
-  // Slice rather than split/destructure: the logical date is always YYYY-MM-DD,
-  // and this stays total under noUncheckedIndexedAccess.
   const year = Number(month.slice(0, 4));
   const index = Number(month.slice(5, 7));
-  // Day 0 of month `index` (1-based) is the last day of that month.
   const length = new Date(Date.UTC(year, index, 0)).getUTCDate();
   return Array.from({ length }, (_, i) => {
     const iso = month + '-' + String(i + 1).padStart(2, '0');
-    return { iso, planted: dates.has(iso), today: iso === today };
+    return { iso, day: i + 1, planted: dates.has(iso), today: iso === today };
   });
 }
 
+function monthKey(iso: string): string {
+  return new Date(iso + 'T12:00:00Z').toLocaleDateString('en-PH', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+}
+
+/**
+ * Grove is the record: where you stand, the milestones you have reached,
+ * your personal records, this month day by day, and the trail of every step
+ * you confirmed. It reads only the confirmed ledger. Text and shape, no tree
+ * (decision, 2026-09-19), and nothing here ever goes backwards: a quiet day
+ * is a grey cell, and the run simply starts again.
+ */
 export function BotanicalGrove({ userId }: { userId: string }) {
   const { today } = useDeskClock(userId);
   const load = useCallback(async () => {
-    const [progress, events, tasks, goals] = await Promise.all([
-      getLocalCompanionProgression(userId),
+    const [events, tasks, goals] = await Promise.all([
       listLocalCompanionEvents(userId),
       listLocalTasks(userId),
       listLocalGoals(userId),
     ]);
-    return { progress, events, tasks, goals };
+    return { events, tasks, goals };
   }, [userId]);
   const { data, error, refresh } = useRecords(load);
-  const dates = new Set((data?.events ?? []).map((event) => event.logical_date));
-  const streak = currentStreak(dates, today);
+
+  const events = data?.events ?? [];
+  const eventDates = events.map((event) => event.logical_date);
+  const dates = new Set(eventDates);
+  const byDay = countByDay(eventDates);
+  const progression = progressionOf(events);
+  const stage = stageProgress(progression.totalPoints);
+  const run = currentRun(dates, today);
+  const best = longestRun(dates);
+  const busiest = bestWeek(byDay);
+  const first = firstDate(dates);
   const cells = monthCells(dates, today);
   const planted = cells.filter((cell) => cell.planted).length;
-  const monthName = new Date(today + 'T12:00:00Z').toLocaleDateString('en-PH', {
-    month: 'long',
-    timeZone: 'UTC',
-  });
+  const stepsThisMonth = eventDates.filter((date) => inMonth(date, today)).length;
+  const standings = achievementStandings(events);
+  const reached = standings.filter((row) => row.reachedOn).length;
+
+  const ordered = events
+    .slice()
+    .sort(
+      (a, b) =>
+        b.logical_date.localeCompare(a.logical_date) || b.created_at.localeCompare(a.created_at),
+    );
+  const groups: { month: string; rows: typeof ordered }[] = [];
+  for (const event of ordered) {
+    const month = monthKey(event.logical_date);
+    const last = groups[groups.length - 1];
+    if (last && last.month === month) last.rows.push(event);
+    else groups.push({ month, rows: [event] });
+  }
+
+  const readings = [
+    { value: run, unit: run === 1 ? 'day' : 'days', label: 'in a row with a confirmed step' },
+    { value: planted, unit: `of ${cells.length}`, label: 'days with a step this month' },
+    { value: dates.size, unit: '', label: 'days with a step, in total' },
+    { value: `${reached}`, unit: `of ${standings.length}`, label: 'milestones reached' },
+  ];
+
+  const records = [
+    {
+      label: 'Longest run',
+      value: `${best.length} ${best.length === 1 ? 'day' : 'days'}`,
+      when: best.endedOn ? `ended ${shortDate(best.endedOn)}` : 'no run yet',
+    },
+    {
+      label: 'Busiest week',
+      value: `${busiest.count} ${busiest.count === 1 ? 'step' : 'steps'}`,
+      when: busiest.endedOn ? `week ending ${shortDate(busiest.endedOn)}` : 'no steps yet',
+    },
+    {
+      label: 'First step',
+      value: first ? shortDate(first) : '–',
+      when: first ? longDate(first) : 'still ahead of you',
+    },
+    {
+      label: 'Points, all time',
+      value: String(progression.totalPoints),
+      when: 'from confirmed records only',
+    },
+  ];
+
   return (
     <section className={styles.page} aria-labelledby="grove-title">
       <header className={styles.header}>
@@ -103,7 +155,8 @@ export function BotanicalGrove({ userId }: { userId: string }) {
             Grove
           </h1>
           <p className={styles.lede}>
-            A record of the steps you have confirmed. Quiet days take nothing away.
+            Milestones, records and the trail of what you have done. Quiet days take
+            nothing away.
           </p>
         </div>
       </header>
@@ -121,135 +174,178 @@ export function BotanicalGrove({ userId }: { userId: string }) {
         </p>
       ) : (
         <div className={styles.stack}>
-          <section
-            className={`${styles.streak} kgSurface kgSheen`}
-            aria-label="Days in a row"
-          >
-            <div className={styles.streakBody}>
-              <p className="kgEyebrow">Days in a row</p>
-              <span className={`${styles.streakNum} kgNum`}>
-                {streak}
-                <span className={styles.streakUnit}>
-                  {streak === 1 ? 'day' : 'days'}
+          <section className={`${styles.streak} kgSurface kgSheen`} aria-labelledby="grove-stage-title">
+            <div className={`${styles.streakBody} ${progressStyles.stage}`}>
+              <ProgressRing fraction={stage.fraction} size={72} />
+              <div className={progressStyles.stageBody}>
+                <p className="kgEyebrow" id="grove-stage-title">
+                  Your stage
+                </p>
+                <p className={progressStyles.stageName}>{STAGE_LABEL[stage.current]}</p>
+                <p className={progressStyles.stageNote}>
+                  {stage.next
+                    ? `${progression.totalPoints} points · ${stage.span - stage.into} more to ${STAGE_LABEL[stage.next]}.`
+                    : `${progression.totalPoints} points · the last stage there is.`}{' '}
+                  Points come only from steps you confirmed, and never go down.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <div className={progressStyles.readings} aria-label="Readings" role="list">
+            {readings.map((reading) => (
+              <div key={reading.label} className={`${progressStyles.reading} kgSurface`} role="listitem">
+                <span className={`${progressStyles.readingNum} kgNum`}>
+                  {reading.value}
+                  {reading.unit ? (
+                    <span className={progressStyles.readingUnit}>{reading.unit}</span>
+                  ) : null}
                 </span>
-              </span>
-              <p className={styles.streakNote}>
-                Consecutive days with a confirmed step, counting today if it has one. A
-                quiet day ends the run and takes nothing away from what is recorded.
-              </p>
-            </div>
-          </section>
-          <section
-            className={`${styles.panel} kgSurface`}
-            aria-labelledby="grove-month-title"
-          >
+                <span className={progressStyles.readingLabel}>{reading.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <section className={`${styles.panel} kgSurface`} aria-labelledby="grove-milestones-title">
             <div className={styles.panelHead}>
-              <h2 id="grove-month-title">{monthName}</h2>
+              <h2 id="grove-milestones-title">Milestones</h2>
               <p className={styles.muted}>
-                {planted} of {cells.length} days with a step
+                {reached} of {standings.length} reached
               </p>
             </div>
-            <div
-              className={styles.groveGrid}
-              role="img"
-              aria-label={
-                planted +
-                ' of ' +
-                cells.length +
-                ' days in ' +
-                monthName +
-                ' carry a confirmed step'
-              }
-            >
-              {cells.map((cell) => (
-                <span
-                  key={cell.iso}
-                  className={`${styles.cell} ${
-                    cell.planted
-                      ? styles.cellPlanted
-                      : cell.today
-                        ? styles.cellToday
-                        : ''
-                  }`}
-                />
+            <ul className={progressStyles.badges}>
+              {standings.map((row) => (
+                <li
+                  key={row.key}
+                  className={progressStyles.badge}
+                  data-reached={row.reachedOn ? 'true' : 'false'}
+                  data-achievement={row.key}
+                >
+                  <span className={progressStyles.badgeMark} aria-hidden="true">
+                    <BotanicalIcon
+                      name={row.reachedOn ? 'check' : 'goals'}
+                      size={18}
+                      weight={row.reachedOn ? 'bold' : 'regular'}
+                    />
+                  </span>
+                  <span className={progressStyles.badgeBody}>
+                    <span className={progressStyles.badgeTitle}>{row.title}</span>
+                    <span className={progressStyles.badgeNote}>
+                      {row.reachedOn
+                        ? `Reached ${shortDate(row.reachedOn)}. ${row.description}`
+                        : row.threshold > 1
+                          ? `${row.description} ${row.progress} of ${row.threshold} so far.`
+                          : row.description}
+                    </span>
+                    {!row.reachedOn && row.threshold > 1 ? (
+                      <span className={progressStyles.badgeBar} aria-hidden="true">
+                        <span
+                          className={progressStyles.badgeBarFill}
+                          style={{ width: `${Math.round((row.progress / row.threshold) * 100)}%` }}
+                        />
+                      </span>
+                    ) : null}
+                  </span>
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
+
           <div className={styles.cards}>
-            <section
-              className={`${styles.panel} kgSurface`}
-              aria-labelledby="grove-growth-title"
-            >
-              <h2 id="grove-growth-title">Your growth</h2>
-              <span className={`${styles.stat} kgNum`}>
-                {data.progress.totalPoints}
-                <span className={styles.statUnit}>points</span>
-              </span>
-              <p className={styles.muted}>
-                Stage: {STAGE_LABEL[data.progress.stageKey]}. Based only on confirmed
-                records.
-              </p>
+            <section className={`${styles.panel} kgSurface`} aria-labelledby="grove-month-title">
+              <div className={styles.panelHead}>
+                <h2 id="grove-month-title">{monthKey(today).replace(/ \d{4}$/, '')}</h2>
+                <p className={styles.muted}>
+                  {stepsThisMonth} {stepsThisMonth === 1 ? 'step' : 'steps'} on {planted}{' '}
+                  {planted === 1 ? 'day' : 'days'}
+                </p>
+              </div>
+              <div
+                className={styles.groveGrid}
+                role="img"
+                aria-label={`${planted} of ${cells.length} days this month carry a confirmed step`}
+              >
+                {cells.map((cell) => (
+                  <span
+                    key={cell.iso}
+                    className={`${styles.cell} ${
+                      cell.planted ? styles.cellPlanted : cell.today ? styles.cellToday : ''
+                    }`}
+                  >
+                    {cell.day}
+                  </span>
+                ))}
+              </div>
             </section>
-            <section
-              className={`${styles.panel} kgSurface`}
-              aria-labelledby="grove-days-title"
-            >
-              <h2 id="grove-days-title">Days with a confirmed step</h2>
-              <span className={`${styles.stat} kgNum`}>{dates.size}</span>
-              <p className={styles.muted}>Every such day since you started, in total.</p>
+
+            <section className={`${styles.panel} kgSurface`} aria-labelledby="grove-records-title">
+              <div className={styles.panelHead}>
+                <h2 id="grove-records-title">Your records</h2>
+              </div>
+              <ul className={progressStyles.records}>
+                {records.map((record) => (
+                  <li key={record.label} className={progressStyles.record}>
+                    <span className={progressStyles.recordLabel}>
+                      {record.label}
+                      <span className={progressStyles.recordWhen}>{record.when}</span>
+                    </span>
+                    <span className={`${progressStyles.recordValue} kgNum`}>{record.value}</span>
+                  </li>
+                ))}
+              </ul>
             </section>
           </div>
-          <section
-            className={`${styles.panel} kgSurface`}
-            aria-labelledby="grove-trail-title"
-          >
+
+          <section className={`${styles.panel} kgSurface`} aria-labelledby="grove-trail-title">
             <div className={styles.panelHead}>
               <h2 id="grove-trail-title">Your trail</h2>
+              {events.length ? (
+                <p className={styles.muted}>
+                  {events.length} {events.length === 1 ? 'step' : 'steps'}
+                </p>
+              ) : null}
             </div>
-            {data.events.length === 0 ? (
+            {events.length === 0 ? (
               <div className={styles.empty}>
                 <h3>Your story starts with a step.</h3>
                 <p>
-                  Completed tasks, chosen milestones, and recorded progress will appear
-                  here. Nothing is added just for opening the app.
+                  Tasks you tick off, goal steps you confirm, workouts you finish and food
+                  you log all land here, the day you do them. Nothing is added just for
+                  opening the app.
                 </p>
                 <a href="/today" className="kgGhost">
                   Go to Home
                 </a>
               </div>
             ) : (
-              <ul className={styles.history}>
-                {data.events
-                  .slice()
-                  .sort(
-                    (a, b) =>
-                      b.logical_date.localeCompare(a.logical_date) ||
-                      b.created_at.localeCompare(a.created_at),
-                  )
-                  .map((event) => {
-                    const source =
-                      data.tasks.find((task) => task.id === event.source_id)?.title ??
-                      data.goals.find((goal) => goal.id === event.source_id)?.title ??
-                      null;
-                    const kind = eventLabel(event.event_type);
-                    // With no source to name, the kind IS the headline. Printing it
-                    // again underneath said the same words twice.
-                    return (
-                      <li key={event.id}>
-                        <strong>{source ?? kind}</strong>
-                        <p>
-                          <span>{event.logical_date}</span>
-                          {source ? (
-                            <>
-                              {' · '}
-                              <span>{kind}</span>
-                            </>
-                          ) : null}
-                        </p>
-                      </li>
-                    );
-                  })}
-              </ul>
+              groups.map((group) => (
+                <div key={group.month} className={progressStyles.trailMonth}>
+                  <p className={`kgEyebrow ${progressStyles.trailMonthTitle}`}>{group.month}</p>
+                  <ul className={styles.history}>
+                    {group.rows.map((event) => {
+                      const source =
+                        data.tasks.find((task) => task.id === event.source_id)?.title ??
+                        data.goals.find((goal) => goal.id === event.source_id)?.title ??
+                        null;
+                      const kind = eventLabel(event.event_type);
+                      return (
+                        <li key={event.id}>
+                          <strong>{source ?? kind}</strong>
+                          <p>
+                            <span>{shortDate(event.logical_date)}</span>
+                            {source ? (
+                              <>
+                                {' · '}
+                                <span>{kind}</span>
+                              </>
+                            ) : null}
+                          </p>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))
             )}
           </section>
         </div>

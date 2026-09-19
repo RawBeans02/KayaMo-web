@@ -176,7 +176,7 @@
   box-shadow: inset 0 0 0 1px var(--stroke2);
 }
 
-.badge[data-earned='true'] {
+.badge[data-reached='true'] {
   background: color-mix(in srgb, var(--accent) 12%, var(--glass-strong));
   box-shadow:
     inset 0 1px 0 var(--stroke),
@@ -194,7 +194,7 @@
   color: var(--ink3);
 }
 
-.badge[data-earned='true'] .badgeMark {
+.badge[data-reached='true'] .badgeMark {
   background: var(--accent);
   color: var(--accent-ink);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
@@ -272,6 +272,16 @@
 .recordValue {
   flex: none;
   font-size: 1.25rem;
+}
+
+/* ── Trail, grouped by month ─────────────────────────────────────────── */
+
+.trailMonth + .trailMonth {
+  margin-top: 18px;
+}
+
+.trailMonthTitle {
+  margin: 0 0 2px;
 }
 
 @media (max-width: 900px) {

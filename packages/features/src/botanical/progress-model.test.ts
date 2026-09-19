@@ -85,10 +85,10 @@ describe('achievements', () => {
   it('earns "First step" on the first accepted event and dates it', () => {
     const standings = achievementStandings([event('task_completed', '2026-09-05', 1)]);
     const first = standings.find((row) => row.key === 'first_step')!;
-    expect(first.earnedOn).toBe('2026-09-05');
+    expect(first.reachedOn).toBe('2026-09-05');
     expect(first.progress).toBe(1);
     const ten = standings.find((row) => row.key === 'ten_true_steps')!;
-    expect(ten.earnedOn).toBeNull();
+    expect(ten.reachedOn).toBeNull();
     expect(ten.progress).toBe(1);
     expect(ten.threshold).toBe(10);
   });
@@ -98,7 +98,7 @@ describe('achievements', () => {
       event('task_completed', shiftDay('2026-09-01', i), i + 1),
     );
     const ten = achievementStandings(events).find((row) => row.key === 'ten_true_steps')!;
-    expect(ten.earnedOn).toBe('2026-09-10');
+    expect(ten.reachedOn).toBe('2026-09-10');
     expect(ten.progress).toBe(10);
   });
 
@@ -118,7 +118,7 @@ describe('achievements', () => {
       event('goal_completed', '2026-09-15', 3, 'goals'),
     ];
     const growth = achievementStandings(events).find((row) => row.key === 'sprout_stage')!;
-    expect(growth.earnedOn).toBe('2026-09-08');
+    expect(growth.reachedOn).toBe('2026-09-08');
     expect(growth.progress).toBe(100);
   });
 });

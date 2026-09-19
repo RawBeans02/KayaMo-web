@@ -169,14 +169,14 @@ export const ACHIEVEMENTS: readonly AchievementCopy[] = [
 ];
 
 export type AchievementStanding = AchievementCopy & {
-  earnedOn: string | null;
+  reachedOn: string | null;
   progress: number;
   threshold: number;
 };
 
 /**
- * Each achievement with how far along it is and, once earned, the logical
- * date of the event that earned it. Only events the ledger accepts count
+ * Each achievement with how far along it is and, once reached, the logical
+ * date of the event that reached it. Only events the ledger accepts count
  * (same rule as the points), taken in date order.
  */
 export function achievementStandings(
@@ -207,7 +207,7 @@ export function achievementStandings(
   return definitions.map((definition) => {
     const { rule } = definition;
     let progress = 0;
-    let earnedOn: string | null = null;
+    let reachedOn: string | null = null;
     let points = 0;
     for (const row of ordered) {
       if (rule.kind === 'event_count') progress += 1;
@@ -217,9 +217,9 @@ export function achievementStandings(
         points += COMPANION_EVENT_POINTS[row.event_type as CompanionEventType] ?? 0;
         progress = points;
       }
-      if (earnedOn === null && progress >= rule.threshold) earnedOn = row.logical_date;
+      if (reachedOn === null && progress >= rule.threshold) reachedOn = row.logical_date;
     }
-    return { ...definition, earnedOn, progress: Math.min(progress, rule.threshold), threshold: rule.threshold };
+    return { ...definition, reachedOn, progress: Math.min(progress, rule.threshold), threshold: rule.threshold };
   });
 }
 
