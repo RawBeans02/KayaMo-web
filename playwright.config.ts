@@ -33,6 +33,14 @@ export default defineConfig({
   // separates a flake from a failure in the report; locally a failure stays a
   // failure so it is noticed.
   retries: process.env.CI ? 1 : 0,
+  // Hosted mode runs against a Vercel preview from wherever the runner sits.
+  // Opening the demo there took 3.5 s on WebKit in the 2026-09-19 smoke
+  // (functions in iad1, Supabase in ap-south-1, runner in the Philippines),
+  // so Firefox and WebKit crossed the 5 s default on some attempts while
+  // Chromium never did, and a spec with several page loads ran out of its
+  // 30 s on Firefox. 15 s per expectation and 60 s per test separate a slow
+  // round trip from a failure; the localhost runs, and CI, keep the defaults.
+  ...(hostedBaseURL ? { timeout: 60_000, expect: { timeout: 15_000 } } : {}),
   use: {
     baseURL,
     trace: 'on-first-retry',

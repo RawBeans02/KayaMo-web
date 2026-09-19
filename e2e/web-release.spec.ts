@@ -37,6 +37,12 @@ test('empty remote refresh preserves searchable demo foods and valid shell marku
     status: 200, contentType: 'application/json', body: '[]',
   }));
   await demo(page);
+  // The rail prefetches its routes as soon as Today hydrates. A hard navigation
+  // while those fetches are in flight cancels them, and WebKit reports each
+  // cancelled fetch as an unhandled "due to access control checks" rejection,
+  // which would land in renderingErrors below although nothing rendered wrong.
+  // Letting the prefetches settle first keeps that assertion about markup.
+  await page.waitForLoadState('networkidle');
   const refreshed = page.waitForResponse((response) => new URL(response.url()).pathname === '/rest/v1/foods');
   await page.goto('/foods');
   await (await refreshed).finished();
