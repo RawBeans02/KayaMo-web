@@ -61,6 +61,16 @@
   white-space: nowrap;
   text-decoration: none;
 }
+
+/* Below 900px the shell shows its phone header, which carries its own Ask Lis,
+   and the tab bar carries a Lis tab. Home's own pill made three ways to the
+   same screen, two of them 32px apart. The page keeps its pill only where the
+   phone header is hidden. */
+@media (max-width: 899px) {
+  .ask {
+    display: none;
+  }
+}
 /* Lis's mark on a button: the sparkle icon in an accent circle. The face
    renders on the Lis surface (mus/lis-face.tsx), not on an "Ask Lis" pill. */
 .askMark {
