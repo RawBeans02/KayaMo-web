@@ -579,3 +579,18 @@ Left, and recorded: Home on mobile still loads 467 KB of shared app JavaScript;
 the hosted preview smoke and a Lighthouse run on the real deployment wait on
 the Vercel environment; the legal texts need professional review before the
 draft banner comes off.
+
+## Phase 7 outcome — 2026-09-19
+
+Seven commits on `phase-7/progress-and-motion`, Fable 5.1 at high effort, after
+the owner chose to ship v1 first. The owner's six asks, in order: the capture
+bar rebuilt as a composer pill; Goals' empty state turned into the onboarding
+with seeded suggestions and a Home nudge; Life given readings and four
+hand-drawn SVG charts from the local ledgers; Grove given a stage ring, the six
+milestones with dates, records, a labelled month and a trail by month, all from a
+pure progress model with unit tests; a motion vocabulary (route view transitions,
+sheet and toast exits, spring pops, staggered rows, count-ups) that honours
+Reduce Motion; and an audit against the 29-clip checklist, which re-scores what
+Phases 5–7 changed, scores the nine new sections, and found one spend gap on the
+food-parse route, fixed in the same series. Vocabulary held: milestones are
+reached, never earned; a quiet day is a grey cell.

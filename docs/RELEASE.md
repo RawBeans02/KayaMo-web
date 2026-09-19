@@ -179,6 +179,31 @@ Things only the owner can do. Most of the release is waiting on these.
   by tokens.test.ts; the glass bridge overrides its runtime values. Restyle those
   two on glass tokens, then retire tokens.css's palette and the bridge together.
 
+## Phase 7 — progress, guidance and motion (second release, 2026-09-19)
+
+Built on `phase-7/progress-and-motion` after v1 (PR #1) was frozen for its own
+deploy; it lands as a second release. What it adds, each verified in the
+browser and by the affected specs on chromium:
+
+- The Home capture bar is a glass composer pill matching the Lis composer.
+- Goals' empty state is the onboarding: a three-line guide, five suggestion
+  chips that open the editor seeded, one primary action; Home nudges to the
+  first goal.
+- Life reads back the record: five readings and four SVG charts (steps, food,
+  tasks, workouts) from the local ledgers.
+- Grove shows the stage ring, the six milestones with the date each was
+  reached, personal records, a labelled month grid and the trail by month.
+- Motion: route transitions, sheet and toast exits, spring pops on state
+  changes, staggered row entrances, count-up readings; all reduced-motion aware.
+- Audit against the 29-clip checklist: `docs/audits/2026-09-19-build-sot-audit-v2.md`.
+  It found one spend gap (`/api/foods/parse` unmetered), fixed the same day.
+
+Deferred from Phase 7, recorded in the audit's release decision: product
+analytics (none wired, so the empty-state funnel is unmeasured; needs an owner
+decision on consent), the Home mobile bundle (467 KB; split the Lis thread and
+the palette out of the first load), a retention schedule, a screen-reader pass
+by a person.
+
 ## Design work deferred out of Phase 5
 
 - ~~Home's deep links into Gym and Todos and the log sheet's Workout kind~~
