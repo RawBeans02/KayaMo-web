@@ -127,10 +127,12 @@ Things only the owner can do. Most of the release is waiting on these.
 - [x] **Add `pnpm check:copy` to CI.** Also: a concurrency group, a read-only
       token, one retry in CI so traces record, and the report kept on failure.
       2026-09-18.
-- [ ] **Settle the migration runners.** Decided 2026-09-19: the Supabase CLI
-      history is the only record (seeded by the repair; see the release note).
-      Remaining code work: remove or archive the Drizzle migration path and the
-      stale journal so nothing can write a second history.
+- [x] **Settle the migration runners.** Done 2026-09-19: the Supabase CLI
+      history is the only record (seeded by the repair; see the release note),
+      and the Drizzle runner is gone from the repository: `drizzle-kit`, its
+      config, the `generate`/`migrate`/`db:generate` scripts and the stale
+      `supabase/migrations/meta/` journal. `packages/db/README.md` documents
+      `db push --linked` as the deploy step.
 - [x] **Take Gym and Todos off the rail and the Life hub** per the v1 scope
       decision. 2026-09-19. Home's deep links (Open planner, View all tasks,
       the Movement glance, a workout Next-up) and the log sheet's Workout kind

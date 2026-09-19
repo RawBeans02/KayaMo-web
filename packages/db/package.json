@@ -13,8 +13,6 @@
     "./load-root-env": "./src/load-root-env.ts"
   },
   "scripts": {
-    "generate": "drizzle-kit generate",
-    "migrate": "drizzle-kit migrate",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -31,7 +29,6 @@
   "devDependencies": {
     "@kayamo/config": "workspace:*",
     "@types/node": "^20",
-    "drizzle-kit": "^0.31",
     "eslint": "^9",
     "typescript": "^5",
     "vitest": "^3"

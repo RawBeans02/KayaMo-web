@@ -1,6 +1,6 @@
 # @kayamo/db
 
-Drizzle schema, SQL migrations, RLS, and typed query helpers. The single source of truth for data shape.
+Drizzle schema (for typed queries), hand-written SQL migrations applied by the Supabase CLI, RLS, and typed query helpers. The single source of truth for data shape.
 
 **Built in:** Bundles 0–3 backend foundations
 
@@ -61,10 +61,25 @@ This is an accepted diagnostic-metadata side effect: `server_updated_at` is not 
 sync or conflict cursor, and no forward migration is warranted solely to restore
 those old diagnostic timestamps.
 
-`pnpm db:migrate` is different: Drizzle connects to whatever `DATABASE_URL`
-currently names and applies pending migrations there. Treat it as a deployment
-command when `DATABASE_URL` is remote; inspect the target and obtain explicit
-approval before running it. A local migration reset or passing RLS suite does not
-deploy anything.
+## Deploying a migration
+
+The Supabase CLI is the only migration runner, and its history table on the
+hosted project (`supabase_migrations.schema_migrations`) is the only record.
+Until 2026-09-19 a second runner, `drizzle-kit migrate`, kept its own history in
+`drizzle.__drizzle_migrations` and stopped at 0012 while the files went on to
+0023; that table stays as history and nothing writes to it. The drizzle-kit
+scripts, its config and the stale `supabase/migrations/meta/` journal are gone.
+
+To ship a migration: add a numbered file under `supabase/migrations/`, replay it
+locally with `npx supabase db reset --local` and the suites above, then, linked
+to the hosted project and with a backup taken:
+
+```bash
+npx supabase db push --linked --dry-run
+npx supabase db push --linked
+```
+
+Record the applied set under `docs/releases/`. A local migration reset or passing
+RLS suite does not deploy anything.
 
 This package is consumed by `apps/*`. It must never import from an app.
