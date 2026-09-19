@@ -6,6 +6,21 @@ loadRootEnv();
 const hostedBaseURL = process.env.PLAYWRIGHT_BASE_URL?.trim().replace(/\/$/, '');
 const baseURL = hostedBaseURL || 'http://localhost:3002';
 
+// A Vercel preview sits behind Deployment Protection, which answers every
+// request with a redirect to a Vercel sign-in. Vercel's "Protection Bypass for
+// Automation" secret (project settings → Deployment Protection) lets a test
+// runner through: sent as a header on the first request, with the second
+// header asking Vercel to set the bypass cookie so page navigations after it
+// pass too. Read from the environment, never committed.
+const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.trim();
+const bypassHeaders =
+  hostedBaseURL && bypassSecret
+    ? {
+        'x-vercel-protection-bypass': bypassSecret,
+        'x-vercel-set-bypass-cookie': 'true',
+      }
+    : undefined;
+
 export default defineConfig({
   testDir: './e2e',
   // Genuine constraint, not a speed workaround: local skip-login mints one
@@ -21,6 +36,7 @@ export default defineConfig({
   use: {
     baseURL,
     trace: 'on-first-retry',
+    ...(bypassHeaders ? { extraHTTPHeaders: bypassHeaders } : {}),
   },
   // PLAYWRIGHT_WEB_SERVER=start serves the production build (`pnpm build`
   // first) instead of the dev server; CI runs both. The guest cookie is Secure
