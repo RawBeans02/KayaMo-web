@@ -2,12 +2,13 @@
 
 import {
   createLocalTask,
+  listLocalGoals,
   listLocalTasksForDate,
   listLocalTimeBlocks,
   listLocalWorkoutHistory,
   setLocalTaskCompleted,
-  useLiveFoodEntries,
   type LocalTask,
+  useLiveFoodEntries,
 } from '@kayamo/offline';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useDeskClock } from '../desk/use-desk-clock';
@@ -30,12 +31,13 @@ export function BotanicalHome({ userId }: { userId: string }) {
   const [editing, setEditing] = useState<LocalTask | null>(null);
   const date = selected ?? today;
   const load = useCallback(async () => {
-    const [tasks, blocks, workouts] = await Promise.all([
+    const [tasks, blocks, workouts, goals] = await Promise.all([
       listLocalTasksForDate(userId, date),
       listLocalTimeBlocks(userId, date),
       listLocalWorkoutHistory(userId),
+      listLocalGoals(userId),
     ]);
-    return { tasks, blocks, workouts };
+    return { tasks, blocks, workouts, goals };
   }, [userId, date]);
   const { data, error, refresh } = useRecords(load);
   const entries = useLiveFoodEntries(userId, date);
@@ -356,8 +358,12 @@ export function BotanicalHome({ userId }: { userId: string }) {
               </ol>
             </>
           )}
+          {/* The composer: the same pill the Lis screen types into, so the
+              two places a person writes something look and behave alike. */}
           <form className={styles.capture} onSubmit={capture}>
-            <BotanicalIcon name="plus" size={20} />
+            <span className={styles.captureMark} aria-hidden="true">
+              <BotanicalIcon name="plus" size={18} weight="bold" />
+            </span>
             <input
               ref={input}
               aria-label="Capture a thought or task"
@@ -368,12 +374,12 @@ export function BotanicalHome({ userId }: { userId: string }) {
               disabled={busy || !draftReady}
             />
             <button
-              className={styles.iconButton}
+              className={styles.captureSend}
               type="submit"
               aria-label="Add task"
               disabled={!draft.trim() || busy}
             >
-              <BotanicalIcon name="send" size={20} />
+              <BotanicalIcon name="send" size={18} weight="bold" />
             </button>
           </form>
         </section>
@@ -422,6 +428,16 @@ export function BotanicalHome({ userId }: { userId: string }) {
               <p className={styles.muted}>
                 {tasks.length - 5} more in your plan.
               </p>
+            )}
+            {data && data.goals.length === 0 && (
+              <a href="/goals" className={styles.tool} data-home-goal-nudge="">
+                <BotanicalIcon name="goals" size={22} />
+                <span>
+                  <strong>Start your first goal</strong>
+                  <small>One thing worth working toward, one step at a time.</small>
+                </span>
+                <BotanicalIcon name="next" size={18} />
+              </a>
             )}
             <div className={styles.actions}>
               <button
