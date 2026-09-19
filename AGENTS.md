@@ -67,6 +67,17 @@ the person chose and has no web trigger yet. In navigation and on buttons Lis
 is the `lis` sparkle icon, not the face. `e2e/mus.spec.ts` asserts a face is
 present; do not add an expressions gallery.
 
+## Auth
+
+Clerk is the front door (owner decision 2026-09-20): accounts, passwords,
+reset and the sign-in UI at `/login` and `/sign-up`. Supabase keeps its own
+session for data. `/auth/bridge` turns a Clerk sign-in into that session by
+email with the service role (`src/lib/clerk-bridge.ts`), so row security,
+sync and the tests never see Clerk. Do not move a table to Clerk's string ids
+piecemeal; that is one migration, recorded in `docs/RELEASE.md` under Phase
+10. Without `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` the app builds, the demo runs
+and `/login` says sign-in is not configured.
+
 ## Design
 
 One visual system: **Liquid Glass**. `packages/ui/src/glass.css` owns the

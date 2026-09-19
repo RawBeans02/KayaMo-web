@@ -29,6 +29,7 @@
     "clean": "rm -rf .next .turbo tsconfig.tsbuildinfo"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.9.4",
     "@kayamo/ai": "workspace:*",
     "@kayamo/core": "workspace:*",
     "@kayamo/db": "workspace:*",
@@ -43,6 +44,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "@clerk/testing": "^2.2.36",
     "@kayamo/config": "workspace:*",
     "@playwright/test": "^1.54",
     "@tailwindcss/postcss": "^4",

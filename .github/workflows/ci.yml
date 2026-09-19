@@ -1,4 +1,15 @@
 name: CI
+
+# Clerk: the publishable key is public by design and lives in a repository
+# variable; the secret key is a repository secret. Without them the build
+# and the demo still pass, and the Clerk e2e specs self-skip.
+env:
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ vars.CLERK_PUBLISHABLE_KEY }}
+  CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+  NEXT_PUBLIC_CLERK_SIGN_IN_URL: /login
+  NEXT_PUBLIC_CLERK_SIGN_UP_URL: /sign-up
+  NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: /auth/bridge
+  NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: /auth/bridge
 on: [push, pull_request]
 # Read-only token: nothing here writes to the repository.
 permissions:

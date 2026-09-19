@@ -54,8 +54,11 @@ Things only the owner can do. Most of the release is waiting on these.
 - [ ] **Confirm backups and recovery.** Supabase plan, point-in-time recovery or
       daily backups, retention of tombstoned rows and AI logs, and an acceptable
       data-loss and recovery-time target.
-- [ ] **Confirm hosted auth limits.** Magic-link OTP rate limits, and captcha if
-      needed, before a public URL is promoted.
+- [ ] **Confirm hosted auth limits.** Sign-in is Clerk's since Phase 10: its
+      bot protection and rate limits are on by default on a production
+      instance; confirm the attack-protection settings in the Clerk dashboard.
+      The Supabase side is only reached through the bridge with the service
+      role, so its OTP limits no longer gate a person.
 - [ ] **Choose an error-monitoring sink.** Nothing observes production failures
       today.
 - [ ] **Verify `kayamo.fit` in Search Console** and submit the sitemap after
@@ -178,6 +181,52 @@ Things only the owner can do. Most of the release is waiting on these.
   the `@kayamo/ui` primitives still in use on the web (Toast, Button) and is pinned
   by tokens.test.ts; the glass bridge overrides its runtime values. Restyle those
   two on glass tokens, then retire tokens.css's palette and the bridge together.
+
+## Phase 10 — Clerk in front (2026-09-20)
+
+Owner decision 2026-09-20: Clerk owns accounts and the sign-in surface
+(password, reset, providers, sessions). Done on `phase-10/clerk` from `main`.
+
+**Shape, and why not the documented third-party model.** Supabase's Clerk
+third-party auth expects Clerk's string user ids in the data layer. Here every
+one of 41 tables keys on a uuid `user_id` with a foreign key to `auth.users`,
+165 policies compare against `auth.uid()`, a trigger on `auth.users` creates
+the profile row, two RPCs take uuid ids, and the whole test identity layer
+signs in with Supabase passwords. So the bridge pattern instead: after a Clerk
+sign-in, `/auth/bridge` (`src/app/auth/bridge/route.ts`, logic in
+`src/lib/clerk-bridge.ts`, unit-tested) creates or finds the Supabase account
+by the verified email, records the Clerk id in its metadata, generates a
+one-time token with the service role and redeems it on a cookie client. No
+email is sent. That is the skip-login's own mechanism, promoted. Row security,
+sync, the offline scope, the demo guest, the RLS suite and CI are untouched.
+The Supabase third-party Clerk toggle the owner enabled stays unused; moving
+to it later is a data migration (uuid → text ids) that does not change the
+UI.
+
+- `src/proxy.ts` wraps the gate in `clerkMiddleware` when the publishable key
+  is set: a Clerk session without a Supabase one goes through the bridge, no
+  session goes to `/login`, the guest still unlocks the routes. Matcher gains
+  `/sign-up`, `/auth/bridge`, `/__clerk/(.*)` (asserted in
+  `src/lib/protected-routes.test.ts`).
+- `/login` and `/sign-up` render Clerk's `<SignIn>` / `<SignUp>` (hash
+  routing) inside the glass card, with the demo note, the legal footer and,
+  in development, the skip-login. Without the key the page says sign-in is
+  not configured and the demo still runs; `ClerkProvider` wraps the tree only
+  when the key exists, so CI's key-less build passes.
+- Sign out ends both sessions (`src/shell/sign-out-button.tsx`).
+- Removed from the web: the Supabase magic-link form wrapper. The shared
+  `LoginForm` in `packages/features/src/auth` stays for the PWA.
+- Tests: `clerk-bridge.test.ts` (7); entry-page and smoke specs assert
+  Clerk's form when the key exists and the notice when it does not (the two
+  mocked emailed-link tests are gone with the feature: product decision);
+  `e2e/clerk-sign-up.spec.ts` runs the whole front door on a dev instance
+  with a `+clerk_test` address and self-skips without keys.
+- Owner: Vercel env (Production and Preview) gets `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`,
+  `CLERK_SECRET_KEY` and the four URL vars from `.env.example`; GitHub gets
+  the repository variable `CLERK_PUBLISHABLE_KEY` and secret
+  `CLERK_SECRET_KEY`. Production keys (`pk_live`/`sk_live`) need Clerk's
+  production instance with `kayamo.fit` as its domain. PR #2 (Supabase
+  password form) is superseded by this and can close unmerged.
 
 ## Design work deferred out of Phase 5
 

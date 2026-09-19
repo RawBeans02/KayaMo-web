@@ -12,7 +12,7 @@ an emergency service or a promise of particular health, weight or fitness result
 
 ## Accounts and your information
 
-Keep access to your sign-in email secure. Do not share sign-in links. You are
+Keep your password to yourself and access to your sign-in email secure. You are
 responsible for information you choose to enter and for checking the outcome of
 changes. Demo data stays in its browser and does not automatically transfer when
 you sign in. Offline or unsynced work may be lost if browser data is cleared.
