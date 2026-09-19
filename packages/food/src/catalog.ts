@@ -20,6 +20,8 @@ export type CatalogFood = {
   verified?: boolean;
   attribution?: string;
   sourceNote?: string;
+  /** The numbers came from this browser's Verify overlay, not from `source`. */
+  locallyEdited?: boolean;
 };
 
 export type ResolveCatalog = {

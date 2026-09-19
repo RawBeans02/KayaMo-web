@@ -3,6 +3,7 @@ import { scaleNutrientSnapshot, toConfidenceString, toNutrientString, type Nutri
 import { resolveFood, type FoodCandidate } from './resolve';
 import type { ResolveSource } from './score';
 import type { NutrientsPer100g } from './types';
+export { normalizedFoodSchema, type NormalizedFood } from './types';
 
 export { foodRowToCatalog } from './catalog-supabase';
 export { memoryResolveCatalog, type CatalogFood };

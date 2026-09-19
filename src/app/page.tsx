@@ -4,6 +4,21 @@ import { GUEST_COOKIE, isValidGuestId } from '@/lib/guest';
 import { Landing } from './landing/landing';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import type { Metadata } from 'next';
+import {
+  publicIndexingEnabled,
+  SITE_DESCRIPTION,
+  SITE_TITLE,
+  SITE_URL,
+  WEBSITE_SCHEMA,
+} from '@/lib/site-metadata';
+
+export const metadata: Metadata = {
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: `${SITE_URL}/` },
+  robots: { index: publicIndexingEnabled(), follow: true },
+};
 
 export default async function Home({
   searchParams,
@@ -22,5 +37,15 @@ export default async function Home({
 
   // Keep the public home reachable from sign-in without losing a guest's diary.
   const demoStarted = isValidGuestId((await cookies()).get(GUEST_COOKIE)?.value);
-  return <Landing demoStarted={demoStarted} />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(WEBSITE_SCHEMA).replace(/</g, '\\u003c'),
+        }}
+      />
+      <Landing demoStarted={demoStarted} />
+    </>
+  );
 }

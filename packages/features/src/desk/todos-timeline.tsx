@@ -1,8 +1,9 @@
 'use client';
 
 import type { LocalTimeBlock } from '@kayamo/offline';
-import { useRef, useState } from 'react';
-import styles from '../food/desk.module.css';
+import { useEffect, useRef, useState } from 'react';
+import { startTimelineDrag } from '../todo/timeline-drag';
+import styles from './desk.module.css';
 import {
   DAY_END_MIN,
   DAY_START_MIN,
@@ -64,13 +65,15 @@ export function TodosTimeline({
   dayEnd?: number;
   hourPx?: number;
   onSelect: (id: string | null) => void;
-  onCommit: (id: string, startMin: number, endMin: number) => void;
+  onCommit: (id: string, startMin: number, endMin: number) => void | Promise<void>;
   onCreateAt: (startMin: number) => void;
   onDelete?: (id: string) => void;
   onGhostCommit?: (id: string, startMin: number, endMin: number) => void;
 }) {
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const rootRef = useRef<HTMLDivElement>(null);
+  const cancelDrag = useRef<(() => void) | null>(null);
+  useEffect(() => () => cancelDrag.current?.(), []);
 
   const items: TimelineItem[] = [
     ...blocks.map((block) => ({
@@ -107,6 +110,34 @@ export function TodosTimeline({
     item: TimelineItem,
     mode: 'move' | 'resize',
   ) {
+    if (document.documentElement.hasAttribute('data-kayamo-web')) {
+      if (event.button !== 0 || !event.isPrimary) return;
+      event.stopPropagation();
+      event.currentTarget.focus();
+      onSelect(item.id);
+      const origin = shown(item);
+      cancelDrag.current?.();
+      const clear = () => setDrafts(current => {
+        const copy = { ...current };
+        delete copy[item.id];
+        return copy;
+      });
+      cancelDrag.current = startTimelineDrag({
+        target: event.currentTarget, pointerId: event.pointerId,
+        originY: event.clientY, origin, mode, dayStart, dayEnd, hourPx,
+        preview: range => setDrafts(current => ({ ...current, [item.id]: range })),
+        cancel: clear,
+        commit: async range => {
+          try {
+            if (item.ghost) onGhostCommit?.(item.id, range.start, range.end);
+            else await onCommit(item.id, range.start, range.end);
+          } finally {
+            clear();
+          }
+        },
+      });
+      return;
+    }
     event.preventDefault();
     event.stopPropagation();
     onSelect(item.id);
@@ -152,6 +183,7 @@ export function TodosTimeline({
     const pos = shown(item);
 
     if (event.key === 'Escape') {
+      cancelDrag.current?.();
       event.preventDefault();
       onSelect(null);
       return;
@@ -188,7 +220,7 @@ export function TodosTimeline({
       className={styles.timeline}
       data-desk=""
       tabIndex={0}
-      role="list"
+      role="region"
       aria-label={
         readOnly
           ? 'Day timeline'
@@ -200,6 +232,7 @@ export function TodosTimeline({
         readOnly
           ? undefined
           : (event) => {
+              if ((event.target as HTMLElement).closest('[data-drag-handle]')) return;
               const rect = event.currentTarget.getBoundingClientRect();
               const start = yToMinutes(event.clientY - rect.top, dayStart, hourPx);
               onCreateAt(Math.max(dayStart, Math.min(dayEnd - 30, start)));
@@ -223,7 +256,7 @@ export function TodosTimeline({
       {items.map((item) => {
         const pos = shown(item);
         const kind = kindOf(item);
-        const flag = kind === 'fixed' ? '◆' : kind === 'done' ? '✓' : item.ghost ? 'from Mus' : '';
+        const flag = kind === 'fixed' ? '◆' : kind === 'done' ? '✓' : item.ghost ? 'from Lis' : '';
         return (
           <div
             key={item.id}
@@ -235,13 +268,15 @@ export function TodosTimeline({
             data-ghost={item.ghost ? 'true' : undefined}
             data-kind={kind}
             style={{
-              top: blockTopPx(pos.start, dayStart, hourPx),
+              top: blockTopPx(item.start_min, dayStart, hourPx),
+              transform: `translateY(${((pos.start - item.start_min) / 60) * hourPx}px)`,
               height: blockHeightPx(pos.start, pos.end, hourPx),
             }}
           >
             <button
               type="button"
               className={styles.timeBlockHit}
+              data-drag-handle=""
               onClick={() => onSelect(item.id)}
               onPointerDown={readOnly ? undefined : (event) => beginDrag(event, item, 'move')}
             >
@@ -250,13 +285,14 @@ export function TodosTimeline({
                 {flag ? <span className={styles.timeBlockFlag}> {flag}</span> : null}
               </strong>
               <small>
-                {minutesToLabel(pos.start)}–{minutesToLabel(pos.end)}
+                {minutesToLabel(Math.round(pos.start))}–{minutesToLabel(Math.round(pos.end))}
               </small>
             </button>
             {readOnly ? null : (
               <button
                 type="button"
                 className={styles.resizeHandle}
+                data-drag-handle=""
                 aria-label={`Resize ${item.title}`}
                 onPointerDown={(event) => beginDrag(event, item, 'resize')}
               />

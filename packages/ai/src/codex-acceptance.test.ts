@@ -1,19 +1,24 @@
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { cocoActionNameSchema, cocoContextSnapshotSchema, musEntrySchema } from './contracts';
+import { renderLisSystemPrompt } from './persona';
+import { baselineContext } from './evals/doubles';
 
-const here = dirname(fileURLToPath(import.meta.url));
-
-describe('codex acceptance: prompt and shared Mus', () => {
-  it('uses the canonical Mus identity and confirmation rules', () => {
-    const src = readFileSync(join(here, 'openai-provider.ts'), 'utf8');
-    expect(src).toContain("You are Mus, KayaMo's supportive AI companion.");
-    expect(src).toContain('Propose at most three actions and set requiresConfirmation to true');
-    expect(src).toContain('Do not claim an action was executed');
-    expect(src).toContain('Nutrition calculation is outside your authority');
-    expect(src).not.toMatch(/system:\s*`You are Coco/);
+/**
+ * This used to `readFileSync('openai-provider.ts')` and assert on source
+ * substrings, which was brittle in the wrong direction: it broke whenever the
+ * file was refactored while permitting any semantic change that kept those
+ * substrings intact. It now asserts on what the model is actually sent.
+ */
+describe('codex acceptance: prompt and shared Lis', () => {
+  it('keeps the non-negotiable clauses in the assembled prompt', () => {
+    const prompt = renderLisSystemPrompt(baselineContext());
+    expect(prompt).toContain("You are Lis, KayaMo's supportive AI companion.");
+    expect(prompt).not.toMatch(/\b(?:Mus|Coco)\b/);
+    expect(prompt).toContain('Propose at most three actions and set requiresConfirmation to true');
+    expect(prompt).toContain('Do not claim an action was executed');
+    expect(prompt).toContain('Nutrition calculation is outside your authority');
+    expect(prompt).toContain('Faith content is opt-in');
+    expect(prompt).toContain('Never invent completed activity');
   });
 
   it('treats module entry as extra JSON, not a replaced prompt file', () => {
@@ -45,6 +50,7 @@ describe('codex acceptance: prompt and shared Mus', () => {
         physical_self: false,
         memory: false,
         faith: false,
+        identity: false,
       },
     });
     expect(snapshot.entry?.module).toBe('gym');

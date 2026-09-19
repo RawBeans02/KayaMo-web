@@ -15,6 +15,7 @@ export const MUS_CONTEXT_DOMAINS = [
   'physical_self',
   'memory',
   'faith',
+  'identity',
 ] as const;
 export type MusContextDomain = (typeof MUS_CONTEXT_DOMAINS)[number];
 
@@ -37,7 +38,7 @@ export const musContextPermissions = pgTable(
     index('mus_context_permissions_server_updated_at_idx').on(table.server_updated_at),
     check(
       'mus_context_permissions_domain_check',
-      sql`${table.domain} in ('goals_planning', 'physical_self', 'memory', 'faith')`,
+      sql`${table.domain} in ('goals_planning', 'physical_self', 'memory', 'faith', 'identity')`,
     ),
   ],
 );

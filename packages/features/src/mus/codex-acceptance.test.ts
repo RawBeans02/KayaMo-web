@@ -56,7 +56,7 @@ describe('codex acceptance: desks, vision, gym consult', () => {
   });
 
   it('sends chat through /api/mus/respond and photos through observe-image', () => {
-    const thread = readFileSync(join(featuresRoot, 'screens/mus-thread.tsx'), 'utf8');
+    const thread = readFileSync(join(featuresRoot, 'mus/mus-thread.tsx'), 'utf8');
     expect(thread).toContain("/api/mus/respond");
     expect(thread).toContain('/api/mus/observe-image');
     expect(thread).toContain('Nothing is saved until you confirm');

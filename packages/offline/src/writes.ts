@@ -219,6 +219,16 @@ export async function restoreLocalFoodEntry(params: {
   return next;
 }
 
+/**
+ * How long a deleted food entry can be undone. The diary shows an Undo for this
+ * long, and the tombstone is held back from the server for the same time. The
+ * two must agree: server tombstones are irreversible (the update policy hides
+ * deleted rows and a trigger keeps deleted_at), so a tombstone that ships before
+ * the person taps Undo cannot be taken back, and the restore that follows is
+ * silently rejected and re-deleted on the next pull.
+ */
+export const FOOD_ENTRY_UNDO_MS = 8000;
+
 export async function tombstoneLocalFoodEntry(params: {
   id: string;
   userId: string;
@@ -233,8 +243,16 @@ export async function tombstoneLocalFoodEntry(params: {
     updated_at: updatedAt,
   };
   await db.food_entries.put(next);
-  await enqueueUpsert('food_entries', next.id, toFoodEntryPayload(next));
+  // Held for the undo window. A restore inside it replaces this queue item
+  // (same id) with the live row, so the server never sees the delete.
+  await enqueueUpsert('food_entries', next.id, toFoodEntryPayload(next), {
+    delayMs: FOOD_ENTRY_UNDO_MS,
+  });
   void drainQueue();
+  // The drain only takes due items and does not re-arm itself for future ones,
+  // so make sure something drains once the window closes. If the tab is gone by
+  // then, the item is still in the queue and ships on the next drain trigger.
+  setTimeout(() => void drainQueue(), FOOD_ENTRY_UNDO_MS + 50);
 }
 
 export async function listLocalFoodEntries(
@@ -250,6 +268,12 @@ export async function listLocalFoodEntries(
     .sort((a, b) => a.logged_at.localeCompare(b.logged_at));
 }
 
+/**
+ * Foods the user has logged before, for re-logging: palette recents, the search
+ * fallback, the Foods page. Only rows with a catalog `food_id` qualify, because
+ * a row with none cannot be re-logged from the catalog. Do not use this for
+ * totals; see listLocalFoodLedger.
+ */
 export async function listLocalFoodHistory(userId: string): Promise<LocalFoodEntry[]> {
   const rows = await getOfflineDb()
     .food_entries.where('user_id')
@@ -257,6 +281,23 @@ export async function listLocalFoodHistory(userId: string): Promise<LocalFoodEnt
     .toArray();
   return rows
     .filter((row) => !row.deleted_at && row.food_id)
+    .sort((a, b) => a.logged_at.localeCompare(b.logged_at));
+}
+
+/**
+ * Every live entry the user has logged, catalogued or not. This is what a
+ * total, an average or a presence grid must read. The diary used the history
+ * query for its week statistics, so every worldwide-search and personal food
+ * (which carry no catalog food_id) vanished from the week average, the strip
+ * and the presence grid while still appearing in the day's own list.
+ */
+export async function listLocalFoodLedger(userId: string): Promise<LocalFoodEntry[]> {
+  const rows = await getOfflineDb()
+    .food_entries.where('user_id')
+    .equals(userId)
+    .toArray();
+  return rows
+    .filter((row) => !row.deleted_at)
     .sort((a, b) => a.logged_at.localeCompare(b.logged_at));
 }
 

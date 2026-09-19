@@ -1,5 +1,7 @@
 import {
+  CONTEXT_LIMITS,
   buildAuthorizedCocoContext,
+  truncateWords,
   musContextPermissionsFromRows,
   type MusContextAuthorizationAudit,
 } from '@kayamo/ai';
@@ -12,6 +14,10 @@ import {
   listEffectiveNutritionTargets,
   listFoodEntriesByLogicalDate,
   listGoals,
+  getCompassForAi,
+  getFutureSelfForAi,
+  getLisCompanionProfile,
+  listPersonalRulesForAi,
   listMusContextPermissions,
   listRoutineCompletionsForDate,
   listScriptureByTag,
@@ -21,6 +27,16 @@ import {
   listWorkoutSets,
   type DbClient,
 } from '@kayamo/db';
+
+const LANGUAGE_REGISTERS = new Set(['english', 'taglish', 'match_me']);
+
+/** smallint 0/1/2 -> the word each dial uses. Index is the stored value. */
+const DIAL_SCALES = {
+  encouragement: ['low', 'balanced', 'high'],
+  accountability: ['gentle', 'balanced', 'firm'],
+  humor: ['serious', 'balanced', 'playful'],
+  proactivity: ['quiet', 'balanced', 'proactive'],
+} as const;
 
 export async function buildServerMusContext(input: {
   client: DbClient;
@@ -35,6 +51,25 @@ export async function buildServerMusContext(input: {
     timezone: timezone ?? 'Asia/Manila',
     readPermissions: async () =>
       musContextPermissionsFromRows(await listMusContextPermissions(client, userId)),
+    readCompanionProfile: async () => {
+      const row = await getLisCompanionProfile(client, userId);
+      if (!row) return null;
+      return {
+        displayName: row.display_name?.trim() || null,
+        pronouns: row.pronouns?.trim() || null,
+        languageRegister: LANGUAGE_REGISTERS.has(row.language_register)
+          ? (row.language_register as 'english' | 'taglish' | 'match_me')
+          : 'match_me',
+        dials: {
+          encouragement: DIAL_SCALES.encouragement[row.encouragement] ?? 'balanced',
+          accountability: DIAL_SCALES.accountability[row.accountability] ?? 'balanced',
+          humor: DIAL_SCALES.humor[row.humor] ?? 'balanced',
+          proactivity: DIAL_SCALES.proactivity[row.proactivity] ?? 'balanced',
+        },
+        aboutMe: row.about_me?.trim() || null,
+        avoidTopics: row.avoid_topics.map((topic: string) => topic.trim()).filter(Boolean),
+      };
+    },
     loaders: {
       goals_planning: async () => {
         const weekday = new Date(`${logicalDate}T12:00:00.000Z`).getUTCDay();
@@ -170,6 +205,50 @@ export async function buildServerMusContext(input: {
           content: row.content,
         })),
       }),
+      identity: async () => {
+        // Every read here filters on mus_may_read. RLS cannot do it: the user
+        // owns these rows, so ownership alone would grant the server access.
+        // inbox_items is deliberately absent — unreviewed capture, and the
+        // highest-risk injection surface in the schema.
+        const [futureSelf, compass, rules] = await Promise.all([
+          getFutureSelfForAi(client, userId),
+          getCompassForAi(client, userId),
+          listPersonalRulesForAi(client, userId, CONTEXT_LIMITS.personalRules),
+        ]);
+        const trim = (value: string | null, max: number) =>
+          value?.trim() ? truncateWords(value.trim(), max) : null;
+        return {
+          identity: {
+            futureSelf: futureSelf?.statement?.trim()
+              ? {
+                  id: 'self' as const,
+                  statement: truncateWords(
+                    futureSelf.statement.trim(),
+                    CONTEXT_LIMITS.futureSelfChars,
+                  ),
+                }
+              : null,
+            compass: compass
+              ? {
+                  id: 'self' as const,
+                  mattersNow: trim(compass.matters_now, CONTEXT_LIMITS.compassFieldChars),
+                  protect: trim(compass.protect, CONTEXT_LIMITS.compassFieldChars),
+                  strugglingWith: trim(
+                    compass.struggling_with,
+                    CONTEXT_LIMITS.compassFieldChars,
+                  ),
+                  doNotBecome: trim(compass.do_not_become, CONTEXT_LIMITS.compassFieldChars),
+                  activeAreas: (compass.active_areas ?? []).slice(0, 8),
+                }
+              : null,
+            rules: rules.map((rule) => ({
+              id: rule.id,
+              title: truncateWords(rule.title.trim(), 120),
+            })),
+          },
+        };
+      },
+
       faith: async () => {
         const preferences = await getDailyLoopPreferences(client, userId);
         if (preferences?.faith_enabled !== true) return { scripture: [] };

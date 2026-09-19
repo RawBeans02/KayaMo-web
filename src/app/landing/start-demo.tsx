@@ -4,16 +4,22 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import styles from './landing.module.css';
 
+const BUTTON_CLASS = {
+  primary: `kgAccent ${styles.ctaPrimary}`,
+  ghost: `kgGhost ${styles.ctaGhost}`,
+  nav: `kgAccent ${styles.ctaNav}`,
+} as const;
+
 /**
  * Starts the no-account demo: issues a guest cookie, then lands the visitor on
- * the diary — the screen that actually shows what the product does.
+ * Home, without replacing an existing guest identity or its saved records.
  */
 export function StartDemo({
   children,
   variant = 'primary',
 }: {
   children: React.ReactNode;
-  variant?: 'primary' | 'ghost';
+  variant?: 'primary' | 'ghost' | 'nav';
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -26,7 +32,7 @@ export function StartDemo({
     try {
       const response = await fetch('/api/demo', { method: 'POST' });
       if (!response.ok) throw new Error('demo');
-      router.push('/calories');
+      router.push('/today');
     } catch {
       setBusy(false);
       setFailed(true);
@@ -34,10 +40,14 @@ export function StartDemo({
   }
 
   return (
-    <span className={styles.ctaWrap}>
+    <span
+      className={
+        variant === 'nav' ? `${styles.ctaWrap} ${styles.navCtaWrap}` : styles.ctaWrap
+      }
+    >
       <button
         type="button"
-        className={variant === 'primary' ? styles.ctaPrimary : styles.ctaGhost}
+        className={BUTTON_CLASS[variant]}
         onClick={() => void start()}
         disabled={busy}
       >

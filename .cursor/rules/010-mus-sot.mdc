@@ -1,14 +1,48 @@
 ---
-description: Mus source of truth, tab IA, and phased delivery. Applies to all work.
+description: Product source of truth, navigation, and what is in scope for the web v1. Applies to all work.
 alwaysApply: true
 ---
 
-Canonical product file: `Mus_Build_Source_of_Truth.md`. Hierarchy: that file, then an explicit owner override, then Claude design that does not contradict it, then ADRs, then code.
+Canonical product file: `Mus_Build_Source_of_Truth.md`. Authority order: that
+file, then an explicit owner override, then design work that does not contradict
+either, then ADRs, then code. Two standing overrides apply to this repository:
 
-KayaMo is the shipped product name for now. Companion is **Mus** (mustard seed). Bundle ID `ph.kayamo.app`. First market: Philippines.
+- **Global, not Philippines-first** (2026-09-14). English by default; preserve an
+  explicit language choice. See `docs/global-product-direction.md`.
+- **The assistant is Lis** (2026-09-18). `Mus` and `Coco` survive only as frozen
+  identifiers in routes, tables, stored values and env names. See AGENTS.md.
 
-Five tabs only: **Home** (Daily Command Center), **Goals**, **Life** (areas; Physical Self holds food/gym), **Grove** (XP/tree/story), **Mus** (full chat). No sixth primary add tab.
+The SoT still carries `product_name: "TBD"` and pre-override positioning. Where
+it disagrees with the two overrides above, the overrides win.
 
-Phase 0–5 are in. Phase 6 is **Circles**: optional, private-first named groups with per-circle visibility and a compile preview. Social stays off by default. Do not invent members, a feed, follower counts, or partner rewards. Do not share nutrition, weight, journals, faith, or money. Do not start other life-area modules or a sixth tab. Do not silently drop §37 inventory — mark `SHIPPED` / `PLANNED` / `DEFERRED_*`. Commits for this file use `mus:`, never a build-guide `chNN`.
+## Navigation
 
-Mus proposes; the user confirms writes. Stored data is not automatically AI-readable. XP never decreases. Use **Released**, not failed, when a goal is set down. No shame copy, no tree death, no diagnoses, no “God told me”.
+Five destinations: **Home** (daily command centre), **Goals**, **Life** (areas;
+Physical Self holds food and gym), **Grove** (XP, tree, story), **Lis** (full
+chat). Profile is settings, not a sixth area.
+
+The phone tab bar carries Home, Life, a centre create action, Lis and Profile.
+The centre create button is a deliberate exception to "no sixth primary add tab":
+it is the platform-familiar pattern and it creates, it does not navigate to a new
+area. Do not add a sixth destination.
+
+**Out of web v1:** Gym and Todos. They work but render the legacy desk skin, so
+they are off the rail and the Life hub (done 2026-09-19) until they are
+converted to glass. Their routes keep resolving. Home still deep-links to both
+and the log sheet's Workout kind opens Gym; that is an open owner call in
+docs/RELEASE.md.
+
+## Product rules
+
+Lis proposes; the user confirms every write. Stored data is not automatically
+AI-readable. XP never decreases. A goal that is set down is **Released**, never
+failed. No shame copy, no tree death, no diagnoses, no "God told me".
+
+Lis has a character. The four expressions ship. Concern is for wellbeing, never
+for a missed log or compliance.
+
+Phase 6 is **Circles**: optional, private-first named groups with per-circle
+visibility and a compile preview. Social stays off by default. Do not invent
+members, a feed, follower counts, or partner rewards. Do not share nutrition,
+weight, journals, faith, or money. Do not start other life-area modules.
+Do not silently drop §37 inventory — mark `SHIPPED` / `PLANNED` / `DEFERRED_*`.

@@ -84,6 +84,13 @@ export {
   musContextPermissions,
   type MusContextDomain,
 } from './mus-context';
+export {
+  LIS_DIALS,
+  LIS_LANGUAGE_REGISTERS,
+  lisCompanionProfile,
+  type LisDial,
+  type LisLanguageRegister,
+} from './lis-companion';
 export { profiles } from './profiles';
 export {
   achievementDefinitions,

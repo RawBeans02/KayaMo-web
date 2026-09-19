@@ -12,9 +12,9 @@ const responseSchema = z.object({ permissions: musContextPermissionsSchema }).st
 async function parsePermissionResponse(
   response: Response,
 ): Promise<MusContextPermissions> {
-  if (!response.ok) throw new Error('Mus permissions are unavailable.');
+  if (!response.ok) throw new Error('Lis permissions are unavailable.');
   const parsed = responseSchema.safeParse(await response.json().catch(() => null));
-  if (!parsed.success) throw new Error('Mus permissions are unavailable.');
+  if (!parsed.success) throw new Error('Lis permissions are unavailable.');
   return parsed.data.permissions;
 }
 

@@ -1,5 +1,6 @@
 import type { MusEntryModule } from '@kayamo/ai';
 import { useEffect, useState } from 'react';
+import type { MusFace } from './mus-faces';
 
 export type MusSelection = {
   module: MusEntryModule;
@@ -50,4 +51,35 @@ export function useMusBusy(): boolean {
     return () => window.removeEventListener(MUS_BUSY_EVENT, onBusy);
   }, []);
   return busy;
+}
+
+/**
+ * The resting face, published by the thread after each reply and read by every
+ * LisFace on the page. Held in module state as well as broadcast, so a face that
+ * mounts after the reply (the rail on a later screen) shows the same expression
+ * rather than snapping back to neutral. "thinking" is not published here: it is
+ * derived from the busy flag while a reply is in flight.
+ */
+export const MUS_FACE_EVENT = 'kayamo:mus-face';
+
+let currentFace: MusFace = 'neutral';
+
+export function setMusFace(face: MusFace): void {
+  currentFace = face;
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(MUS_FACE_EVENT, { detail: { face } }));
+}
+
+export function useMusFace(): MusFace {
+  const [face, setFace] = useState<MusFace>(currentFace);
+  useEffect(() => {
+    setFace(currentFace);
+    function onFace(event: Event) {
+      const detail = (event as CustomEvent<{ face?: MusFace }>).detail;
+      if (detail?.face) setFace(detail.face);
+    }
+    window.addEventListener(MUS_FACE_EVENT, onFace);
+    return () => window.removeEventListener(MUS_FACE_EVENT, onFace);
+  }, []);
+  return face;
 }

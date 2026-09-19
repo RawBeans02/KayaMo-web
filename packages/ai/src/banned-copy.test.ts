@@ -10,6 +10,7 @@ const repoRoot = path.resolve(here, '../../..');
 const SCAN_ROOTS = [
   'src',
   'packages/ai/src',
+  'packages/features/src',
   'packages/ui/src',
   'packages/core/src',
 ];

@@ -10,18 +10,33 @@ import {
   whatNowRequestSchema,
   whatNowSchema,
 } from '../todo/planner-schema';
+import type { AllowanceOutcome } from './respond-handler';
 
-function nonnegativeEnvNumber(name: string, fallback: number): number {
-  const value = Number(process.env[name]);
-  return Number.isFinite(value) && value >= 0 ? value : fallback;
+/**
+ * Optional per-request metering. The handler calls it only after the body has
+ * parsed (and, for images, decoded and passed the size check), so a malformed
+ * request never spends one of the day's allowance slots. The chat handler has
+ * had this ordering since the allowance was introduced; these four did not.
+ */
+export type PlanHandlerOptions = {
+  reserveAllowance?: (userId: string) => Promise<AllowanceOutcome>;
+};
+
+async function rejectedByAllowance(
+  options: PlanHandlerOptions,
+  userId: string,
+): Promise<{ status: number; body: object } | null> {
+  if (!options.reserveAllowance) return null;
+  const outcome = await options.reserveAllowance(userId);
+  if (outcome.ok) return null;
+  return { status: outcome.status, body: { error: outcome.error } };
 }
 
-function budgetUsd() {
-  return {
-    dailyBudgetUsd: nonnegativeEnvNumber('AI_DAILY_BUDGET_USD_PER_USER', 0.05),
-    estimatedRequestCostUsd: nonnegativeEnvNumber('AI_ESTIMATED_REQUEST_USD', 0.01),
-  };
-}
+import { readAiBudgetEnv } from './ai-budget-env';
+
+export { readAiBudgetEnv } from './ai-budget-env';
+
+const budgetUsd = readAiBudgetEnv;
 
 async function withTelemetry<T>(params: {
   client: DbClient;
@@ -43,7 +58,7 @@ async function withTelemetry<T>(params: {
       };
     }
     if (error instanceof AiConfigError) {
-      return { status: 503, body: { error: 'Mus planning is not configured.' } };
+      return { status: 503, body: { error: 'Lis planning is not configured.' } };
     }
     await insertAgentRunTelemetry(params.client, {
       id: crypto.randomUUID(),
@@ -61,7 +76,7 @@ async function withTelemetry<T>(params: {
       updatedAt: new Date().toISOString(),
       agent: params.trigger,
     }).catch(() => undefined);
-    return { status: 502, body: { error: 'Mus could not finish that plan.' } };
+    return { status: 502, body: { error: 'Lis could not finish that plan.' } };
   }
 }
 
@@ -115,7 +130,7 @@ const WHAT_NOW_SYSTEM = `You rank 1 to 5 things the user can do in the current o
 Only use supplied tasks. Prefer unblocked work that fits availableMinutes.
 Match location and energy when those fields are present. No nutrition numbers. No shame.`;
 
-const CAPTURE_SYSTEM = `Parse a brain dump into capture items. Philippine English and Taglish are normal.
+const CAPTURE_SYSTEM = `Parse a brain dump into capture items. Understand everyday and mixed-language messages without assuming the user's country or culture.
 
 Kinds: TASK, EVENT, ROUTINE, HABIT, INBOX, PROJECT.
 Do not invent dates or clock times. If the user did not name a calendar date, leave scheduledFor and horizon null.
@@ -136,10 +151,13 @@ export async function handlePlanDay(
   client: DbClient,
   userId: string,
   body: unknown,
+  options: PlanHandlerOptions = {},
 ): Promise<{ status: number; body: object }> {
   const parsed = planDayRequestSchema.safeParse(body);
   if (!parsed.success) return { status: 400, body: { error: 'Invalid plan-day request.' } };
   const model = process.env.MUS_ORCHESTRATOR_MODEL?.trim() || process.env.MODEL_SMALL?.trim() || 'gpt-5.6-luna';
+  const rejected = await rejectedByAllowance(options, userId);
+  if (rejected) return rejected;
   return withTelemetry({
     client,
     userId,
@@ -171,10 +189,13 @@ export async function handleWhatNow(
   client: DbClient,
   userId: string,
   body: unknown,
+  options: PlanHandlerOptions = {},
 ): Promise<{ status: number; body: object }> {
   const parsed = whatNowRequestSchema.safeParse(body);
   if (!parsed.success) return { status: 400, body: { error: 'Invalid what-now request.' } };
   const model = process.env.MUS_FAST_MODEL?.trim() || process.env.MODEL_NANO?.trim() || 'gpt-5.6-luna';
+  const rejected = await rejectedByAllowance(options, userId);
+  if (rejected) return rejected;
   return withTelemetry({
     client,
     userId,
@@ -200,10 +221,13 @@ export async function handleCaptureText(
   client: DbClient,
   userId: string,
   body: unknown,
+  options: PlanHandlerOptions = {},
 ): Promise<{ status: number; body: object }> {
   const parsed = captureTextRequestSchema.safeParse(body);
   if (!parsed.success) return { status: 400, body: { error: 'Invalid capture request.' } };
   const model = process.env.MUS_FAST_MODEL?.trim() || process.env.MODEL_NANO?.trim() || 'gpt-5.6-luna';
+  const rejected = await rejectedByAllowance(options, userId);
+  if (rejected) return rejected;
   return withTelemetry({
     client,
     userId,
@@ -229,6 +253,7 @@ export async function handleObserveImage(
   client: DbClient,
   userId: string,
   body: unknown,
+  options: PlanHandlerOptions = {},
 ): Promise<{ status: number; body: object }> {
   const parsed = observeImageRequestSchema.safeParse(body);
   if (!parsed.success) return { status: 400, body: { error: 'Invalid image request.' } };
@@ -243,6 +268,8 @@ export async function handleObserveImage(
   }
   const model = process.env.MUS_VISION_MODEL?.trim() || process.env.MODEL_VISION?.trim() || 'gpt-5.4-mini';
   const caption = parsed.data.caption?.trim() || 'Observe this image for planning or food names only.';
+  const rejected = await rejectedByAllowance(options, userId);
+  if (rejected) return rejected;
   return withTelemetry({
     client,
     userId,

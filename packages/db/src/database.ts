@@ -24,6 +24,7 @@ import type {
   personalRules,
 } from './schema/identity';
 import type { musContextPermissions } from './schema/mus-context';
+import type { lisCompanionProfile } from './schema/lis-companion';
 import type { profiles } from './schema/profiles';
 import type {
   achievementDefinitions,
@@ -67,6 +68,7 @@ export type Database = {
       inbox_items: TableDef<typeof inboxItems>;
       personal_rules: TableDef<typeof personalRules>;
       mus_context_permissions: TableDef<typeof musContextPermissions>;
+      lis_companion_profile: TableDef<typeof lisCompanionProfile>;
       foods: TableDef<typeof foods>;
       servings: TableDef<typeof servings>;
       food_aliases: TableDef<typeof foodAliases>;
@@ -164,6 +166,10 @@ export type PersonalRule = Database['public']['Tables']['personal_rules']['Row']
 export type PersonalRuleInsert = Database['public']['Tables']['personal_rules']['Insert'];
 export type MusContextPermission =
   Database['public']['Tables']['mus_context_permissions']['Row'];
+export type LisCompanionProfile =
+  Database['public']['Tables']['lis_companion_profile']['Row'];
+export type LisCompanionProfileInsert =
+  Database['public']['Tables']['lis_companion_profile']['Insert'];
 export type WeightLog = Database['public']['Tables']['weight_logs']['Row'];
 export type WeightLogInsert = Database['public']['Tables']['weight_logs']['Insert'];
 export type ExpenditureEstimate =

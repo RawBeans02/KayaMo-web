@@ -41,7 +41,7 @@ test('empty remote refresh preserves searchable demo foods and valid shell marku
   await page.goto('/foods');
   await (await refreshed).finished();
   await page.getByRole('button', { name: /^PH core/ }).click();
-  await page.getByLabel('Filter by name or Taglish alias').fill('adobo');
+  await page.getByLabel('Filter by name or alias').fill('adobo');
   await expect(page.locator('[data-foods-row]').first()).toBeVisible();
   await expect(page.getByTestId('sync-status')).toHaveAttribute('data-sync-kind', 'local_only');
   expect(renderingErrors).toEqual([]);
@@ -87,17 +87,18 @@ test('demo food logging persists and guest AI requests never leave the browser',
     if (request.method() === 'POST' && /\/api\/(mus|gym)\//.test(request.url())) onlinePosts++;
   });
   await demo(page);
-  await page.getByRole('button', { name: 'Log food', exact: true }).click();
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+K' : 'Control+K');
   const palette = page.locator('[data-palette="log"]');
   await palette.getByRole('combobox').fill('kanin');
   await expect(palette.getByRole('option').first()).toBeVisible();
   await palette.getByRole('combobox').press('Enter');
   await expect(page.getByLabel('This plate')).toContainText(/kanin/i);
   await page.keyboard.press('Escape');
+  await page.goto('/calories');
   await page.reload();
   await expect(page.locator('[data-entry-row]').filter({ hasText: /kanin/i })).toHaveCount(1);
   await page.goto('/gym');
-  await page.getByRole('button', { name: 'Ask Mus to fill gaps' }).click();
+  await page.getByRole('button', { name: 'Ask Lis to fill gaps' }).click();
   await expect(page.getByText('Could not consult. Pick from the list.')).toBeVisible();
   expect(onlinePosts).toBe(0);
 });
@@ -124,6 +125,9 @@ test('an active workout from yesterday remains usable', async ({ page }) => {
   await page.goto('/gym');
   await expect(page.getByRole('button', { name: 'Pause session', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Copy last workout' })).toBeDisabled();
-  await page.getByRole('button', { name: 'Finish', exact: true }).click();
+  // The seeded workout has no planned sets, so the end control is the ghost
+  // "End early" — the accent "Finish" is reserved for a session with every
+  // planned set logged.
+  await page.getByRole('button', { name: 'End early', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Start session', exact: true })).toBeVisible();
 });

@@ -1,0 +1,731 @@
+/* Food diary (/calories) — split from desk.module.css on 2026-09-19.
+   Rules kept verbatim; only the ones this surface references. Colours are
+   glass tokens. */
+
+.panel {
+  display: grid;
+  /* An auto track sizes to its widest child's MAX-content, so a header whose
+  shortcut hints could wrap still measured unwrapped and dragged the whole
+  page into a horizontal scroll. minmax(0, 1fr) caps the track at the
+  available width and lets the children wrap or scroll inside it. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  min-width: 0;
+  color: var(--ink);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+/* Flex children default to min-width:auto, so a wide group of shortcut hints
+   cannot shrink and drags the whole page into a horizontal scroll. Let them
+   shrink, and let the header wrap once they run out of room. */
+
+.header > * {
+  min-width: 0;
+}
+
+/* Section label, not a hero eyebrow: it sits under the title, never above it. */
+
+.eyebrow {
+  margin: 0;
+  color: var(--ink2);
+  font-size: 0.8125rem;
+}
+
+.header h1,
+.title {
+  margin: 0;
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-size: 2.125rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+@media (min-width: 900px) {
+  .header h1,
+.title {
+    font-size: 2.5rem;
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+}
+
+.statLabel {
+  margin: 0;
+  color: var(--ink2);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* The week hero's lead label sits one step up from the card labels below it. */
+
+.statLabelLead {
+  composes: statLabel;
+  color: var(--accent-text);
+}
+
+.statNote {
+  margin: 6px 0 0;
+  color: var(--ink2);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.note {
+  margin: 0;
+  color: var(--ink2);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.toastDock {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 40;
+  min-width: 17rem;
+  overflow: hidden;
+  border-radius: 24px;
+  box-shadow: var(--shadow-deep);
+}
+
+/* ── Food diary ──────────────────────────────────────────────────────────
+ * Today card, week strip, meal groups. The card carries the primary number;
+ * everything below it is a list. Surfaces come from `kgSurface` in the
+ * markup, so nothing here re-declares a glass recipe. */
+
+.diary {
+  display: grid;
+  gap: 14px;
+}
+
+.diary > .header {
+  margin-bottom: 2px;
+}
+
+.headerAside {
+  margin: 0;
+  max-width: 34ch;
+  color: var(--ink2);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  text-align: right;
+}
+
+/* ── Today ─────────────────────────────────────────────────────────────── */
+
+/* ── Week strip ────────────────────────────────────────────────────────── */
+
+.weekStrip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  padding: 6px;
+}
+
+.weekDay {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  min-height: 92px;
+  padding: 12px 12px 13px;
+  border: 0;
+  border-radius: 20px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.weekDay[data-selected='true'] {
+  background: var(--field);
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+}
+
+.weekDay:disabled {
+  cursor: default;
+}
+
+.weekDayTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.weekDow {
+  color: var(--ink2);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.weekDay[data-selected='true'] .weekDow {
+  color: var(--accent-text);
+}
+
+.weekNum {
+  color: var(--ink2);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.weekKcal {
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-size: 1.375rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.weekDay[data-future='true'] .weekKcal {
+  color: var(--ink2);
+}
+
+.weekTrack {
+  display: block;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--track);
+}
+
+.weekFill {
+  display: block;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width var(--rise) var(--ease-glass);
+}
+
+.weekNote {
+  color: var(--ink2);
+  font-size: 0.75rem;
+}
+
+/* ── This week ─────────────────────────────────────────────────────────── */
+
+.weekHero {
+  display: grid;
+  gap: 18px;
+  padding: 20px 22px 22px;
+}
+
+.weekHeroMain {
+  min-width: 0;
+}
+
+.weekHeroValue {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.weekAvg {
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-size: 2.125rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+}
+
+.weekUnit {
+  color: var(--ink2);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.weekDelta {
+  color: var(--accent-text);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.weekDelta[data-over='true'] {
+  color: var(--ink2);
+}
+
+.weekHeroBar {
+  position: relative;
+  height: 6px;
+  margin-top: 16px;
+  border-radius: 999px;
+  background: var(--track);
+}
+
+.weekHeroFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width var(--rise) var(--ease-glass);
+}
+
+.weekHeroTick {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--ink2);
+}
+
+.weekHeroMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-top: 10px;
+  color: var(--ink2);
+  font-size: 0.8125rem;
+}
+
+/* Three readings, not three cards: a list where the value leads. */
+
+.weekHeroStats {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 4px;
+  border-top: 1px solid var(--stroke2);
+}
+
+.weekHeroStat {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 4px 12px;
+  min-height: 48px;
+  padding: 10px 0 8px;
+  box-shadow: inset 0 1px 0 var(--stroke2);
+}
+
+.weekHeroStat:first-child {
+  box-shadow: none;
+}
+
+.weekHeroStat p:first-child {
+  margin: 0;
+}
+
+.weekHeroStatValue {
+  grid-row: 1;
+  grid-column: 2;
+  margin: 0;
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.weekHeroStat .statNote {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+/* ── Meals ─────────────────────────────────────────────────────────────── */
+
+.mealHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px 6px;
+}
+
+.mealLabel {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.mealMeta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--ink2);
+  font-size: 0.8125rem;
+}
+
+.mealCount {
+  color: var(--ink2);
+}
+
+.mealKcal {
+  color: var(--ink2);
+  font-variant-numeric: tabular-nums;
+}
+
+.logRow {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 62px 68px auto 36px;
+  align-items: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 8px 14px;
+  border-radius: 20px;
+}
+
+.logRow + .logRow {
+  box-shadow: inset 0 1px 0 var(--stroke2);
+}
+
+.logName {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.logName strong {
+  overflow: hidden;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logTime {
+  font-variant-numeric: tabular-nums;
+}
+
+.logServing {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logQty {
+  display: flex;
+  justify-content: center;
+}
+
+.logQty input {
+  width: 62px;
+  height: 40px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--field);
+  color: inherit;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+}
+
+.logKcal {
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.logProv {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sourceBadge {
+  color: var(--ink2);
+  font-size: 0.8125rem;
+}
+
+.sourceBadge[data-kind='ph'],
+.sourceBadge[data-kind='user'] {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.logRemove {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.logRemove button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink2);
+  font-size: 1.0625rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.logRemove button:hover {
+  background: var(--field);
+  color: var(--ink);
+}
+
+.mealEmpty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 14px 12px;
+}
+
+/* ── Provenance and presence ───────────────────────────────────────────── */
+
+.diaryCards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.provCard,
+.presenceCard {
+  padding: 18px 20px 20px;
+}
+
+.provList {
+  display: grid;
+  gap: 2px;
+  margin-top: 10px;
+}
+
+.provRow {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 0.9375rem;
+  box-shadow: inset 0 1px 0 var(--stroke2);
+}
+
+.provRow:first-child {
+  box-shadow: none;
+}
+
+.provValue {
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.mark {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--ink2);
+  background: var(--track);
+}
+
+.mark[data-kind='verified'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.mark[data-kind='estimate'] {
+  background: transparent;
+  color: var(--ink2);
+  box-shadow: inset 0 0 0 1.5px var(--ink2);
+}
+
+.provBlurb,
+.presenceBlurb {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--stroke2);
+  color: var(--ink2);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.presenceBlurb {
+  padding-top: 0;
+  border-top: 0;
+  margin-top: 12px;
+}
+
+.presenceGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-top: 14px;
+}
+
+.presenceCell {
+  height: 26px;
+  border-radius: 9px;
+  background: var(--track);
+}
+
+.presenceCell[data-on='true'] {
+  background: var(--accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.presenceCell[data-future='true'] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+}
+
+@media (max-width: 900px) {
+  .diaryCards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Diary card, header row and footer ──────────────────────────────────────
+   Restored after the glass pass: the markup renders six cells per row, and the
+   header must share the row's track list or the labels detach from their
+   columns. Content tier — fill and hairline, no blur. */
+
+.diaryLog {
+  border-radius: 28px;
+  background: var(--glass);
+  box-shadow:
+  inset 0 1px 0 var(--stroke),
+  inset 0 0 0 1px var(--stroke2),
+  var(--shadow);
+  overflow: hidden;
+}
+
+.diaryCols {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 62px 68px auto 36px;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 14px 8px;
+  color: var(--ink2);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.diaryCols span:nth-child(3),
+.diaryCols span:nth-child(4) {
+  text-align: right;
+}
+
+.diaryFoot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  box-shadow: inset 0 1px 0 var(--stroke2);
+}
+
+.diaryFootLabel {
+  color: var(--ink2);
+  font-size: 0.8125rem;
+}
+
+.diaryFootKcal {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-size: 1.625rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.diaryFootUnit {
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ink2);
+}
+
+/* The week strip and the week hero are cards too; the glass pass stripped
+   their containers on the way to a class that never landed. */
+
+.weekStrip,
+.weekHero {
+  border-radius: 28px;
+  background: var(--glass);
+  box-shadow:
+  inset 0 1px 0 var(--stroke),
+  inset 0 0 0 1px var(--stroke2),
+  var(--shadow);
+}
+
+/* ── Week hero: readings beside the headline on wide screens ────────────────
+   Stacked full-width rows are right on a phone and wasteful at 1100px, where
+   the headline only needs half the card. */
+
+@media (min-width: 900px) {
+  .weekHero {
+    grid-template-columns: minmax(0, 1fr) 17rem;
+    align-items: start;
+    gap: 28px;
+  }
+
+  .weekHeroStats {
+    padding-top: 0;
+    padding-left: 24px;
+    border-top: 0;
+    border-left: 1px solid var(--stroke2);
+  }
+}
+
+.diaryLog {
+  overflow: auto;
+}
+
+/* The desk surfaces size their small labels alike. */
+
+:is(.diary)
+  :is(.eyebrow, .statLabel, .statLabelLead, .diaryFootLabel, .mealLabel) {
+  font-size: 0.8125rem;
+  letter-spacing: 0;
+}
+
+@media (max-width: 767px) {
+  :is(.diaryCards) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.header, .headerAside) {
+    flex-wrap: wrap;
+  }
+
+  .weekStrip {
+    overflow: auto;
+    grid-template-columns: repeat(7, minmax(72px, 1fr));
+  }
+
+  .diaryCols,
+.logRow {
+    min-width: 640px;
+  }
+}

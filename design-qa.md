@@ -1,74 +1,129 @@
-# KayaMo Claude Design Fidelity QA
+# Botanical redesign — implementation QA
 
-**Final result: passed**
+final result: passed
 
-## Visual truth and evidence
+September 14 audit implementation and local visual QA passed. This is not production
+release approval. Remaining release gates: hosted verification, native zoom/screen-reader
+review, provider rollback retention and user preview approval.
 
-- Source: `/Users/rovs/Downloads/KayaMo mobile app design (2).zip`
-- Reference viewport: 390 × 844 px
-- Implementation: `/app` in the KayaMo PWA
-- Side-by-side comparisons:
-  - `docs/design/qa-round-2/final-home-aligned-comparison.png`
-  - `docs/design/qa-round-2/final-today-populated-comparison.png`
-  - `docs/design/qa-round-2/final-health-comparison.png`
-  - `docs/design/qa-round-2/final-journey-comparison.png`
-- Additional interaction captures:
-  - `docs/design/qa-round-2/refined-chat.png`
-  - `docs/design/qa-round-2/final-focus-aligned.png`
-  - `docs/design/qa-round-2/final-home-day.png`
+## Scope and visual truth
 
-The source and implementation were inspected together at the same 390 px width. Copy and totals intentionally differ where the implementation shows confirmed IndexedDB records instead of Claude's static sample records.
+Selected direction: daily timeline/priorities from concept 2, with only the botanical
+texture from concept 3. Apple-inspired quality is the goal, not an Apple approval claim.
+Native artwork and defaults remain outside scope.
 
-## Iteration history
+- Source: `docs/design/botanical/evidence/reference.png`, 1487×1058.
+- Current: `docs/design/botanical/evidence/home-motion-v6.png`, Chromium at 1440×1024,
+  device scale factor 1.
+- Original-direction comparison: `docs/design/botanical/evidence/comparison-v5.png`,
+  source normalized to 1440×1024 beside the pre-audit implementation.
+- Audit regression comparison: `docs/design/botanical/evidence/motion-comparison-v6.png`,
+  2880×1024, pre-audit v5 left and final audit v6 right, each at native 1440×1024.
+  Focused brand/header comparison: `motion-detail-v6.png`, two 700×260 crops at 1:1.
+- Same state: light theme, September 11, 2026, three illustrative tasks/time blocks
+  in isolated test-guest IndexedDB. No production sample records are inserted.
+- Additional evidence in that directory: `mus-family-v5.png`,
+  `goal-editor-320-v5.png`, `task-editor-dark-320-v5.png`,
+  `settings-large-text-v5.png`.
+- Live in-app browser review: Mus conversation/history and light/dark settings;
+  audit follow-up reviewed narrow Home, Goals and editor open/close/focus restoration.
 
-### Iteration 1 — blocked
+## September 14 audit findings and post-fix comparison
 
-- [P1] Home used a large boxed habitat and a generic full-width tab dock instead of Claude's open atmosphere and floating capsule.
-- [P1] Today, Health, and Journey reduced the selected design to generic cards and omitted its compact record hierarchy.
-- [P1] The floating Coco puck overlapped content and did not match the selected design's contextual Coco entry points.
-- [P2] Chat lacked the selected source/citation and explicit “Remember this” treatment.
-- [P2] Tab changes reset or leaked scroll position instead of preserving a position per destination.
-- [P2] Re-entering an active focus action could create a second active session.
+No actionable P0/P1/P2 visual differences remain in the reviewed audit scope.
+The audit's AD-01–08 implementation is recorded in
+`docs/audits/2026-09-13-apple-design-implementation.md`; the source audit is unchanged.
 
-### Iteration 2 — passed
+- Fonts/typography: same system-sans family, weights, hierarchy and wrapping at default
+  text size. Optical sizing is enabled; no replacement typeface or decorative labels.
+- Spacing/layout: same columns, card dimensions, corners and content rhythm. The demo
+  banner is intentionally 13px taller to accommodate a true 44px sign-in target;
+  content shifts down accordingly. Brand/link padding no longer relies on overlap.
+  Equivalent rem dimensions preserve default density and scale with text preferences.
+- Colors/tokens: botanical palette, opaque reading cards and navigation texture remain
+  unchanged. Reduced transparency now becomes opaque immediately, including on theme changes.
+- Images: existing sprout and transparent Mus assets retain scale, crop and sharpness;
+  no artwork was regenerated or replaced in this interaction pass.
+- Copy/content: the same saved-record test content and public labels remain; no invented
+  activity or audit instructions appear in the interface.
 
-- Home now uses the source's 52 px top inset, 22 px gutters, 196 px Coco habitat, stage progress control, 24 px mission card, confirmed ledger, and full-width Talk to Coco control.
-- Today now uses the compact header companion, lime next-action band, borderless task rows, visible completed rows, focus card, and local reflection surface.
-- Health now follows the source's Food → Weight & guidance → Fitness sequence with code-derived numbers and real food provenance.
-- Journey now follows the source's stage, trace, goals, presence, faith, and settings hierarchy. Missing companion evolution art is not replaced with fake placeholders.
-- Coco chat now matches the source hierarchy and provides a working explicit memory write.
-- Focus now supports “Return later” without cancelling or duplicating the timestamp-backed session.
-- Day is the default blue/white experience; aubergine/lime remains night mode.
+The full-view and focused comparisons were opened together as before/after images.
+The focused crop confirms unchanged brand/nav typography and the intentional banner
+spacing correction. The enlarged dark settings screenshot was also reviewed at 200%
+root text size: content remains readable and scrollable without horizontal overflow.
 
-No actionable P0, P1, or P2 visual or interaction findings remain.
+Iteration history: motion checks caught reduced-motion selector specificity and an
+unreachable read-only timetable; those were corrected in implementation. An intermediate
+full run found four Reduce Transparency checks sampling a fading translucent background.
+The preference now excludes background from transitions rather than weakening assertions.
+The final full run passes all 132 checks, including the original failed states.
+Final screenshots are in `/private/tmp/kayamo-apple-audit-verified/`; the durable Home
+comparison above was regenerated from that final run.
 
-## Accessibility and interaction checks
+## Visual review outcome
 
-- All visible buttons, links, fields, and summaries measured at least 44 × 44 px in the live browser audit.
-- No document-level horizontal overflow was present.
-- Native modal dialogs provide modal focus behavior, Escape dismissal, accessible labels, and focus return.
-- Tab buttons expose `aria-current`; completion rows expose pressed state; the countdown exposes `role="timer"`.
-- Focus order follows each screen's visual order: header, primary action, records, secondary content, then tab navigation.
-- Main screens have one vertical scroll area. Each tab preserves its own position.
-- Reduced motion, reduced transparency, and higher contrast remain supported.
-- Large content is allowed to reflow and scroll; no fixed-height text containers clip user copy.
+Home preserves the selected two-column plan/priorities layout, opaque reading
+surfaces, botanical palette and textured navigation. Typography is system sans.
+The demo disclosure adds vertical space absent from the mock. Generic saved tasks
+use neutral icons/categories rather than guessing life areas from their text.
+These are intentional functional differences.
 
-## Data-integrity checks
+All four Mus expressions now use the transparent seed/two-leaf family, reviewed on
+light/dark backgrounds. Web overrides preserve native assets and non-shaming rules.
+Old black-circle artwork and checkerboard candidates are no longer used by the web.
 
-- Nutrition values remain record-derived and show source/confidence; no design-only calorie values were introduced.
-- Weight trend bars render only when at least two real measurements exist.
-- Journey progress comes from the idempotent accepted event ledger; no restriction, weight-loss, or pain-based reward was added.
-- Diary/reflection stays local. “Remember this” is a separate explicit synced-memory action.
-- Coco continues to require user confirmation for writes.
+Visual review caught overlapping actions in the 320px goal editor. The footer now
+occupies a reserved opaque area; the scrollable form ends above it. A regression
+assertion checks their bounds. Goal labels and conversation titles were made
+readable, and history controls no longer squeeze titles into a tiny column.
+
+Non-blocking polish: the mock's timeline icons/markers are more prominent. Retain
+honest saved-field semantics if refining them.
 
 ## Verification
 
-- `pnpm lint` — passed
-- `pnpm typecheck` — passed
-- `pnpm test` — passed
-- `pnpm build` — passed for the full workspace
-- Next builds now use webpack explicitly, avoiding the environment-specific Turbopack worker-port panic.
-- Google font files used by the design are local, so production builds do not depend on network access.
-- Database RLS integration tests remain environment-gated when local Supabase is not running; all available unit and offline tests passed.
+- Full browser suite: **132/132 passed**, Chromium, Firefox and WebKit, retaining
+  original behaviors and adding accessibility/recovery and motion coverage.
+- Unit suite: **529/529 passed**. Typecheck, lint and production build passed after
+  the full browser run. Existing AI SDK and local Node 20 warnings remain.
+- Final affected-screen rerun/build checks are recorded in
+  `docs/design/botanical/release-candidate.md` when complete.
+- Disposable database: **32/32 integration tests passed** after all migrations
+  replayed in a separate local Supabase project. Temporary data was removed after
+  testing; the existing local project and production were untouched.
+- Goal save is now one account-scoped IndexedDB transaction including the outbox.
+  Injected failure/reload/retry is tested. Remote sync remains eventually consistent,
+  not an invented atomic server transaction.
+- See `docs/design/botanical/accessibility-state-matrix.md` for exact route/state,
+  width, theme, reduced-preference, focus and contrast coverage, and its limits.
 
-final result: passed
+## Release checklist
+
+- [x] Selected layout, responsive five-destination shell and working core journeys.
+- [x] Complete transparent Mus family and web-only integration.
+- [x] Observed table/timeline, contrast, modal-focus and editor-overlap fixes.
+- [x] Document automated accessibility and workflow-state matrix.
+- [x] Atomic local goal-plan save and partial-write recovery tests.
+- [x] Disposable database integration.
+- [x] Audit interaction pass AD-01–08 and final visual comparison.
+- [x] Final full browser checks 132/132; unit tests 529/529; typecheck, lint and build passed.
+- [ ] Hosted preview and candidate smoke checks.
+- [ ] Native browser zoom and actual screen-reader review.
+- [ ] Verify provider rollback retention.
+- [ ] User preview approval, promotion and post-promotion smoke.
+
+## Comparison history
+
+September 14 global-positioning follow-up: public landing/login wording is no longer
+Filipino-first. Foods adds an opaque worldwide-search/review section using the existing
+palette and control system; `evidence/worldwide-review-390.png` records the narrow
+authenticated fixture. The app's demo gate was also inspected in the in-app browser.
+This is a functional addition, not a claim that the original Home mock included a food
+search design. Release limits and exact regression outcomes are in
+`docs/global-product-direction.md`; USDA access currently returns HTTP 403.
+
+Earlier `comparison-v1/v2/v3.png` and `detail-v3.png` document typography/layout
+corrections. The v2 detail was incorrectly density-normalized and is not acceptance
+evidence. V4 corrected narrow Home hierarchy and moved expression guidance into
+a disclosure. V5 completes artwork, semantic/contrast fixes and same-state comparison.
+Earlier 105-test results precede the expanded suite.

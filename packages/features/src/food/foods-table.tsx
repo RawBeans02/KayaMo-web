@@ -1,4 +1,5 @@
 'use client';
+import type { ReactNode } from 'react';
 
 import type { Food, Serving } from '@kayamo/db';
 import {
@@ -33,7 +34,7 @@ import {
 import { applyOverlayToFood } from './verify-model';
 import { readVerifyOverlay } from './verify-overlay';
 import { waitForUserDb } from './wait-user-db';
-import styles from './desk.module.css';
+import styles from './catalog.module.css';
 
 const UNDO_MS = 8000;
 
@@ -42,7 +43,7 @@ function defaultServing(list: Serving[] | undefined): Serving | null {
   return list.find((row) => row.is_default) ?? list[0] ?? null;
 }
 
-export function FoodsTable({ userId }: { userId: string }) {
+export function FoodsTable({ userId, children }: { userId: string; children?: ReactNode }) {
   const { today } = useDeskClock(userId);
   const [foods, setFoods] = useState<Food[]>([]);
   const [servings, setServings] = useState<Map<string, Serving[]>>(new Map());
@@ -156,7 +157,7 @@ export function FoodsTable({ userId }: { userId: string }) {
       setError(
         food.source === 'user'
           ? 'Could not save that alias.'
-          : 'PH-core aliases need verify_ph_core_food — the same RPC as Verify. This browser cannot write the shared catalog.',
+          : 'PH-core aliases need verify_ph_core_food, the same RPC as Verify. This browser cannot write the shared catalog.',
       );
     }
   }
@@ -229,8 +230,9 @@ export function FoodsTable({ userId }: { userId: string }) {
             Foods
           </h1>
         </div>
-        <p className={styles.foodsLede}>Everything visible under RLS. Logging happens in the palette, not here.</p>
+        <p className={styles.foodsLede}>Your saved catalog. Log a saved food from the palette, or search worldwide below.</p>
       </header>
+      {children}
 
       <section className={styles.foodsShape} aria-label="Shape of the database">
         <p className={styles.statLabel}>Shape of the database</p>
@@ -262,8 +264,8 @@ export function FoodsTable({ userId }: { userId: string }) {
               type="search"
               value={query}
               onChange={(event) => setQuery(event.currentTarget.value)}
-              placeholder="Filter by name or Taglish alias…"
-              aria-label="Filter by name or Taglish alias"
+              placeholder="Filter by name or alias…"
+              aria-label="Filter by name or alias"
             />
             <div className={styles.foodsPills}>
               <button
@@ -305,21 +307,20 @@ export function FoodsTable({ userId }: { userId: string }) {
           ) : (
             <div className={styles.foodsGrid} role="table" aria-label="Catalog foods">
               <div className={styles.foodsCols} role="row">
-                <span />
-                <span>Dish · aliases</span>
-                <span>Source</span>
-                <span>kcal /100g</span>
-                <span>Default serving</span>
-                <span>Conf</span>
+                <span role="columnheader" aria-label="Verification" />
+                <span role="columnheader">Dish · aliases</span>
+                <span role="columnheader">Source</span>
+                <span role="columnheader">kcal /100g</span>
+                <span role="columnheader">Default serving</span>
+                <span role="columnheader">Conf</span>
               </div>
               <div className={styles.foodsBody}>
                 {visible.map((food) => {
                   const list = uniqueAliases(food.name_tl, aliases.get(food.id));
                   const mark = food.source === 'llm' ? '~' : food.verified_by_user ? '✓' : '~';
                   return (
-                    <button
+                    <div
                       key={food.id}
-                      type="button"
                       role="row"
                       className={styles.foodsRow}
                       data-foods-row=""
@@ -330,33 +331,33 @@ export function FoodsTable({ userId }: { userId: string }) {
                         setCreating(false);
                       }}
                     >
-                      <span className={styles.mark} data-kind={food.verified_by_user ? 'verified' : 'plain'} aria-hidden="true">
+                      <span role="cell" className={styles.mark} data-kind={food.verified_by_user ? 'verified' : 'plain'} aria-label={food.verified_by_user ? 'Verified' : 'Unverified'}>
                         {mark}
                       </span>
-                      <span className={styles.foodsName}>
-                        <strong>{food.name}</strong>
+                      <span role="cell" className={styles.foodsName}>
+                        <button type="button" data-food-select=""><strong>{food.name}</strong></button>
                         <span>{list.join(' · ') || '—'}</span>
                       </span>
-                      <span className={styles.foodsProv}>
+                      <span role="cell" className={styles.foodsProv}>
                         <span className={styles.foodsBadge} data-source={food.source}>
                           {catalogBadge(food.source)}
                         </span>
                         <span>{provenanceLabel(food.source, food.verified_by_user)}</span>
                       </span>
-                      <span className={styles.foodsKcal} data-kcal-cell="">
+                      <span role="cell" className={styles.foodsKcal} data-kcal-cell="">
                         {kcalCell(food)}
                         <span className={styles.foodsKcalUnit}>/100g</span>
                       </span>
-                      <span className={styles.foodsServing}>
+                      <span role="cell" className={styles.foodsServing}>
                         {(() => {
                           const picked = defaultServing(servings.get(food.id));
                           return picked ? `${picked.label} · ${picked.grams_equivalent} g` : '—';
                         })()}
                       </span>
-                      <span className={styles.foodsConf}>
+                      <span role="cell" className={styles.foodsConf}>
                         {food.source === 'llm' ? '—' : Number(food.confidence).toFixed(2)}
                       </span>
-                    </button>
+                    </div>
                   );
                 })}
               </div>

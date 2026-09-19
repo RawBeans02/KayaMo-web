@@ -12,7 +12,7 @@ test.describe('public entry pages', () => {
       await page.setViewportSize({ width, height: 900 });
       await page.goto('/');
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-        'The tracker that already knows kanin.',
+        'One place for the day you meant to have.',
       );
       await expect(page.getByRole('button', { name: 'Explore the demo' })).toBeVisible();
       await page.screenshot({ path: testInfo.outputPath('landing.png'), fullPage: true });
@@ -30,13 +30,18 @@ test.describe('public entry pages', () => {
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
       ).toBe(true);
       if (width < 800) {
+        // The login shows no mascot (Lis's face renders on the Lis surface). The
+        // intent this guarded still holds: on a phone the email field must come
+        // before any supporting copy.
         const form = await page
           .getByRole('textbox', { name: 'Email', exact: true })
           .boundingBox();
-        const mascot = await page
-          .getByRole('img', { name: 'Mus, your seed companion' })
+        const help = await page
+          .getByRole('group', { name: 'Need help signing in?' })
+          .or(page.getByText('Need help signing in?'))
+          .first()
           .boundingBox();
-        expect(form!.y).toBeLessThan(mascot!.y);
+        expect(form!.y).toBeLessThan(help!.y);
       }
       await page.screenshot({ path: testInfo.outputPath('login.png'), fullPage: true });
     });
@@ -44,6 +49,7 @@ test.describe('public entry pages', () => {
 
   test('theme toggle and keyboard focus work on the login', async ({
     page,
+    browserName,
   }, testInfo) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/login');
@@ -52,7 +58,12 @@ test.describe('public entry pages', () => {
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-kayamo-theme', 'night');
     await page.getByRole('textbox', { name: 'Email', exact: true }).focus();
-    await page.keyboard.press('Tab');
+    // macOS WebKit follows Safari's default keyboard policy: Option-Tab
+    // reaches every control, while plain Tab skips buttons. Keep the same
+    // focus assertion and exercise the platform's native keyboard shortcut.
+    await page.keyboard.press(
+      browserName === 'webkit' && process.platform === 'darwin' ? 'Alt+Tab' : 'Tab',
+    );
     await expect(
       page.getByRole('button', { name: 'Email me a sign-in link' }),
     ).toBeFocused();
@@ -66,14 +77,14 @@ test.describe('public entry pages', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
     await page.getByRole('button', { name: 'Explore the demo' }).click();
-    await page.waitForURL('**/calories');
+    await page.waitForURL('**/today');
     const original = (await context.cookies()).find(
       (cookie) => cookie.name === 'kayamo_guest',
     )?.value;
     expect(original).toBeTruthy();
     await page.goto('/');
     await page.getByRole('button', { name: 'Continue your demo' }).click();
-    await page.waitForURL('**/calories');
+    await page.waitForURL('**/today');
     const resumed = (await context.cookies()).find(
       (cookie) => cookie.name === 'kayamo_guest',
     )?.value;
@@ -142,28 +153,31 @@ test.describe('public entry pages', () => {
     await expect(
       page.getByRole('alert').filter({ hasText: 'This link has expired' }),
     ).toBeVisible();
+    // The alert is server-rendered, so its visibility says nothing about
+    // whether React has attached the onChange that dismisses it. Wait for the
+    // form's post-mount marker; WebKit in CI typed before hydration and lost
+    // the event.
+    await expect(page.locator('[data-hydrated]')).toBeVisible();
     await page
       .getByRole('textbox', { name: 'Email', exact: true })
       .fill('entry-review@example.com');
     await expect(page.getByText('This link has expired')).toHaveCount(0);
   });
 
-  test('demo opens with a quiet rail; both toggle directions work', async ({ page }) => {
+  test('demo opens without a competing rail and Lis uses one destination', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
     await page.getByRole('button', { name: 'Explore the demo' }).click();
-    await page.waitForURL('**/calories');
-    await expect(page.locator('[data-desk-shell]')).toHaveAttribute(
-      'data-rail',
-      'collapsed',
-    );
-    await page.getByRole('button', { name: 'Expand Mus', exact: true }).first().click();
-    await expect(page.locator('[data-desk-shell]')).toHaveAttribute('data-rail', 'open');
-    await page.getByRole('button', { name: 'Collapse Mus', exact: true }).click();
-    await expect(page.locator('[data-desk-shell]')).toHaveAttribute(
-      'data-rail',
-      'collapsed',
-    );
+    await page.waitForURL('**/today');
+    await page.getByRole('link', { name: 'Ask Lis', exact: true }).click();
+    await expect(page.locator('[data-mus-desk]')).toBeVisible();
+    // Exactly one assistant rail on the Lis screen: the shell no longer mounts
+    // a second one, which is what "competing rail" meant.
+    await expect(page.locator('[data-mus-rail]')).toHaveCount(1);
+    await page.getByRole('link', { name: 'Home', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Home', exact: true })).toBeVisible();
     await page.setViewportSize({ width: 1024, height: 900 });
     await expect(page.locator('[data-desk-shell]')).toBeVisible();
     expect(

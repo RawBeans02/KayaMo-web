@@ -5,6 +5,13 @@ description: KayaMo database schema rules — tables, denormalization, row-level
 
 - RLS on every table. Users read only their own rows. Exception: `foods` and
   `servings` where source != 'user' are globally readable.
+- RLS answers *which rows*. It does not answer *which columns*. Any field that
+  carries authority — a quota, a cost, a role, an entitlement — must be
+  server-controlled with a column-level grant, not merely owned by the user.
+  `agent_runs.cost_usd` is currently user-writable and is a known defect.
+- Migrations are hand-written SQL applied with the Supabase CLI. One runner
+  only. Record the applied set in `docs/releases/` so the deployed schema is
+  knowable without querying production.
 - `food_entries` stores a DENORMALIZED nutrient snapshot. Never replace it
   with a join. Correcting a food in 2027 must not silently rewrite 2026 history.
 - Every user-owned row uses a client-generated UUID primary key plus

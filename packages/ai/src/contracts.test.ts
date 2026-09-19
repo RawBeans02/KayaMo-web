@@ -62,6 +62,7 @@ describe('coco model output contracts', () => {
         physical_self: false,
         memory: false,
         faith: false,
+        identity: false,
       },
     });
     expect(parsed.success).toBe(true);

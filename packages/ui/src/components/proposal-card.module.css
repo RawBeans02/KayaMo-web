@@ -1,160 +1,175 @@
+/* Proposal card — Liquid Glass.
+ *
+ * The card Lis's proposed writes render in: Verify and Foods inspectors and
+ * the dev gallery. It sits inside a surface (an inspector, a thread), so it
+ * is content: a plain glass fill with the edge drawn as inset strokes, no
+ * blur. Risk tints the fill and the label; the three tiers keep the same
+ * shape so the word "high" and the confirm field carry the difference, not a
+ * different card. Every colour is a glass token; the legacy --color-* aliases
+ * this file read until 2026-09-19 are gone from it, as is the 9px radius and
+ * the 1px border of the desk skin.
+ */
+
 .card {
   overflow: hidden;
-  border: 1px solid var(--color-line);
-  border-radius: 9px;
-  background: var(--color-surface);
-  color: var(--color-text);
+  border-radius: 22px;
+  background: var(--glass-strong);
+  color: var(--ink);
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    inset 0 0 0 1px var(--stroke2);
 }
 
 .card[data-risk='medium'] {
-  border-color: var(--color-line-strong);
-  background: color-mix(in srgb, var(--color-accent) 5%, var(--color-surface));
+  background: color-mix(in srgb, var(--accent) 6%, var(--glass-strong));
 }
 
 .card[data-risk='high'] {
-  border-color: color-mix(in srgb, var(--color-warning) 45%, transparent);
-  background: color-mix(in srgb, var(--color-warning) 7%, var(--color-surface));
+  background: color-mix(in srgb, var(--danger) 7%, var(--glass-strong));
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    inset 0 0 0 1px color-mix(in srgb, var(--danger) 35%, transparent);
 }
 
 .head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.5rem 0.7rem 0.45rem;
-  border-bottom: 1px solid var(--color-line);
-}
-
-.card[data-risk='medium'] .head,
-.card[data-risk='high'] .head {
-  border-bottom-color: inherit;
+  gap: 8px;
+  padding: 10px 14px 9px;
+  box-shadow: inset 0 -1px 0 var(--stroke2);
 }
 
 .risk {
-  color: var(--color-muted);
-  font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.11em;
+  color: var(--ink2);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .card[data-risk='medium'] .risk {
-  color: var(--color-accent);
+  color: var(--accent-text);
 }
 
 .card[data-risk='high'] .risk {
-  color: var(--color-warning);
+  color: var(--danger-text);
 }
 
 .action {
-  color: var(--color-muted-2);
-  font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.08em;
+  color: var(--ink2);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .body {
-  padding: 0.65rem 0.7rem 0.7rem;
+  padding: 12px 14px 14px;
 }
 
 .title {
   margin: 0;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.9375rem;
+  font-weight: 700;
   line-height: 1.35;
+  letter-spacing: -0.01em;
 }
 
 .why {
-  margin: 0.4rem 0 0;
-  color: var(--color-muted);
-  font-size: 0.78125rem;
+  margin: 6px 0 0;
+  color: var(--ink2);
+  font-size: 0.8125rem;
   line-height: 1.5;
 }
 
+/* Before / after: two rows inside one rounded field. */
 .diff {
   display: grid;
   gap: 1px;
-  margin-top: 0.65rem;
+  margin-top: 12px;
   overflow: hidden;
-  border: 1px solid var(--color-line);
-  border-radius: 6px;
+  border-radius: 14px;
+  background: var(--stroke2);
+  box-shadow: inset 0 0 0 1px var(--stroke2);
 }
 
 .row {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
-  gap: 0.5rem;
-  padding: 0.4rem 0.55rem;
-  background: var(--color-surface);
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--field);
 }
 
 .rowAfter {
-  background: var(--color-surface-2);
+  background: var(--glass);
 }
 
 .rowLabel {
-  color: var(--color-muted-2);
-  font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.08em;
+  color: var(--ink2);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .rowValue {
   min-width: 0;
-  color: var(--color-muted);
-  font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 0.75rem;
+  color: var(--ink2);
+  font-size: 0.8125rem;
   line-height: 1.4;
+  font-variant-numeric: tabular-nums;
 }
 
 .rowAfter .rowValue {
-  color: var(--color-text);
-  font-weight: 500;
+  color: var(--ink);
+  font-weight: 600;
 }
 
+/* A proposed day: time and title per block, same field shape. */
 .blocks {
   display: grid;
   gap: 1px;
-  margin: 0.65rem 0 0;
+  margin: 12px 0 0;
   padding: 0;
   overflow: hidden;
-  border: 1px solid var(--color-line);
-  border-radius: 6px;
+  border-radius: 14px;
+  background: var(--stroke2);
+  box-shadow: inset 0 0 0 1px var(--stroke2);
   list-style: none;
 }
 
 .block {
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr);
-  gap: 0.5rem;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 8px;
   align-items: baseline;
-  padding: 0.4rem 0.55rem;
-  background: var(--color-surface);
+  padding: 8px 12px;
+  background: var(--field);
 }
 
 .block:nth-child(even) {
-  background: var(--color-surface-2);
+  background: var(--glass);
 }
 
 .blockTime {
-  color: var(--color-muted);
-  font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 0.6875rem;
+  color: var(--ink2);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .blockTitle {
   display: block;
-  font-size: 0.78125rem;
-  font-weight: 500;
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
 
 .blockWhy {
   display: block;
-  color: var(--color-muted-2);
-  font-size: 0.6875rem;
+  color: var(--ink2);
+  font-size: 0.75rem;
   line-height: 1.4;
 }
 
@@ -162,139 +177,168 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 5px;
-  margin-top: 0.65rem;
+  gap: 6px;
+  margin-top: 12px;
 }
 
 .touchesLabel {
-  color: var(--color-muted-2);
-  font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.08em;
+  color: var(--ink2);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .chip {
   display: inline-block;
-  padding: 1px 6px;
-  border: 1px solid var(--color-line-strong);
-  border-radius: 3px;
-  color: var(--color-muted);
-  font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.06em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--glass);
+  color: var(--ink2);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--stroke2);
 }
 
+/* High risk: the word, typed. */
 .confirm {
   display: grid;
-  gap: 5px;
-  margin-top: 0.7rem;
+  gap: 6px;
+  margin-top: 12px;
 }
 
 .confirmLabel {
   display: block;
-  font-size: 0.72rem;
+  color: var(--ink2);
+  font-size: 0.8125rem;
   line-height: 1.45;
 }
 
 .confirmWord {
-  font-family: var(--font-data), ui-monospace, monospace;
-  font-weight: 600;
+  color: var(--danger-text);
+  font-weight: 700;
 }
 
 .confirmInput {
-  height: 32px;
-  padding: 0 9px;
-  border: 1px solid var(--color-line-strong);
-  border-radius: 6px;
-  background: var(--color-surface);
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--field);
   color: inherit;
-  font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 0.78125rem;
+  font: inherit;
+  font-size: 0.9375rem;
+  box-shadow: inset 0 0 0 1px var(--stroke2);
 }
 
+.confirmInput::placeholder {
+  color: var(--ink3);
+}
+
+/* Actions: the accent pill applies; the ghosts edit or decline. Press
+   feedback is the global contract in web-motion.css. */
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 0.7rem;
+  gap: 8px;
+  margin-top: 14px;
 }
 
 .apply,
 .ghost {
-  height: 32px;
-  padding: 0 13px;
-  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
   font: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .apply {
-  border: 0;
-  background: var(--color-accent);
-  color: var(--color-accent-fg);
-  font-weight: 600;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 .apply:disabled {
-  background: var(--color-surface-2);
-  color: var(--color-muted-2);
   cursor: not-allowed;
-  opacity: 0.75;
+  opacity: 0.45;
 }
 
 .ghost {
-  padding: 0 11px;
-  border: 1px solid var(--color-line-strong);
-  background: transparent;
-  color: inherit;
+  padding: 0 16px;
+  background: var(--glass);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--stroke);
+  transition: background var(--swap) linear;
+}
+
+.ghost:hover {
+  background: var(--glass-strong);
 }
 
 .dismiss {
-  color: var(--color-muted);
+  color: var(--ink2);
 }
 
 .foot {
-  margin: 0.5rem 0 0;
-  color: var(--color-muted-2);
-  font-size: 0.6875rem;
+  margin: 10px 0 0;
+  color: var(--ink2);
+  font-size: 0.75rem;
   line-height: 1.45;
 }
 
+/* After an apply: one line and Undo. */
 .undo {
   display: grid;
-  grid-template-columns: 15px minmax(0, 1fr) auto;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 9px;
-  padding: 9px 14px;
-  background: var(--color-surface-2);
-  color: var(--color-text);
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: var(--glass-strong);
+  color: var(--ink);
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    inset 0 0 0 1px var(--stroke2);
 }
 
 .mark {
   display: inline-grid;
   place-items: center;
-  width: 15px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
   border-radius: 999px;
-  background: var(--color-accent);
-  color: var(--color-accent-fg);
-  font-size: 9px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 0.625rem;
   font-weight: 700;
 }
 
 .undoText {
-  font-size: 0.78125rem;
+  font-size: 0.8125rem;
   line-height: 1.4;
 }
 
 .undoButton {
+  min-height: 32px;
+  padding: 0 10px;
   border: 0;
+  border-radius: 999px;
   background: transparent;
-  color: var(--color-accent);
+  color: var(--accent-text);
   font: inherit;
-  font-size: 0.78125rem;
-  font-weight: 600;
+  font-size: 0.8125rem;
+  font-weight: 700;
   cursor: pointer;
+}
+
+.undoButton:hover {
+  background: var(--glass);
 }

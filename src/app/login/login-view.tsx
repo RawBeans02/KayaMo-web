@@ -1,11 +1,11 @@
 'use client';
-import Image from 'next/image';
 import Link from 'next/link';
 import { ThemeToggle } from '@/shell/theme-toggle';
 import { useSearchParams } from 'next/navigation';
-import { useDeskLocale } from '@kayamo/features/desktop';
+import { useDeskLocale } from '@kayamo/features/desk-locale';
 import { LoginForm } from './login-form';
 import { LoginTheme } from './login-theme';
+import { LEGAL_ROUTES } from '@/lib/legal';
 import styles from './login.module.css';
 
 export function LoginView({ localDev }: { localDev: boolean }) {
@@ -20,24 +20,27 @@ export function LoginView({ localDev }: { localDev: boolean }) {
       <LoginTheme />
       <header className={styles.nav}>
         <Link href="/" className={styles.wordmark} aria-label="KayaMo home">
+          <span className={styles.wordmarkTile} aria-hidden="true" />
           KayaMo
         </Link>
         <div className={styles.navActions}>
           <ThemeToggle />
-          <Link className={styles.back} href={fromDemo ? '/calories' : '/'}>
-            {fromDemo ? 'Back to your demo' : 'Back to home'}{' '}
+          <Link className={styles.back} href={fromDemo ? '/today' : '/'}>
+            <span className={styles.backLong}>
+              {fromDemo ? 'Back to your demo' : 'Back to home'}
+            </span>
+            <span className={styles.backShort}>Back</span>
             <span aria-hidden="true">↗</span>
           </Link>
         </div>
       </header>
       <div className={styles.shell}>
-        <section className={styles.signIn} aria-labelledby="login-title">
-          <p className={styles.eyebrow}>Your everyday, in one place</p>
+        <section className={`${styles.signIn} kgSurface`} aria-labelledby="login-title">
           <h1 id="login-title">
             {locale === 'en' ? 'Sign in to KayaMo.' : 'Tuloy ka sa KayaMo.'}
           </h1>
           <p className={styles.intro}>
-            Enter your email. We’ll send you a sign-in link—no password needed.
+            Enter your email. We’ll send you a sign-in link, no password needed.
           </p>
           {fromDemo ? (
             <p className={styles.demoNote}>
@@ -57,35 +60,30 @@ export function LoginView({ localDev }: { localDev: boolean }) {
           </details>
         </section>
         <aside className={styles.welcome} aria-label="Welcome to KayaMo">
-          <p className={styles.eyebrow}>Kaya mo. One day at a time.</p>
+          <p className={`kgEyebrow ${styles.eyebrow}`}>Small steps. One day at a time.</p>
+          {/* The break is hidden below 480px, so the space before it matters. */}
           <h2>
-            A little more room
+            A little more room{' '}
             <br />
             for your everyday.
           </h2>
           <p>
             Your meals, your training, your next small step. Pick up where you left off.
           </p>
-          <div className={styles.companion}>
-            <Image
-              className={styles.mus}
-              src="/mus-neutral.webp"
-              alt="Mus, your seed companion"
-              width={160}
-              height={160}
-              sizes="160px"
-            />
-            <p>
-              <strong>Kasama mo si Mus.</strong>A little encouragement along the way.
-            </p>
-          </div>
           <span className={styles.signature}>
-            Made for the everyday. Made for the Philippines.
+            Personal growth, on your terms.
           </span>
         </aside>
       </div>
       <footer className={styles.footer}>
-        Food, training, and the little things that add up.
+        <span>Small steps. Meaningful goals. Room to grow.</span>
+        <nav className={styles.footerLinks} aria-label="Legal">
+          {LEGAL_ROUTES.map((route) => (
+            <Link key={route.href} href={route.href}>
+              {route.label}
+            </Link>
+          ))}
+        </nav>
       </footer>
     </main>
   );

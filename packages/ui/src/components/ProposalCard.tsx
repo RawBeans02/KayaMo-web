@@ -118,7 +118,7 @@ export function ProposalCard({
         {risk === 'high' ? (
           <div className={styles.confirm}>
             <label className={styles.confirmLabel} htmlFor={inputId}>
-              This one changes a target, so it needs the word — type{' '}
+              This one changes a target, so it needs the word. Type{' '}
               <span className={styles.confirmWord}>{HIGH_RISK_CONFIRM_WORD}</span>.
             </label>
             <input

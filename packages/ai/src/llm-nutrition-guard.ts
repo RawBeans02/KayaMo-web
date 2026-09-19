@@ -55,5 +55,10 @@ export function nutritionKeysInJsonSchema(schema: unknown): string[] {
 }
 
 export function nutritionKeysInZod(schema: z.ZodType): string[] {
-  return nutritionKeysInJsonSchema(z.toJSONSchema(schema));
+  // The guard cares about what the model may emit, which is the schema's
+  // input side. The output side is what a `.transform()` produces, and Zod
+  // refuses to represent transforms there, so the chat schema used to make
+  // this throw. Unrepresentable pieces become `{}` rather than aborting the
+  // walk; a guard that crashes is a guard that gets removed.
+  return nutritionKeysInJsonSchema(z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any' }));
 }

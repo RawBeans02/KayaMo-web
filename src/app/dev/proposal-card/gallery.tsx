@@ -27,7 +27,7 @@ const DEMOS: Record<
     why: 'The standalone row has no entries logged against it, so nothing in your history changes.',
     diff: {
       before: '2 rows · sinaing, Kanin (white rice, cooked)',
-      after: '1 row · Kanin — alias: sinaing',
+      after: '1 row · Kanin · alias: sinaing',
     },
     touches: ['Foods'],
     foot: 'Low risk, so this applies straight away with an undo for the rest of the day.',
@@ -36,7 +36,7 @@ const DEMOS: Record<
   medium: {
     risk: 'medium',
     action: 'edit ph_core row',
-    title: 'Sinigang na baboy — fat 6.5 → 5.8 g',
+    title: 'Sinigang na baboy · fat 6.5 → 5.8 g',
     why: 'Brings 4/4/9 inside 1% and matches the 30 g cooked pork in your own source note. Confidence stays 0.50 until you verify it yourself.',
     diff: {
       before: 'P 8.0 / C 3.5 / F 6.5 → 104.5 kcal · off 8.4%',
@@ -66,12 +66,12 @@ const DEMOS: Record<
     why: 'Nothing before 15:30 moves. Gym stays where you fixed it.',
     touches: ['Todos', 'Gym'],
     blocks: [
-      { time: '15:30', title: 'Paper — second block', why: 'due tomorrow, no block yet today' },
+      { time: '15:30', title: 'Paper · second block', why: 'due tomorrow, no block yet today' },
       { time: '17:15', title: 'Travel to gym', why: '20 min, from your usual' },
-      { time: '18:00', title: 'Gym · Push A', why: 'you fixed this — not moved' },
+      { time: '18:00', title: 'Gym · Push A', why: 'you fixed this, not moved' },
       { time: '19:30', title: 'Dinner', why: 'wall you set' },
     ],
-    foot: 'Verify rows stay unscheduled — leftover minutes after dinner are yours.',
+    foot: 'Verify rows stay unscheduled. Leftover minutes after dinner are yours.',
     undo: 'Restored the previous plan.',
   },
 };

@@ -1,236 +1,349 @@
+/* Sign-in — Liquid Glass.
+ *
+ * The same ground as the landing: <html> paints bg0 and the wash, the card
+ * composes kgSurface (content sits IN the page, so no blur), and the display
+ * face is Manrope. Every colour is a glass token; the legacy --color-* aliases
+ * this route read until 2026-09-19 are gone from it.
+ */
+
 .viewport {
-  min-height: 100dvh;
+  --display: var(--font-manrope), 'Manrope', system-ui, sans-serif;
   display: flex;
   flex-direction: column;
-  background: var(--color-bg);
-  color: var(--color-text);
+  min-height: 100dvh;
   padding: 0 clamp(1.25rem, 6.6vw, 6rem);
+  background: transparent;
+  color: var(--ink);
 }
-.viewport a:focus-visible,
-.viewport summary:focus-visible,
-.form button:focus-visible {
-  outline: 3px solid var(--color-accent);
-  outline-offset: 4px;
-}
+
+/* ── Top bar ──────────────────────────────────────────────── */
+
 .nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   width: 100%;
-  max-width: 1248px;
+  max-width: 78rem;
   margin-inline: auto;
-  padding-block: 1.8rem;
+  padding-block: 22px 0;
 }
+
 .wordmark {
-  font-family: var(--font-display);
-  font-size: 1.65rem;
-  font-weight: 600;
-  letter-spacing: -0.04em;
-  color: var(--color-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding-right: 8px;
+  color: inherit;
+  font-family: var(--display);
+  font-size: 1.0625rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   text-decoration: none;
 }
+
+.wordmarkTile {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: var(--accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
 .navActions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 10px;
 }
-.navActions button {
+
+/* The shell's theme toggle ships at 32px; an entry page needs a 44px target. */
+.navActions > button {
   width: 44px;
   height: 44px;
+  border-color: var(--stroke2);
+  color: var(--ink2);
 }
+
 .back {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 8px;
   min-height: 44px;
-  font-size: 0.9375rem;
-  color: var(--color-muted);
+  padding: 0 14px;
+  border-radius: 999px;
+  color: var(--ink2);
+  font-size: 0.875rem;
+  font-weight: 600;
   text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background var(--swap) linear,
+    color var(--swap) linear;
 }
+
 .back:hover {
-  color: var(--color-text);
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  background: var(--glass);
+  color: var(--ink);
 }
+
+/* One word at phone widths. The full label wrapped onto two lines at 390 and,
+   with the wider fallback fonts on Linux, pushed the top bar past 320. */
+.backShort {
+  display: none;
+}
+
+/* ── Two columns: welcome on the ground, the card beside it ─── */
+
 .shell {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: clamp(3rem, 8vw, 8rem);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 30rem);
+  gap: clamp(2.5rem, 7vw, 7rem);
   align-items: center;
   width: 100%;
-  max-width: 1120px;
+  max-width: 72rem;
   margin: auto;
-  padding-block: 3rem 4rem;
+  padding-block: clamp(2.5rem, 6vw, 4.5rem) 4rem;
 }
+
 .signIn {
   grid-column: 2;
   grid-row: 1;
   width: 100%;
-  max-width: 400px;
-  justify-self: center;
+  padding: 28px;
 }
-.eyebrow {
-  margin: 0;
-  font-family: var(--font-data);
-  font-size: 0.75rem;
-  line-height: 1.7;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-muted);
-}
+
 .signIn h1 {
-  margin: 0.9rem 0;
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 3vw, 2.65rem);
-  line-height: 1.13;
-  letter-spacing: -0.04em;
+  margin: 0 0 10px;
+  font-family: var(--display);
+  font-size: clamp(1.75rem, 2.6vw, 2.25rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
 }
+
 .intro {
-  margin: 0 0 1.8rem;
-  font-size: 1.0625rem;
-  color: var(--color-muted);
-  line-height: 1.6;
-}
-.demoNote {
-  padding: 0.8rem 1rem;
-  border: 1px solid var(--color-line-strong);
-  border-radius: 8px;
-  font-size: 0.875rem;
-  line-height: 1.6;
-  color: var(--color-muted);
-  background: var(--color-surface);
-}
-/* Desktop composition of the shared form; authentication remains in features. */
-.form > div {
-  padding: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-.form label > span {
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--color-text);
-}
-.form input {
-  min-height: 54px;
-  border-radius: 8px;
-  background: var(--color-surface);
+  margin: 0 0 22px;
+  color: var(--ink2);
   font-size: 1rem;
+  line-height: 1.55;
 }
-.form button {
-  border-radius: 8px;
+
+.demoNote {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--glass);
+  color: var(--ink2);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  box-shadow: inset 0 0 0 1px var(--stroke2);
 }
+
 .form [role='status'],
 .form [role='alert'] {
   overflow-wrap: anywhere;
 }
+
+/* ── Help disclosure ──────────────────────────────────────── */
+
 .help {
-  border-top: 1px solid var(--color-line);
-  margin-top: 1.75rem;
-  color: var(--color-muted);
+  margin-top: 20px;
+  padding-top: 6px;
+  color: var(--ink2);
   font-size: 0.875rem;
-  line-height: 1.6;
+  line-height: 1.55;
+  box-shadow: inset 0 1px 0 var(--stroke2);
 }
+
 .help summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 8px 4px;
+  border-radius: 12px;
+  color: var(--ink);
+  font-weight: 600;
   cursor: pointer;
-  padding-block: 1rem;
+  list-style: none;
 }
+
+.help summary::-webkit-details-marker {
+  display: none;
+}
+
+.help summary::after {
+  color: var(--ink3);
+  content: '›';
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: rotate 220ms var(--ease-glass);
+}
+
+.help[open] summary::after {
+  rotate: 90deg;
+}
+
 .help p {
-  margin: 0 0 1rem;
+  margin: 0 0 12px;
+  padding: 0 4px;
 }
+
+/* ── Welcome column ───────────────────────────────────────── */
+
 .welcome {
   grid-column: 1;
   grid-row: 1;
-  padding-block: 2rem;
+  max-width: 34rem;
 }
+
+.eyebrow {
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+}
+
 .welcome h2 {
-  font-family: var(--font-display);
-  font-size: clamp(2.6rem, 4vw, 3.5rem);
-  line-height: 1.1;
+  margin: 18px 0 0;
+  font-family: var(--display);
+  font-size: clamp(2.5rem, 4.6vw, 4rem);
+  font-weight: 800;
+  line-height: 1;
   letter-spacing: -0.045em;
-  margin: 1.25rem 0;
+  text-wrap: balance;
 }
+
 .welcome > p:not(.eyebrow) {
-  max-width: 36ch;
+  max-width: 40ch;
+  margin: 22px 0 0;
+  color: var(--ink2);
   font-size: 1.125rem;
-  color: var(--color-muted);
-  line-height: 1.7;
+  line-height: 1.55;
 }
-.companion {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  margin-block: 2rem;
-}
-.mus {
-  object-fit: contain;
-  flex-shrink: 0;
-}
-.companion p {
-  max-width: 20ch;
-  font-size: 0.9375rem;
-  color: var(--color-muted);
-  line-height: 1.6;
-}
-.companion strong {
-  display: block;
-  color: var(--color-text);
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
+
 .signature {
   display: block;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-line-strong);
+  margin-top: 28px;
+  padding-top: 18px;
+  color: var(--ink2);
   font-size: 0.8125rem;
-  color: var(--color-muted);
+  box-shadow: inset 0 1px 0 var(--stroke2);
 }
+
 .footer {
-  max-width: 1248px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
   width: 100%;
+  max-width: 78rem;
   margin-inline: auto;
-  padding-block: 1.5rem;
-  border-top: 1px solid var(--color-line);
-  color: var(--color-muted);
+  padding-block: 14px 22px;
+  color: var(--ink2);
   font-size: 0.8125rem;
+  box-shadow: inset 0 1px 0 var(--stroke2);
 }
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.footerLinks a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.footerLinks a:hover {
+  background: var(--glass);
+}
+
+/* ── Phone: the card first, the welcome beneath it ────────── */
+
 @media (max-width: 800px) {
   .shell {
-    grid-template-columns: 1fr;
-    max-width: 440px;
-    gap: 2rem;
-    padding-block: 2rem 3rem;
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 30rem;
+    gap: 28px;
+    padding-block: 1.5rem 3rem;
   }
+
   .signIn {
     grid-column: 1;
-    max-width: none;
+    padding: 22px 18px;
   }
+
   .welcome {
     grid-column: 1;
     grid-row: 2;
-    border-top: 1px solid var(--color-line);
-    padding: 1.5rem 0 0;
+    max-width: none;
+    text-align: center;
   }
-  .welcome > .eyebrow,
-  .welcome > h2,
-  .welcome > p,
+
+  .welcome h2 {
+    font-size: 2rem;
+  }
+
+  .welcome > p:not(.eyebrow) {
+    margin-inline: auto;
+    font-size: 1rem;
+  }
+
   .signature {
     display: none;
   }
-  .companion {
-    margin: 0;
-    justify-content: center;
-    gap: 1rem;
-  }
-  .mus {
-    width: 88px;
-    height: 88px;
-  }
+
   .footer {
+    justify-content: center;
     text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav {
+    gap: 6px;
+  }
+
+  .back {
+    padding: 0 10px;
+  }
+
+  .backLong {
+    display: none;
+  }
+
+  .backShort {
+    display: inline;
+  }
+
+  /* Linux fallback faces run wider than SF and Manrope; give the two display
+     lines room at the narrowest phones instead of trusting the clamp. */
+  .signIn h1 {
+    font-size: 1.5rem;
+    overflow-wrap: anywhere;
+  }
+
+  .welcome h2 {
+    font-size: 1.75rem;
+    overflow-wrap: anywhere;
+  }
+
+  .welcome h2 br {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .help summary::after {
+    transition: none;
   }
 }

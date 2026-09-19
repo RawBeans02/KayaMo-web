@@ -9,7 +9,11 @@ export async function GET(request: Request) {
   const tokenHash = url.searchParams.get('token_hash');
   const otpType = url.searchParams.get('type');
   const next = authCallbackNextPath(url.searchParams.get('next'), '/today');
-  const destination = new URL(next, url.origin);
+  let destination = new URL(next, url.origin);
+  // authCallbackNextPath already rejects protocol-relative and backslash
+  // paths. This is the second lock: whatever the guard let through, a
+  // redirect after a successful sign-in never leaves this origin.
+  if (destination.origin !== url.origin) destination = new URL('/today', url.origin);
 
   const cookieStore = await cookies();
   const response = NextResponse.redirect(destination);

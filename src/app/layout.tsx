@@ -1,59 +1,65 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Barlow_Condensed, IBM_Plex_Mono, Source_Sans_3, Source_Serif_4 } from 'next/font/google';
+import { Manrope } from 'next/font/google';
+import { PRIVATE_ROBOTS, SITE_URL } from '@/lib/site-metadata';
 import './globals.css';
 
-const sourceSans = Source_Sans_3({
+// Display face for titles and numerals. System SF carries the UI text.
+const manrope = Manrope({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--font-source-sans',
-  display: 'swap',
-});
-
-const sourceSerif = Source_Serif_4({
-  subsets: ['latin'],
-  weight: ['600'],
-  variable: '--font-source-serif',
-  display: 'swap',
-});
-
-const barlow = Barlow_Condensed({
-  subsets: ['latin'],
-  weight: ['500', '600', '700'],
-  variable: '--font-barlow',
-  display: 'swap',
-});
-
-const plex = IBM_Plex_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-plex',
+  weight: ['500', '600', '700', '800'],
+  variable: '--font-manrope',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
   title: 'KayaMo',
-  description: 'KayaMo — Filipino food, everyday portions, and your training in one place.',
+  metadataBase: new URL(SITE_URL),
+  robots: PRIVATE_ROBOTS,
+  icons: { icon: '/botanical/favicon-32.png', apple: '/botanical/apple-touch-icon.png' },
+  openGraph: {
+    title: 'KayaMo · plan, food and movement in one place',
+    description:
+      'A calmer place for your daily steps, meaningful goals, and personal growth.',
+    type: 'website',
+    images: [
+      {
+        url: '/botanical/home-preview.webp',
+        width: 1440,
+        height: 1024,
+        alt: 'KayaMo daily plan with illustrative sample tasks',
+      },
+    ],
+  },
+  twitter: { card: 'summary_large_image' },
+  description:
+    'Plan, meals and movement in a single glanceable view. Lis proposes; you confirm.',
 };
 
-const THEME_BOOT = `try{var t=localStorage.getItem('kayamo:theme');var n=t==='night'||(t!=='day'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.kayamoTheme=n?'night':'day';document.documentElement.style.colorScheme=n?'dark':'light';}catch(e){}`;
+const THEME_BOOT = `try{var t=localStorage.getItem('kayamo:theme');var n=t==='night'||(t!=='day'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.kayamoTheme=n?'night':'day';document.documentElement.style.colorScheme=n?'dark':'light';document.documentElement.dataset.reduceTransparency=localStorage.getItem('kayamo:reduce-transparency')==='true'?'true':'false';}catch(e){}`;
 
-// English unless the reader has chosen Taglish. Painted before hydration so the
-// first frame is already in the right language.
+// The rebrand retires the Taglish *toggle*, and English is the default. A
+// reader who had already chosen a language keeps it: dropping a control is not
+// a reason to silently discard an explicit choice someone already made.
 const LOCALE_BOOT = `try{var l=localStorage.getItem('kayamo:locale');document.documentElement.dataset.kayamoLocale=(l==='taglish'||l==='fil')?l:'en';}catch(e){document.documentElement.dataset.kayamoLocale='en';}`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${sourceSans.variable} ${sourceSerif.variable} ${barlow.variable} ${plex.variable} h-full`}
+      className={`h-full ${manrope.variable}`}
+      data-kayamo-web=""
       suppressHydrationWarning
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
         <script dangerouslySetInnerHTML={{ __html: LOCALE_BOOT }} />
       </head>
-      <body className="min-h-full bg-bg font-body text-text antialiased">{children}</body>
+      <body className="min-h-full antialiased">
+        {/* The wash the glass refracts. Inert, behind everything. */}
+        <div className="kgWash" aria-hidden="true" />
+        {children}
+      </body>
     </html>
   );
 }

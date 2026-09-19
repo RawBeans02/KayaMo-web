@@ -42,6 +42,7 @@ import {
   paletteView,
   plateTotalKcal,
   PREFILL_LOG_EVENT,
+  readPrefillLogEvent,
   previewQtyKcal,
   readyCatalogFoods,
   servingCaption,
@@ -255,7 +256,7 @@ export function CommandLog({
 
   useEffect(() => {
     function onPrefill(event: Event) {
-      const query = (event as CustomEvent<{ query?: string }>).detail?.query?.trim();
+      const query = readPrefillLogEvent(event);
       if (!query) return;
       openPalette(query);
     }
@@ -474,7 +475,7 @@ export function CommandLog({
         <div className={styles.body}>
           <div className={styles.chrome}>
             <p id={titleId} className={styles.eyebrow}>
-              Log food · PH core
+              Log food
             </p>
             <div className={styles.slots} role="group" aria-label="Meal slot">
               {SLOTS.map((slot, index) => (
@@ -503,7 +504,7 @@ export function CommandLog({
               ref={inputRef}
               value={query}
               onChange={(event) => setQuery(event.target.value.slice(0, 200))}
-              placeholder="kanin, adobong manok, sinigang na baboy…"
+              placeholder="Rice, lentils, chicken, yogurt…"
               autoComplete="off"
               autoCorrect="off"
               spellCheck={false}
@@ -519,7 +520,7 @@ export function CommandLog({
           <div id={listId} className={styles.list}>
             {view === 'ready' ? (
               <>
-                <p className={styles.readyLabel}>You usually eat around now</p>
+                <p className={styles.readyLabel}>Recent and saved foods</p>
                 <ul role="listbox">
                   {readyHits.map((hit, index) => (
                     <li key={hit.foodId} role="presentation">
@@ -543,7 +544,7 @@ export function CommandLog({
             ) : null}
             {view === 'searching' ? (
               <div>
-                <p className={styles.searchLabel}>Searching PH core · aliases · your history</p>
+                <p className={styles.searchLabel}>Searching saved foods · aliases · your history</p>
                 {PALETTE_SKELETONS.map((sk) => (
                   <div key={sk.w1} className={styles.skeleton} aria-hidden="true">
                     <span className={styles.bones}>
@@ -581,15 +582,15 @@ export function CommandLog({
             ) : null}
             {view === 'none' ? (
               <div className={styles.none}>
-                <p className={styles.noneTitle}>Nothing in PH core matches “{query.trim()}”.</p>
+                <p className={styles.noneTitle}>No saved food matches “{query.trim()}”.</p>
                 <p className={styles.noneBody}>
-                  Brands and USDA stay out of this palette on purpose — they would bury the
-                  dishes you actually eat. Three ways forward:
+                  Search worldwide foods, create a custom entry from a label or recipe,
+                  or ask Lis to help identify it. Nutrition values need a source.
                 </p>
                 <div className={styles.noneActions}>
                   {PALETTE_LEAVE_ACTIONS.map((action) => (
                     <button
-                      key={action.href}
+                      key={action.title}
                       type="button"
                       className={styles.noneAction}
                       onClick={() => leavePalette(action.href)}

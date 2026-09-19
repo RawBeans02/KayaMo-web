@@ -1,0 +1,853 @@
+/* ── KayaMo · Liquid Glass — Home, Life, Goals, Grove ─────────────────────
+   Materials come from the global `kg*` classes (glass.css and
+   glass-materials.css). This module owns layout, type and the shapes
+   these four screens do not share with anything else; it never re-declares a
+   glass recipe.
+
+   One documented exception: `.primary` and `.secondary`. The task editor
+   composes those by name, so they have to stand on their own rather than
+   expecting `kgAccent` / `kgGhost` in the markup. They mirror the global
+   recipes exactly. The goal editor has its own module (goal-editor.module.css).
+
+   No `backdrop-filter` is written on content surfaces on purpose: content sits
+   IN the page, so it takes `kgSurface` (no blur). Only the dialog, which
+   genuinely floats above everything, blurs — and there the `-webkit-` line
+   comes first, which this pipeline requires. */
+
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  color: var(--ink);
+}
+
+/* ── Screen headers ─────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.header > div {
+  min-width: 0;
+}
+.header h1 {
+  margin: 0;
+}
+.lede {
+  margin: 10px 0 0;
+  max-width: 58ch;
+  color: var(--ink2);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+.muted {
+  color: var(--ink2);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+/* The date sits above the title, the way a day view names itself. */
+.homeDate {
+  margin: 0 0 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ink2);
+}
+.ask {
+  padding: 0 18px 0 8px;
+  gap: 10px;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+/* Below 900px the shell shows its phone header, which carries its own Ask Lis,
+   and the tab bar carries a Lis tab. Home's own pill made three ways to the
+   same screen, two of them 32px apart. The page keeps its pill only where the
+   phone header is hidden. */
+@media (max-width: 899px) {
+  .ask {
+    display: none;
+  }
+}
+/* Lis's mark on a button: the sparkle icon in an accent circle. The face
+   renders on the Lis surface (mus/lis-face.tsx), not on an "Ask Lis" pill. */
+.askMark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* ── Week strip ─────────────────────────────────────────────────────── */
+.week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) auto;
+  gap: 6px;
+  padding: 8px;
+  margin-bottom: 20px;
+}
+.weekActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 6px;
+}
+.week .weekActions button {
+  width: 44px;
+  min-height: 44px;
+  border-radius: 999px;
+  color: var(--ink2);
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+}
+.week button {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 6px;
+  min-height: 68px;
+  padding: 10px 4px;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  color: var(--ink2);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.week button b {
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-size: 1.1875rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.week button[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+.week button[aria-pressed='true'] b {
+  color: inherit;
+}
+
+/* ── Sections ───────────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.side {
+  display: grid;
+  gap: 20px;
+}
+.panel {
+  padding: 24px;
+  min-width: 0;
+}
+.panel h2,
+.sectionTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.panelHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.panelHead p {
+  margin: 0;
+}
+.cards {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.stack {
+  display: grid;
+  gap: 16px;
+}
+
+/* ── Next up hero ───────────────────────────────────────────────────── */
+.nextUp {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  padding: 20px;
+  margin-bottom: 10px;
+  background: var(--glass-strong);
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    inset 0 0 0 1px var(--stroke2);
+}
+.nextUpBody {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.nextUpText {
+  flex: 1;
+  min-width: 180px;
+}
+.nextUpTitle {
+  margin: 6px 0 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.nextUpMeta {
+  margin: 3px 0 0;
+  font-size: 0.875rem;
+  color: var(--ink2);
+}
+.nextUpActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.overflow {
+  flex: none;
+  text-decoration: none;
+}
+
+/* ── Plan list ──────────────────────────────────────────────────────── */
+.planList {
+  list-style: none;
+  display: grid;
+  margin: 0;
+  padding: 0;
+}
+.planRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 8px 6px 8px 14px;
+  border-radius: 20px;
+}
+.planRow + .planRow {
+  box-shadow: inset 0 1px 0 var(--stroke2);
+}
+.planText {
+  flex: 1;
+  min-width: 0;
+}
+.planTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+.planMeta {
+  margin: 1px 0 0;
+  font-size: 0.8125rem;
+  color: var(--ink2);
+}
+.planTime {
+  flex: none;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Capture field ──────────────────────────────────────────────────── */
+.capture {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 0 8px 0 16px;
+  border-radius: 18px;
+  background: var(--field);
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+  color: var(--ink2);
+}
+.capture input {
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1rem;
+}
+.capture input::placeholder {
+  color: var(--ink2);
+}
+
+/* ── Check-off rows ─────────────────────────────────────────────────── */
+.priorities {
+  list-style: none;
+  display: grid;
+  margin: 0;
+  padding: 0;
+}
+.priorities li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+}
+.priorities li + li {
+  box-shadow: inset 0 1px 0 var(--stroke2);
+}
+.done {
+  opacity: 0.55;
+}
+/* 26px circle, 44px target: the label carries the hit area. */
+.checkBox {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  margin-left: -9px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.check {
+  width: 26px;
+  height: 26px;
+  margin: 0;
+  flex: none;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--ink3);
+  cursor: pointer;
+  transition:
+    background-color 160ms linear,
+    box-shadow 160ms linear;
+}
+.check:checked {
+  background-color: var(--accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.6 8.4l2.9 2.9 5.9-6.6' fill='none' stroke='%2304120a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 16px 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+.taskTitle {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.done .taskTitle {
+  text-decoration: line-through;
+  color: var(--ink2);
+}
+
+/* ── Glance cards ───────────────────────────────────────────────────── */
+.glance {
+  display: grid;
+  gap: 10px;
+  padding: 22px 24px;
+  text-decoration: none;
+  color: inherit;
+}
+.glanceHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+.glanceHead svg:first-child {
+  color: var(--accent-text);
+  flex: none;
+}
+.glanceHead .caret {
+  margin-left: auto;
+  color: var(--ink2);
+}
+.glanceNum {
+  display: block;
+  font-size: 2.125rem;
+  line-height: 1.05;
+}
+.glanceUnit {
+  margin-left: 6px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ink2);
+}
+.glanceMeta {
+  font-size: 0.8125rem;
+  color: var(--ink2);
+}
+.bar {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--track);
+  overflow: hidden;
+}
+.barFill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* ── Navigation rows (Life, tools) ──────────────────────────────────── */
+.tool {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 60px;
+  padding: 10px 12px;
+  margin: 0 -12px;
+  border-radius: 20px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 1rem;
+}
+.tool + .tool {
+  box-shadow: inset 0 1px 0 var(--stroke2);
+}
+.tool > span {
+  flex: 1;
+  min-width: 0;
+}
+.tool strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.tool small {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.8125rem;
+  color: var(--ink2);
+}
+.tool svg:first-child {
+  color: var(--accent-text);
+  flex: none;
+}
+.tool svg:last-child {
+  color: var(--ink2);
+  flex: none;
+}
+.tool:hover {
+  background: var(--glass-strong);
+}
+
+/* ── Goals ──────────────────────────────────────────────────────────── */
+.goalCard {
+  display: grid;
+  gap: 12px;
+  padding: 22px 22px 16px;
+}
+.goalHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.goalHead h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  overflow-wrap: anywhere;
+}
+.goalProgress {
+  flex: none;
+  font-size: 0.8125rem;
+  color: var(--ink2);
+  font-variant-numeric: tabular-nums;
+}
+.milestones {
+  list-style: none;
+  display: grid;
+  margin: 0;
+  padding: 0;
+}
+.milestone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+}
+.milestone + .milestone {
+  box-shadow: inset 0 1px 0 var(--stroke2);
+}
+.dot {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1.5px var(--ink3);
+  color: transparent;
+}
+.dotDone {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+.msTitle {
+  flex: 1;
+  min-width: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.msDone .msTitle {
+  color: var(--ink2);
+  text-decoration: line-through;
+}
+.goalOpen {
+  justify-self: start;
+  text-decoration: none;
+}
+
+/* ── Grove ──────────────────────────────────────────────────────────── */
+.streak {
+  position: relative;
+  overflow: hidden;
+  padding: 24px;
+}
+.streakBody {
+  position: relative;
+}
+.streakNum {
+  display: block;
+  margin: 6px 0 0;
+  font-size: 2.75rem;
+  line-height: 1;
+}
+.streakUnit {
+  margin-left: 8px;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ink2);
+}
+.streakNote {
+  margin: 12px 0 0;
+  max-width: 44ch;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--ink2);
+}
+.groveGrid {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 8px;
+}
+.cell {
+  aspect-ratio: 1;
+  border-radius: 9px;
+  background: var(--track);
+}
+.cellPlanted {
+  background: var(--accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.cellToday {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.stat {
+  display: block;
+  margin: 10px 0 6px;
+  font-size: 2.125rem;
+  line-height: 1.05;
+}
+.statUnit {
+  margin-left: 6px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ink2);
+}
+.history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.history li {
+  padding: 14px 0;
+}
+.history li + li {
+  box-shadow: inset 0 1px 0 var(--stroke2);
+}
+.history strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+.history p {
+  margin: 2px 0 0;
+  font-size: 0.8125rem;
+  color: var(--ink2);
+}
+
+/* ── Empty, notice, actions ─────────────────────────────────────────── */
+.empty {
+  padding: 26px 0 8px;
+  max-width: 48ch;
+}
+.empty h3 {
+  margin: 0 0 8px;
+  font-size: 1.1875rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.empty p {
+  margin: 0 0 18px;
+  color: var(--ink2);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 16px;
+  padding: 14px 18px;
+  border-radius: 20px;
+  background: var(--glass-strong);
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+  font-size: 0.875rem;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink2);
+}
+.iconButton:hover {
+  background: var(--glass-strong);
+  color: var(--ink);
+}
+
+/* ── Legacy control shims ───────────────────────────────────────────
+   Mirrors of the global kgAccent / kgGhost recipes for the components
+   outside this group that compose these class names. */
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 8px 24px var(--accent-glow);
+}
+.secondary {
+  background: var(--glass);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--stroke);
+}
+
+/* ── Dialogs ────────────────────────────────────────────────────────
+   The only surface here that genuinely floats above scrolling content,
+   so the only one that blurs. `-webkit-` first: this pipeline drops both
+   declarations when the prefixed line comes second. */
+.dialog {
+  position: fixed;
+  inset: 0 0 0 auto;
+  margin: 0;
+  width: min(100%, 520px);
+  max-width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  padding: 28px;
+  border: 0;
+  border-radius: 0;
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(40px) saturate(180%);
+  box-shadow:
+    inset 1px 0 0 var(--stroke),
+    var(--shadow-deep);
+  color: var(--ink);
+  overflow: auto;
+}
+.dialog::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* An editor that lays out its own top bar, scroll region and footer owns the
+   padding and the scrolling; the dialog only frames it. Keyed on [open]: a
+   bare `display: flex` here would override the UA's `dialog:not([open])
+   { display: none }` and leave a blank glass panel over the page. */
+.dialogFlush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.dialogFlush[open] {
+  display: flex;
+  flex-direction: column;
+}
+.dialog h2 {
+  margin: 0 0 20px;
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-size: 1.625rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+.form {
+  display: grid;
+  gap: 20px;
+}
+.form label {
+  display: grid;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.form input,
+.form textarea,
+.form select {
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 18px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--field);
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 400;
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: minmax(0, 1.4fr) minmax(260px, 1fr);
+    gap: 16px;
+  }
+  .panel {
+    padding: 20px;
+  }
+}
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .groveGrid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .header {
+    gap: 14px;
+  }
+  .week {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    padding: 6px;
+    gap: 3px;
+  }
+  .weekActions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+  .week button {
+    min-height: 62px;
+    font-size: 0.75rem;
+    padding: 8px 2px;
+  }
+  .side,
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .panel {
+    padding: 18px;
+  }
+  .nextUp,
+  .glance,
+  .goalCard,
+  .streak {
+    padding: 18px;
+  }
+  .nextUpTitle {
+    font-size: 1.1875rem;
+  }
+  .glanceNum,
+  .stat {
+    font-size: 1.875rem;
+  }
+  .streakNum {
+    font-size: 2.375rem;
+  }
+  .dialog {
+    padding: 22px 18px;
+  }
+  .dialogFlush {
+    padding: 0;
+  }
+  .ask {
+    padding: 0 14px 0 6px;
+  }
+}

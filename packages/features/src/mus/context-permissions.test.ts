@@ -10,7 +10,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('Mus permission API client', () => {
+describe('Lis permission API client', () => {
   it('returns only a validated server permission state', async () => {
     const fetchMock = vi.fn(async () =>
       Response.json({
@@ -19,6 +19,7 @@ describe('Mus permission API client', () => {
           physical_self: true,
           memory: false,
           faith: false,
+          identity: false,
         },
       }),
     );
@@ -29,6 +30,7 @@ describe('Mus permission API client', () => {
       physical_self: true,
       memory: false,
       faith: false,
+      identity: false,
     });
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/mus/permissions',
@@ -41,7 +43,7 @@ describe('Mus permission API client', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(updateMusContextPermission('memory', true)).rejects.toThrow(
-      'Mus permissions are unavailable.',
+      'Lis permissions are unavailable.',
     );
   });
 
@@ -51,7 +53,7 @@ describe('Mus permission API client', () => {
       vi.fn(async () => Response.json({ permissions: { memory: true } })),
     );
     await expect(loadMusContextPermissions()).rejects.toThrow(
-      'Mus permissions are unavailable.',
+      'Lis permissions are unavailable.',
     );
   });
 });

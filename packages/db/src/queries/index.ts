@@ -78,6 +78,9 @@ export {
 } from './journey';
 export {
   upsertCompass,
+  getCompassForAi,
+  getFutureSelfForAi,
+  listPersonalRulesForAi,
   upsertFutureSelf,
   upsertInboxItem,
   upsertPersonalRule,
@@ -88,6 +91,11 @@ export {
   type PersonalRuleWrite,
 } from './identity';
 export { listMusContextPermissions, setMusContextPermission } from './mus-context';
+export {
+  getLisCompanionProfile,
+  upsertLisCompanionProfile,
+  type LisCompanionProfilePatch,
+} from './lis-companion';
 export {
   getProfile,
   getProfileTimezone,

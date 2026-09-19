@@ -4,7 +4,6 @@ import { resolvePortion, type ResolvedPortion } from './portion';
 import { parseFoodQuery, type FoodQuery, type ParsedFoodQuery } from './query-parse';
 import {
   compareScored,
-  LLM_CONFIDENCE_CAP,
   rankScore,
   shouldAutoPick,
   sourcePriorityFor,
@@ -31,22 +30,14 @@ export type FoodCandidate = {
   attribution?: string;
   estimate?: boolean;
   verified?: boolean;
+  /** Carried from CatalogFood: the person edited these numbers on this device. */
+  locallyEdited?: boolean;
 };
 
 export type ResolveNetwork = {
   searchOff?: (query: string) => Promise<NormalizedFood[]>;
   lookupOffBarcode?: (barcode: string) => Promise<NormalizedFood | null>;
   searchUsda?: (query: string) => Promise<NormalizedFood[]>;
-};
-
-export type LlmEstimate = Pick<
-  FoodCandidate,
-  'foodId' | 'name' | 'per100g' | 'servings' | 'confidence' | 'matchScore' | 'whyMatched'
-> & {
-  brand?: string;
-  barcode?: string;
-  sourceId?: string;
-  attribution?: string;
 };
 
 export type ResolveQueryCache = {
@@ -58,7 +49,6 @@ export type ResolveDeps = {
   catalog: ResolveCatalog;
   cache?: CanonicalFoodStore;
   network?: ResolveNetwork;
-  estimateWithLlm?: (query: ParsedFoodQuery) => Promise<LlmEstimate | null>;
   queryCache?: ResolveQueryCache;
 };
 
@@ -308,8 +298,10 @@ async function addNetwork(
 
 /**
  * Ranked food candidates. Never a single answer.
- * Nutrition numbers never come from an LLM; `estimateWithLlm` is a last-resort
- * hook and is not called unless every earlier rung is empty.
+ * Nutrition numbers never come from a model. The cascade ends at the network
+ * sources; when they are empty the result is empty, and the interface offers a
+ * custom food or worldwide search. A model-estimate rung existed here with no
+ * caller and was removed on 2026-09-18.
  */
 export async function resolveFood(
   query: FoodQuery,
@@ -366,38 +358,6 @@ export async function resolveFood(
 
   if (!shouldAutoPick(ranked) && deps.network) {
     ranked = await addNetwork(ranked, parsed, deps);
-  }
-
-  if (ranked.length === 0 && deps.estimateWithLlm) {
-    const estimate = await deps.estimateWithLlm(parsed);
-    if (estimate) {
-      const confidence = Math.min(LLM_CONFIDENCE_CAP, estimate.confidence);
-      ranked = [
-        {
-          foodId: estimate.foodId,
-          name: estimate.name,
-          ...(estimate.brand ? { brand: estimate.brand } : {}),
-          ...(estimate.barcode ? { barcode: estimate.barcode } : {}),
-          source: 'llm',
-          ...(estimate.sourceId ? { sourceId: estimate.sourceId } : {}),
-          confidence,
-          rankScore: Math.min(
-            LLM_CONFIDENCE_CAP,
-            rankScore({ source: 'llm', matchScore: estimate.matchScore, timesLogged: 0 }),
-          ),
-          matchScore: estimate.matchScore,
-          timesLogged: 0,
-          whyMatched: estimate.whyMatched.includes('estimate')
-            ? estimate.whyMatched
-            : `${estimate.whyMatched}; estimate`,
-          per100g: estimate.per100g,
-          servings: estimate.servings,
-          portion: resolvePortion(parsed, estimate.servings, estimate.per100g.kcal),
-          ...(estimate.attribution ? { attribution: estimate.attribution } : {}),
-          estimate: true,
-        },
-      ];
-    }
   }
 
   const result = ranked.slice(0, 12);

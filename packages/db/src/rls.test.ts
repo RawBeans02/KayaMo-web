@@ -245,6 +245,53 @@ describeWithDatabase('RLS and tombstones', () => {
     expect(data).toEqual([]);
   });
 
+  it('lets a user scrub their own agent run but never rewrite its cost', async () => {
+    // Migration 0023. The per-user AI budget reads cost_usd from this table, and
+    // the row-scoped update policy alone let a user zero it through PostgREST.
+    const runId = randomUUID();
+    const now = new Date().toISOString();
+    const { error: insertError } = await userA.client.from('agent_runs').insert({
+      id: runId,
+      user_id: userA.id,
+      agent: 'rls_fixture',
+      trigger: 'rls_test',
+      input: {},
+      output: {},
+      model: 'test-model',
+      tokens: 10,
+      cost_usd: '0.010000',
+      status: 'model',
+      logical_date: '2026-08-22',
+      updated_at: now,
+    });
+    if (insertError) throw insertError;
+
+    const zeroed = await userA.client
+      .from('agent_runs')
+      .update({ cost_usd: '0', updated_at: now })
+      .eq('id', runId)
+      .select('id');
+    // 42501 is insufficient_privilege: the column grant, not the row policy.
+    expect(zeroed.error?.code).toBe('42501');
+
+    const scrubbed = await userA.client
+      .from('agent_runs')
+      .update({ scrubbed_at: now })
+      .eq('id', runId)
+      .select('id');
+    if (scrubbed.error) throw scrubbed.error;
+    expect(scrubbed.data).toHaveLength(1);
+
+    const { data: kept, error: readError } = await service
+      .from('agent_runs')
+      .select('cost_usd, scrubbed_at')
+      .eq('id', runId)
+      .single();
+    if (readError) throw readError;
+    expect(Number(kept.cost_usd)).toBeCloseTo(0.01);
+    expect(kept.scrubbed_at).not.toBeNull();
+  });
+
   it('isolates daily plans, focus sessions, and daily-loop preferences', async () => {
     const at = '2026-08-22T06:00:00.000Z';
     const planId = randomUUID();

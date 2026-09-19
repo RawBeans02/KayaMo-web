@@ -13,7 +13,7 @@ import {
   type ScheduleFlexibility,
 } from '@kayamo/offline';
 import { useEffect, useRef, useState } from 'react';
-import styles from '../food/desk.module.css';
+import styles from './desk.module.css';
 import { labelToMinutes, minutesToLabel } from '../todo/timetable';
 
 const FLEX: ScheduleFlexibility[] = ['FIXED', 'FLEXIBLE', 'AUTO', 'ANYTIME', 'PROTECTED'];
@@ -267,7 +267,7 @@ export function TodosInspector({
             checked={locked}
             onChange={(event) => setLocked(event.target.checked)}
           />
-          Lock from Mus
+          Lock from Lis
         </label>
         <div className={styles.inspectActs}>
           <button type="submit" className={styles.plannerBtn} data-primary="true" disabled={saving}>
@@ -305,7 +305,7 @@ export function TodosInspector({
           ) : null}
         </div>
         <p className={styles.inspectNote}>
-          Mus proposes placements. Confirm still writes. Locked blocks stay where you put them.
+          Lis proposes placements. Confirm still writes. Locked blocks stay where you put them.
         </p>
       </div>
     </form>

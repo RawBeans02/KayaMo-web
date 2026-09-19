@@ -54,11 +54,20 @@ export function LoginForm({
   const [clientSent, setClientSent] = useState(sent);
   const [sentEmail, setSentEmail] = useState('');
   const [cooldown, setCooldown] = useState(0);
+  // Flipped after mount, so a test (or anything else) can tell that the event
+  // handlers below are attached. Server HTML paints the form and the error
+  // banner before React hydrates; input typed into that pre-hydration form is
+  // lost, which is exactly what a slow engine in CI reproduced.
+  const [hydrated, setHydrated] = useState(false);
   const retryAt = useRef(0);
   const cooldownActive = cooldown > 0;
   const inputRef = useRef<HTMLInputElement>(null);
   const requestInFlight = useRef(false);
   const errorId = useId();
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     if (!cooldownActive) return;
@@ -129,7 +138,7 @@ export function LoginForm({
   const shownSent = clientSent;
 
   return (
-    <div className={styles.root}>
+    <div className={styles.root} data-hydrated={hydrated ? '' : undefined}>
       {setup ? (
         <p className={styles.banner} data-kind="warn" role="status">
           Supabase env is empty. Copy <code>.env.example</code> to <code>.env.local</code>

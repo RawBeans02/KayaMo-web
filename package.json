@@ -3,6 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "packageManager": "pnpm@9.15.9",
+  "pnpm": {
+    "overrides": {
+      "@ai-sdk/provider-utils@3>undici": "6.28.0",
+      "next@16.3.3>sharp": "0.35.4"
+    }
+  },
   "scripts": {
     "dev": "next dev --port 3002",
     "build": "next build --webpack",
@@ -10,11 +16,11 @@
     "lint": "eslint src next.config.ts && pnpm -r lint",
     "typecheck": "next typegen && tsc --noEmit && pnpm -r typecheck",
     "test": "vitest run && pnpm -r test",
+    "test:security": "node scripts/check-security-dependencies.mjs",
     "test:e2e": "playwright test",
     "test:e2e:hosted": "PLAYWRIGHT_BASE_URL=https://www.kayamo.fit playwright test",
     "check:copy": "tsx scripts/check-copy.ts",
     "test:db:integration": "pnpm --filter @kayamo/db test:integration",
-    "db:generate": "pnpm --filter @kayamo/db generate",
     "ph-core:build": "tsx scripts/build-ph-core.ts",
     "demo:catalog:build": "tsx scripts/build-demo-catalog.ts",
     "gym:kb:build": "tsx scripts/build-gym-kb.ts",
@@ -30,12 +36,13 @@
     "@kayamo/food": "workspace:*",
     "@kayamo/offline": "workspace:*",
     "@kayamo/ui": "workspace:*",
-    "next": "16.3.1",
+    "next": "16.3.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "zod": "^4"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@kayamo/config": "workspace:*",
     "@playwright/test": "^1.54",
     "@tailwindcss/postcss": "^4",
@@ -43,9 +50,9 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.3.1",
-    "tailwindcss": "^4",
+    "eslint-config-next": "16.3.3",
     "prettier": "^3",
+    "tailwindcss": "^4",
     "tsx": "^4",
     "typescript": "^5",
     "vitest": "^3"

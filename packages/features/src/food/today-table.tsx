@@ -14,7 +14,8 @@ import {
   reviseLocalFoodEntry,
   tombstoneLocalFoodEntry,
   useLiveFoodEntries,
-  useLiveFoodHistory,
+  useLiveFoodLedger,
+  FOOD_ENTRY_UNDO_MS,
   type LocalFoodEntry,
 } from '@kayamo/offline';
 import { Toast } from '@kayamo/ui';
@@ -38,9 +39,8 @@ import {
 } from './today-diary';
 import { useDeskLocale } from '../i18n/desk-locale';
 import { DeskMusPane } from '../desk/desk-mus';
-import styles from './desk.module.css';
+import styles from './diary.module.css';
 
-const UNDO_MS = 8000;
 
 function formatTime(loggedAt: string, timeZone: string): string {
   try {
@@ -85,7 +85,9 @@ export function TodayTable({ userId }: { userId: string }) {
   const clockToday = logicalDateFromInstant(new Date(nowMs).toISOString(), clock.timeZone, clock.dayStartsAt);
   const today = viewDate ?? clockToday;
   const entries = useLiveFoodEntries(userId, today);
-  const history = useLiveFoodHistory(userId);
+  // The ledger, not the catalog-only history: week totals must count every
+  // entry, including worldwide-search and personal foods with no food_id.
+  const history = useLiveFoodLedger(userId);
 
   useEffect(() => {
     const client = createBrowserSupabase();
@@ -179,10 +181,19 @@ export function TodayTable({ userId }: { userId: string }) {
     () => Math.round(entries.reduce((sum, row) => sum + (Number(row.kcal) || 0), 0)),
     [entries],
   );
-  const proteinG = useMemo(
-    () => entries.reduce((sum, row) => sum + (Number(row.protein_g) || 0), 0),
+  const macroTotals = useMemo(
+    () =>
+      entries.reduce(
+        (sum, row) => ({
+          protein: sum.protein + (Number(row.protein_g) || 0),
+          carbs: sum.carbs + (Number(row.carbs_g) || 0),
+          fat: sum.fat + (Number(row.fat_g) || 0),
+        }),
+        { protein: 0, carbs: 0, fat: 0 },
+      ),
     [entries],
   );
+  const proteinG = macroTotals.protein;
   const bar = weekAverageBar(headline.weekAverageKcal, headline.targetKcal);
   const delta = formatWeekDelta(headline.weekAverageKcal, headline.targetKcal);
   const weekOver =
@@ -221,7 +232,7 @@ export function TodayTable({ userId }: { userId: string }) {
     await tombstoneLocalFoodEntry({ id: row.id, userId });
     if (undoTimer.current) clearTimeout(undoTimer.current);
     setUndo({ id: row.id, name: row.food_name_snapshot });
-    undoTimer.current = setTimeout(() => setUndo(null), UNDO_MS);
+    undoTimer.current = setTimeout(() => setUndo(null), FOOD_ENTRY_UNDO_MS);
   }
 
   async function onUndo() {
@@ -393,7 +404,7 @@ export function TodayTable({ userId }: { userId: string }) {
             {group.empty ? (
               <div className={styles.mealEmpty}>
                 <button type="button" data-add-meal={group.slot} onClick={() => onAdd(group.slot)}>
-                  Nothing yet — ⌘K to add
+                  Nothing yet · ⌘K to add
                 </button>
               </div>
             ) : null}

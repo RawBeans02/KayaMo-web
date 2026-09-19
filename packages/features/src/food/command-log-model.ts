@@ -8,9 +8,9 @@ import {
 } from '@kayamo/food/search-ui';
 import { MEAL_SLOTS, type MealSlot } from '@kayamo/food/quick-log';
 
-const COMMAND_LOG_SOURCES = new Set<CatalogFood['source']>(['ph_core', 'user']);
+const COMMAND_LOG_SOURCES = new Set<CatalogFood['source']>(['ph_core', 'user', 'usda_fdc', 'off']);
 
-/** Cmd+K stays on persistable local catalog. USDA/OFF need a service-role resolve path we do not have. */
+/** Quick entry includes every sourced food already present in the local catalog. */
 export function catalogForCommandLog(foods: readonly CatalogFood[]): CatalogFood[] {
   return foods.filter((food) => COMMAND_LOG_SOURCES.has(food.source));
 }
@@ -22,6 +22,30 @@ export function openLogPalette(mealSlot?: MealSlot): void {
   window.dispatchEvent(
     new CustomEvent(OPEN_LOG_EVENT, { detail: mealSlot ? { mealSlot } : {} }),
   );
+}
+
+type PrefillLogDetail = { query: string };
+
+/**
+ * The only way to ask the palette to open with text. Two dispatchers built the
+ * event by hand and disagreed on the payload: one sent `{ query }`, the shell
+ * sent the bare string, and the listener read `detail.query`, so the log
+ * sheet's "Meal → Find this food" silently did nothing. Build it here, read it
+ * with readPrefillLogEvent, and the shape cannot drift again.
+ */
+export function prefillLogPalette(query: string, target: EventTarget = window): void {
+  const detail: PrefillLogDetail = { query };
+  target.dispatchEvent(new CustomEvent<PrefillLogDetail>(PREFILL_LOG_EVENT, { detail }));
+}
+
+/** The trimmed query, or null when the event carries none. A string detail is null. */
+export function readPrefillLogEvent(event: Event): string | null {
+  const detail: unknown = (event as CustomEvent<unknown>).detail;
+  if (!detail || typeof detail !== 'object') return null;
+  const query = (detail as { query?: unknown }).query;
+  if (typeof query !== 'string') return null;
+  const trimmed = query.trim();
+  return trimmed ? trimmed : null;
 }
 
 export function asLogSource(value: string): LogFoodEntryInput['source'] {
@@ -122,7 +146,9 @@ export function toLogInputFromCandidate(params: {
     grams: qty.grams,
     ...nutrients,
     source: asLogSource(params.candidate.source),
-    resolvedVia: asResolvedVia(params.candidate.source),
+    // The food keeps its catalog identity; who resolved the numbers is separate.
+    // A row edited in this browser's Verify overlay was resolved by the person.
+    resolvedVia: params.candidate.locallyEdited ? 'user' : asResolvedVia(params.candidate.source),
     inputMethod: 'search',
     servingId: params.servingId,
     servingLabel: qty.servingLabel,
@@ -164,7 +190,7 @@ export function readyCatalogFoods(
   limit = 4,
 ): CatalogFood[] {
   return catalog
-    .filter((food) => food.source === 'ph_core' || food.source === 'user')
+    .filter((food) => COMMAND_LOG_SOURCES.has(food.source))
     .slice()
     .sort((a, b) => {
       const byCount = (logCounts.get(b.id) ?? 0) - (logCounts.get(a.id) ?? 0);
@@ -184,7 +210,7 @@ export function loggedStatus(slotLabel: string): string {
 
 export function idlePaletteStatus(plateCount: number): string {
   if (plateCount > 0) return `${plateCount} logged · keep going`;
-  return 'Stays open — a plate is several items';
+  return 'Stays open · a plate is several items';
 }
 
 export function paletteStateLabel(view: PaletteView, resultCount: number): string {
@@ -240,26 +266,27 @@ export function candidateFromCatalogFood(
       kcal: (food.per100g.kcal * grams) / 100,
     },
     ...(food.verified ? { verified: true } : {}),
+    ...(food.locallyEdited ? { locallyEdited: true } : {}),
   };
 }
 
 export const PALETTE_LEAVE_ACTIONS = [
   {
-    href: '/verify',
-    title: 'Create it in PH core',
+    href: '/foods',
+    title: 'Create a custom food',
     sub: 'Name, macros per 100 g, a serving, a source note',
     key: '⌘N',
   },
   {
     href: '/foods',
-    title: 'Search brands and USDA',
-    sub: 'Leaves the palette and opens Foods, filtered',
+    title: 'Search worldwide foods',
+    sub: 'Open international ingredient and packaged-food search',
     key: '⌘⇧F',
   },
   {
     href: '/mus',
-    title: 'Ask Mus what this is',
-    sub: 'Mus proposes a row. You confirm before it saves.',
+    title: 'Ask Lis what this is',
+    sub: 'Lis proposes a row. You confirm before it saves.',
     key: '⌘M',
   },
 ] as const;
@@ -289,7 +316,7 @@ export function leaveHrefFromPaletteKey(event: {
   const mod = event.metaKey || event.ctrlKey;
   if (!mod) return null;
   const key = event.key.toLowerCase();
-  if (key === 'n' && !event.shiftKey) return '/verify';
+  if (key === 'n' && !event.shiftKey) return '/foods';
   if (key === 'f' && event.shiftKey) return '/foods';
   if (key === 'm' && !event.shiftKey) return '/mus';
   return null;

@@ -1,6 +1,6 @@
 'use client';
 
-import { installDemoCatalog } from '@kayamo/features';
+import { installDemoCatalog } from '@kayamo/features/desktop';
 
 // Cache the in-flight fetch, not a permanent "some rows exist" success marker.
 // Reopening the demo repairs interrupted/partial catalog installations.

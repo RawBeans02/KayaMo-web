@@ -1,28 +1,51 @@
 ---
 name: nutrition-domain
-description: KayaMo nutrition and food data rules — resolver cascade order, Philippine food data sourcing, portions, Taglish aliases, licensing constraints.
+description: kayamo-web nutrition and food data rules — resolver cascade order, food data sourcing, portions, aliases, licensing constraints.
 ---
 
 ## Resolver cascade (@kayamo/food `resolve.ts`) — order is fixed
-1. My Foods (user's own confirmed foods)
-2. PH core (`source='ph_core'`, matched on name AND name_tl aliases)
+
+1. My Foods (the user's own confirmed foods)
+2. Curated core (`source='ph_core'`, matched on name and its aliases)
 3. Local cache
 4. Open Food Facts — jumps to FIRST when a barcode is present
 5. USDA FoodData Central
-6. LLM estimate — last resort, confidence capped at 0.5, always UI-flagged
 
-Never collapse the cascade into a single LLM call.
+There is **no LLM rung**. A model never produces a nutrition number, and
+`llm-nutrition-guard.ts` rejects any LLM schema carrying nutrition keys. The
+model's job is to read text and quantities; the numbers come from the cascade.
+Label OCR is the one place a model transcribes printed numbers, and the user
+confirms them, confidence is capped, and the row is stored
+`verified_by_user=false`.
+
+An earlier version of this rule listed an "LLM estimate, last resort" sixth rung.
+That contradicted the project constitution and the code that enforces it. The
+constitution wins. `resolve.ts` still carries a vestigial `LlmEstimate` hook with
+no caller; it is scheduled for removal.
+
+Never collapse the cascade into a single model call.
 Always return a ranked candidate list, never a bare answer.
 
+A record missing any of the three core macros is excluded, not filled with
+zeroes. Energy without an explicit per-100g basis is excluded too.
+
 ## Licensing — hard constraints
+
 - Do NOT scrape FNRI PhilFCT or any FNRI endpoint. No open licence exists.
-  PH core values come from ingredient decomposition of CC0 USDA data, with
+  Curated core values come from ingredient decomposition of CC0 USDA data, with
   the assumption recorded in `source_note`.
-- Open Food Facts is ODbL: store the attribution with every imported record
-  and surface it in the About screen. Send a proper User-Agent.
-- USDA FoodData Central is CC0 — free to use.
+- Open Food Facts is ODbL: store the attribution with every imported record and
+  surface it. Send a reachable contact in the User-Agent and respect the
+  published rate limit.
+- USDA FoodData Central is CC0 — free to use. Its `foodNutrients` are already
+  per 100 g, including branded foods. Do not convert by serving size.
 
 ## Portions
-PH-native units come first in every picker: tasa, piraso, order, hiwa,
-kutsara, bowl. Grams are the fallback, not the default.
-Vague sizes (malaki / sakto / maliit) map to portion multipliers, never ignored.
+
+Offer the units that fit the food and the viewer's locale. Filipino units
+(tasa, piraso, order, hiwa, kutsara, bowl) remain first-class for Filipino
+dishes; they are no longer the default ordering for every picker, because the
+product is global. Grams are always available.
+
+Vague sizes (large / right-sized / small, malaki / sakto / maliit) map to portion
+multipliers, never ignored.

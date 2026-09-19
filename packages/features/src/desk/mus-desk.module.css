@@ -1,35 +1,729 @@
-/* The Mus thread reuses the phone's chat chrome, which styles itself with the
-   --km-* set defined on the mobile shell's .viewport. That ancestor does not
-   exist on the desk, so every one of those references resolved to nothing and
-   bubbles, borders and the composer lost their fills. Map the set onto the
-   desk's semantic tokens here so the chat renders in the desk palette. */
+/* ─────────────────────────────────────────────────────────────
+   Lis — the assistant surface (Liquid Glass)
+
+   This module carries two things: the /mus desk grid, and the
+   conversation chrome the thread itself renders. The thread used to
+   borrow the phone's chat styles, which were written against the
+   --km-* set defined on the mobile shell's .viewport — an ancestor the
+   desk does not have — so bubbles, borders and the composer lost their
+   fills. It now owns its look and reads the glass tokens directly.
+
+   No blur is declared here on purpose. The conversation panel and the
+   composer compose the global .kgPanel / .kgPanelStrong recipes; the
+   cards and bubbles nested inside them are plain fills, because
+   stacking backdrop filters only muddies what is behind them.
+   ───────────────────────────────────────────────────────────── */
+
+/* Conversation and rail sit side by side ON the page ground rather
+   than inside one shared container: the rail is a panel and the log
+   is a surface, and nesting them would stack translucency twice for
+   no gain. The gap is what separates them, not a divider. */
 .desk {
-  --km-bg: var(--color-bg);
-  --km-wash: var(--color-surface-2);
-  --km-surface: var(--color-surface);
-  --km-surface-2: var(--color-surface-2);
-  --km-text: var(--color-text);
-  --km-muted: var(--color-muted);
-  --km-action: var(--color-accent);
-  --km-action-fg: var(--color-accent-fg);
-  --km-growth: var(--color-proposal);
-  --km-growth-fg: var(--color-accent-fg);
-  --km-danger: var(--color-warning);
-  --km-glass: var(--color-surface);
-  --km-glass-clear: var(--color-surface);
-  --km-glass-edge: var(--color-line-strong);
-  --km-hairline: var(--color-line);
-  --km-shadow: none;
-  --km-scrim: var(--color-overlay);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 316px;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  background: var(--color-surface);
+  background: transparent;
 }
 
 .desk > :first-child {
   min-width: 0;
   min-height: 0;
+}
+
+/* ── Thread shell ───────────────────────────────────────────── */
+
+.thread {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+  color: var(--ink);
+}
+
+.thread[data-mus-thread='full'] {
+  min-height: 100%;
+  height: auto;
+  padding: 20px 20px 24px;
+}
+
+.thread[data-mus-thread='rail'] {
+  gap: 10px;
+  padding: 10px 12px 12px;
+}
+
+.thread[data-mus-thread='page'] {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 0;
+  padding: 0;
+}
+
+.thread[data-mus-thread='page'] > .header,
+.thread[data-mus-thread='page'] > .log,
+.thread[data-mus-thread='page'] > .composer,
+.thread[data-mus-thread='page'] > .privacy {
+  grid-column: 2;
+}
+
+/* ── Header: Lis's face + name ──────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px 8px;
+}
+
+.thread[data-mus-thread='full'] .header {
+  padding: 2px 2px 4px;
+}
+
+.face {
+  flex: none;
+  width: 44px;
+  height: 44px;
+}
+
+.identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.tagline {
+  margin: 1px 0 0;
+  color: var(--ink2);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+.headState {
+  color: var(--ink2);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.iconButton {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--glass);
+  color: var(--ink2);
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--stroke);
+  transition:
+    transform 120ms var(--ease-glass),
+    background var(--swap) linear;
+}
+
+.iconButton:hover {
+  background: var(--glass-strong);
+  color: var(--ink);
+}
+
+
+/* ── Conversation ───────────────────────────────────────────── */
+
+.log {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px;
+  margin: 0 22px;
+  scroll-padding-bottom: 24px;
+}
+
+.thread[data-mus-thread='full'] .log {
+  margin: 0;
+  min-height: 14rem;
+}
+
+.thread[data-mus-thread='rail'] .log {
+  margin: 0;
+  padding: 12px;
+}
+
+.bubbleLis,
+.bubbleUser {
+  max-width: 82%;
+  border-radius: 20px;
+  padding: 11px 14px;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.bubbleLis {
+  align-self: flex-start;
+  border-bottom-left-radius: 6px;
+  background: var(--glass-strong);
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+  color: var(--ink);
+}
+
+.bubbleUser {
+  align-self: flex-end;
+  border-bottom-right-radius: 6px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 500;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 92%;
+}
+
+.group .bubbleLis {
+  max-width: 100%;
+}
+
+.source {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding-left: 2px;
+  color: var(--ink2);
+  font-size: 0.8125rem;
+}
+
+.remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--glass);
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--stroke);
+  transition:
+    transform 120ms var(--ease-glass),
+    background var(--swap) linear;
+}
+
+.remember:hover:not(:disabled) {
+  background: var(--glass-strong);
+}
+
+
+.remember:disabled {
+  color: var(--ink2);
+  cursor: default;
+  opacity: 0.72;
+}
+
+/* Status, not something Lis says: capability and error copy renders
+   here once, as a muted note, never also as a bubble. */
+.note {
+  margin: 0;
+  padding: 0 2px;
+  color: var(--ink2);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+/* ── Proposal card ──────────────────────────────────────────── */
+
+.card {
+  align-self: stretch;
+  border-radius: 22px;
+  padding: 16px;
+  background: var(--glass-strong);
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    inset 0 0 0 1px var(--stroke2),
+    var(--shadow);
+}
+
+.cardTitle {
+  margin: 6px 0 10px;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.lines {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.875rem;
+  color: var(--ink2);
+}
+
+.lineValue {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.cardActions {
+  display: flex;
+  gap: 8px;
+}
+
+.apply {
+  flex: 1;
+}
+
+.cardFoot {
+  margin: 10px 0 0;
+  color: var(--ink2);
+  font-size: 0.75rem;
+}
+
+.confirm {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+
+.confirmLabel {
+  color: var(--ink2);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.confirmWord {
+  color: var(--danger-text);
+  font-weight: 700;
+}
+
+.confirmInput {
+  width: 100%;
+}
+
+/* ── Composer ───────────────────────────────────────────────── */
+
+/* Doubled class: kgPanelStrong sets a 28px radius and the composer is
+   a pill, so this has to win independently of stylesheet order. */
+.composer.composer {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 8px;
+  margin: 0 22px 18px;
+  padding: 6px;
+  border-radius: 999px;
+}
+
+.thread[data-mus-thread='full'] .composer,
+.thread[data-mus-thread='rail'] .composer {
+  margin: 0;
+}
+
+.composer textarea {
+  min-height: 48px;
+  max-height: 108px;
+  padding: 13px 8px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.35;
+  outline: none;
+  overflow-y: auto;
+  resize: none;
+}
+
+.composer textarea::placeholder {
+  color: var(--ink3);
+}
+
+.attach {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--ink2);
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+  transition:
+    transform 120ms var(--ease-glass),
+    background var(--swap) linear;
+}
+
+.attach:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+
+.send {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 8px 24px var(--accent-glow);
+  transition:
+    transform 120ms var(--ease-glass),
+    opacity var(--swap) linear;
+}
+
+
+.attach:disabled,
+.send:disabled {
+  cursor: default;
+  opacity: 0.4;
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+}
+
+.pending {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 10px 6px 16px;
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--ink2);
+  font-size: 0.8125rem;
+}
+
+.pending button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+
+.privacy {
+  margin: 0 22px 16px;
+  color: var(--ink2);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.thread[data-mus-thread='full'] .privacy {
+  margin: 0;
+}
+
+/* ── Conversation list ──────────────────────────────────────── */
+
+.list {
+  grid-row: 1 / -1;
+  grid-column: 1;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+  padding: 18px 12px 16px;
+  border-right: 1px solid var(--stroke2);
+}
+
+/* The history overlay floats above the conversation, so it reads
+   heavier than the surface it covers: an opaque ground (text has to
+   stay legible over whatever is behind it) and the deep shadow.
+   Doubled class so it beats the composed kgSurface recipe whichever
+   order the two sheets land in. */
+.panel.panel {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  padding: 16px;
+  border-radius: 28px;
+  background: var(--bg0);
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    inset 0 0 0 1px var(--stroke2),
+    var(--shadow-deep);
+}
+
+.listHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px 12px;
+}
+
+.panel .listHead {
+  padding: 0;
+}
+
+.listEyebrow {
+  flex: 1;
+  min-width: 100%;
+  margin: 0 0 10px;
+}
+
+.search {
+  display: flex;
+  flex: 1;
+  min-width: 10rem;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--ink2);
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+}
+
+.search input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9375rem;
+  outline: none;
+}
+
+.listNew {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--glass);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--stroke);
+  transition:
+    transform 120ms var(--ease-glass),
+    background var(--swap) linear;
+}
+
+.listNew:hover {
+  background: var(--glass-strong);
+}
+
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0 4px 12px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px;
+  border-radius: 20px;
+}
+
+.row[data-active='true'] {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.open {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  align-content: center;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 120ms var(--ease-glass);
+}
+
+
+.open strong {
+  overflow: hidden;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.open small {
+  color: var(--ink2);
+  font-size: 0.75rem;
+}
+
+.rename {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--field);
+  color: inherit;
+  font: inherit;
+  font-size: 0.9375rem;
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+}
+
+.rowGhost {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink2);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition:
+    transform 120ms var(--ease-glass),
+    background var(--swap) linear;
+}
+
+.rowGhost:hover {
+  background: var(--glass);
+  color: var(--ink);
+}
+
+
+.empty {
+  margin: 0;
+  padding: 12px;
+  color: var(--ink2);
+  font-size: 0.875rem;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Narrow desks ───────────────────────────────────────────── */
+/* Last in the file on purpose: these have to beat the base rules
+   above, which carry the same specificity. */
+
+@media (max-width: 1180px) {
+  .desk {
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 12px;
+  }
+
+  /* Narrow the conversation list rather than hiding it: on this
+     layout it is the only way to reach another conversation. */
+  .thread[data-mus-thread='page'] {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+
+  .header {
+    padding: 16px 16px 8px;
+  }
+
+  .log {
+    margin: 0 16px;
+  }
+
+  .composer {
+    margin: 0 16px 16px;
+  }
+
+  .privacy {
+    margin: 0 16px 14px;
+  }
+}
+
+/* ── Desk frame (from src/app/botanical.css, 2026-09-18) ── */
+.desk[data-mus-desk] {
+  min-height: 650px;
+  height: calc(100dvh - 140px);
+  border-radius: 20px;
+  border: 1px solid var(--stroke2);
+}
+
+@media (max-width: 1000px) {
+  .desk[data-mus-desk] {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
+  }
+
+  .desk[data-mus-desk] > :first-child {
+    min-height: 600px;
+  }
+
+  .thread[data-mus-thread='page'] {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: 650px;
+  }
 }

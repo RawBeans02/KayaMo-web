@@ -1,0 +1,526 @@
+/* ─────────────────────────────────────────────────────────────
+   KayaMo — Liquid Glass
+   Token + material layer. Values lifted from the iOS 27 handoff
+   (design_handoff_kayamo_glass). Every component reads these; no
+   component hard-codes a glass recipe.
+   ───────────────────────────────────────────────────────────── */
+
+html[data-kayamo-web] {
+  /* ── ground ── */
+  --bg0: #eef3ee;
+  --glow1: #c6f2d4;
+  --glow2: #d6e6ff;
+
+  /* ── glass ── */
+  --glass: rgba(255, 255, 255, 0.52);
+  --glass-strong: rgba(255, 255, 255, 0.78);
+  --stroke: rgba(255, 255, 255, 0.9); /* top edge highlight */
+  --stroke2: rgba(10, 20, 12, 0.06); /* hairline */
+  --sheen: rgba(255, 255, 255, 0.7);
+  --field: rgba(255, 255, 255, 0.7);
+  --track: rgba(10, 20, 12, 0.08);
+
+  /* ── ink ── */
+  --ink: #0b0f0c;
+  --ink2: rgba(11, 15, 12, 0.62);
+  --ink3: rgba(11, 15, 12, 0.4);
+
+  /* ── accent ── */
+  --accent: #30d158;
+  /* Accent as TEXT. The handoff's #1a8a3c measures 4.19:1 once glass sits over
+     --glow1, below the 4.5:1 the spec itself requires (§8). Darkened until it
+     clears on the lightest ground the wash can produce. */
+  --accent-text: #157a34;
+  --accent-ink: #04120a; /* text on accent */
+  --accent-glow: #30d15866;
+  --danger: #ff453a;
+  /* --danger as TEXT. #ff453a reads right as a fill or a hairline, but measures
+     3.0:1 as a word on the day ground — below the 4.5:1 AA needs. Pinned by
+     src/shell/glass-contrast.test.ts against every ground the wash produces. */
+  --danger-text: #c9271b;
+
+  --shadow: 0 12px 36px rgba(20, 40, 28, 0.12);
+  --shadow-deep: 0 18px 48px rgba(20, 40, 28, 0.2);
+
+  /* ── motion ── */
+  --ease-glass: cubic-bezier(0.22, 1, 0.36, 1);
+  --rise: 260ms;
+  --sheet-in: 320ms;
+  --swap: 180ms;
+
+  /* ── type and shape scale ──
+     tokens.css declares a cream-palette type ramp with Source Sans, Barlow and
+     Plex faces the web never loads; these override it with the glass system's
+     values. They lived in src/app/botanical.css until 2026-09-18 and were the
+     only part of that file still doing anything. */
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: var(--font-body);
+  --font-numeral: var(--font-body);
+  --font-data: var(--font-body);
+  --font-source-sans: var(--font-body);
+  --font-source-serif: var(--font-body);
+  --font-barlow: var(--font-body);
+  --font-plex: var(--font-body);
+  --text-body: 1rem;
+  --text-caption: 0.875rem;
+  --text-caption--letter-spacing: 0;
+  --text-mono-3xs: 12px;
+  --text-mono-2xs: 12px;
+  --text-mono-xs: 13px;
+  --text-mono-sm: 13px;
+  --text-mono-md: 14px;
+  --text-mono-lg: 14px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  color-scheme: light;
+  background: var(--bg0);
+  color: var(--ink);
+  font-optical-sizing: auto;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Manrope', system-ui, sans-serif;
+  /* No root font-size pin: the browser's text-size setting is the person's
+     choice, and every font-size in the web stylesheets is in rem so it follows
+     that choice. A 16px pin lived here until 2026-09-18, and the 200% text
+     check passed without a single glyph growing. */
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Base resets ─────────────────────────────────────────────
+   Controls inherit the page type; buttons look pressable; a disabled control
+   says so with the cursor rather than pretending to wait for something. */
+:where(html[data-kayamo-web]) :where(button, input, select, textarea) {
+  font: inherit;
+}
+
+html[data-kayamo-web] button {
+  cursor: pointer;
+}
+
+html[data-kayamo-web] button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* A food name rendered as a button, reset to read as text. */
+html[data-kayamo-web] [data-food-select] {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+/* Lis's expressions are transparent WebP; never letterbox or round them. */
+html[data-kayamo-web] img[src^='/botanical/mus-'] {
+  object-fit: contain;
+  object-position: center;
+  border-radius: 0;
+  background: transparent;
+}
+
+html[data-kayamo-web][data-kayamo-theme='night'] {
+  --bg0: #0a0d0b;
+  --glow1: #0f3a24;
+  --glow2: #0e1c30;
+
+  --glass: rgba(255, 255, 255, 0.07);
+  --glass-strong: rgba(255, 255, 255, 0.12);
+  --stroke: rgba(255, 255, 255, 0.22);
+  --stroke2: rgba(255, 255, 255, 0.07);
+  --sheen: rgba(255, 255, 255, 0.1);
+  --field: rgba(255, 255, 255, 0.08);
+  --track: rgba(255, 255, 255, 0.1);
+
+  --ink: #f5f7f5;
+  --ink2: rgba(245, 247, 245, 0.66);
+  --ink3: rgba(245, 247, 245, 0.42);
+
+  /* Same correction on the dark ground: #30d158 measures 4.35:1 over --glow1. */
+  --accent-text: #3ade63;
+  /* #ff453a measures 3.0:1 on night glass over --glow1; lightened to clear AA. */
+  --danger-text: #ffa9a2;
+  --accent-glow: #30d15855;
+
+  --shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+  --shadow-deep: 0 20px 50px rgba(0, 0, 0, 0.6);
+
+  color-scheme: dark;
+}
+
+/* The wash paints on <html> with a fixed attachment rather than a separate
+   z-index:-1 element — an element behind an opaque <body> is simply hidden. */
+html[data-kayamo-web] {
+  background-color: var(--bg0);
+  background-image:
+    radial-gradient(40% 50% at 10% 0%, var(--glow1) 0%, transparent 70%),
+    radial-gradient(40% 40% at 95% 20%, var(--glow2) 0%, transparent 70%),
+    radial-gradient(60% 40% at 60% 110%, var(--glow1) 0%, transparent 70%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+html[data-kayamo-web] body {
+  background: transparent;
+  color: var(--ink);
+}
+
+/* ── Backdrop wash ───────────────────────────────────────────
+   Gives the glass something to refract. Fixed, behind everything,
+   inert. Without this the blur has nothing to work with and the
+   panels read as flat translucent rectangles. */
+.kgWash {
+  display: none;
+}
+
+/* ── Materials ───────────────────────────────────────────────
+   One recipe each. Components compose these rather than
+   re-declaring blur values, so weight stays consistent. */
+/* Hero cards, tab bar, sheet, nav pill — thicker, floats higher. */
+.kgFloat {
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    inset 0 0 0 1px var(--stroke2),
+    var(--shadow-deep);
+}
+
+/* Diagonal light catch. Needs a positioned, overflow-hidden parent. */
+.kgSheen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, var(--sheen) 0%, transparent 45%);
+}
+
+/* ── Controls ────────────────────────────────────────────────
+   Press feedback lives on :active and fires on pointer-down —
+   the response the prior audit found missing everywhere. */
+.kgAccent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 8px 24px var(--accent-glow);
+  transition: opacity var(--swap) linear;
+}
+
+.kgGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--stroke);
+  transition: background var(--swap) linear;
+}
+
+/* Press feedback comes from @kayamo/ui/web-motion.css, once, for every
+   interactive element. These pills used to add their own transform: scale(0.97)
+   on top of that contract's scale: 0.98, so a press shrank twice. */
+.kgAccent:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.kgGhost:hover {
+  background: var(--glass-strong);
+}
+
+.kgField {
+  min-height: 52px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--field);
+  color: inherit;
+  font: inherit;
+  font-size: 1.0625rem;
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+}
+
+/* ── Type ────────────────────────────────────────────────────
+   Manrope 800 for display numerals and titles; system SF for UI.
+   Tracking is size-specific: display tightens, eyebrows open up. */
+.kgTitle {
+  margin: 0;
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-size: 2.125rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.kgNum {
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.kgEyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+
+.kgMeta {
+  color: var(--ink2);
+  font-size: 0.8125rem;
+}
+
+@media (min-width: 900px) {
+  .kgTitle {
+    font-size: 2.5rem;
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+}
+
+/* ── Motion ──────────────────────────────────────────────────
+   New rows and proposals rise in; sheets slide; swaps fade. */
+@keyframes kgRise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes kgFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.kgRise {
+  animation: kgRise var(--rise) var(--ease-glass) both;
+}
+
+/* The ring follows the element's own shape. This rule used to set
+   border-radius: 4px, so every pill snapped square the moment it took
+   keyboard focus. Outlines follow border-radius in every current engine. */
+html[data-kayamo-web] :focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ── Accessibility ───────────────────────────────────────────
+   Reduced motion is a GENTLER equivalent, not an absence of one:
+   translate and scale go, opacity and colour stay. A blanket
+   `transition: none !important` would strip the cross-fades that
+   carry meaning — that was a real finding in the 13 Sep audit. */
+@media (prefers-reduced-motion: reduce) {
+  html[data-kayamo-web] *,
+  html[data-kayamo-web] *::before,
+  html[data-kayamo-web] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-property: opacity, background-color, border-color, color, box-shadow !important;
+    transition-duration: 160ms !important;
+    scroll-behavior: auto !important;
+  }
+
+}
+
+/* Frostier, not transparent — raise opacity and drop the blur. */
+@media (prefers-reduced-transparency: reduce) {
+  html[data-kayamo-web] {
+    --glass: var(--bg0);
+    --glass-strong: var(--bg0);
+    --field: var(--bg0);
+  }
+
+  html[data-kayamo-web] .kgPanel,
+  html[data-kayamo-web] .kgPanelStrong,
+  html[data-kayamo-web] .kgGhost {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  html[data-kayamo-web] .kgWash {
+    display: none;
+  }
+}
+
+html[data-kayamo-web][data-reduce-transparency='true'] {
+  --glass: var(--bg0);
+  --glass-strong: var(--bg0);
+  --field: var(--bg0);
+}
+
+html[data-kayamo-web][data-reduce-transparency='true'] .kgPanel,
+html[data-kayamo-web][data-reduce-transparency='true'] .kgPanelStrong,
+html[data-kayamo-web][data-reduce-transparency='true'] .kgGhost {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+html[data-kayamo-web][data-reduce-transparency='true'] .kgWash {
+  display: none;
+}
+
+/* Honour the preference at once: no fade through a translucent fill. */
+html[data-kayamo-web][data-reduce-transparency='true'] * {
+  transition-property: opacity, scale, color, border-color !important;
+}
+
+@media (prefers-contrast: more) {
+  html[data-kayamo-web] {
+    --stroke: currentColor;
+    --stroke2: currentColor;
+    --ink2: var(--ink);
+    --glass: var(--bg0);
+    --glass-strong: var(--bg0);
+  }
+}
+
+/* ── Forced colours ─────────────────────────────────────────
+   Windows High Contrast and similar modes drop backgrounds and box-shadows.
+   Glass draws its edges, dividers and control rings with box-shadow on
+   border: 0, so every surface would lose its outline. Give each tier a real
+   border in the system colours, and keep the accent legible as a button. */
+@media (forced-colors: active) {
+  .kgSurface,
+  .kgPanel,
+  .kgPanelStrong,
+  .kgHeavy,
+  .kgField {
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+
+  .kgAccent,
+  .kgGhost {
+    border: 1px solid ButtonText;
+    forced-color-adjust: none;
+    background: ButtonFace;
+    color: ButtonText;
+  }
+
+  html[data-kayamo-web] :focus-visible {
+    outline: 3px solid Highlight;
+  }
+
+  .kgWash {
+    display: none;
+  }
+}
+
+/* No blur support: fall back to an opaque ground rather than
+   unreadable near-transparent panels. */
+@supports not (backdrop-filter: blur(1px)) {
+  html[data-kayamo-web] {
+    --glass: color-mix(in srgb, var(--bg0) 82%, white);
+    --glass-strong: color-mix(in srgb, var(--bg0) 92%, white);
+  }
+
+  html[data-kayamo-web][data-kayamo-theme='night'] {
+    --glass: color-mix(in srgb, var(--bg0) 82%, white 8%);
+    --glass-strong: color-mix(in srgb, var(--bg0) 70%, white 12%);
+  }
+}
+
+/* ── Compatibility bridge ────────────────────────────────────
+   The desk still has screens written against the previous
+   `--color-*` names. Alias them onto the glass tokens so every
+   surface adopts the new palette in one step; screens then get
+   their structure converted individually without a flash of the
+   old look in between. Remove an alias once nothing reads it.
+   These aliases are also what made src/app/botanical.css's colour
+   palette dead: every value it set was re-declared here, later. */
+html[data-kayamo-web] {
+  --color-bg: var(--bg0);
+  --color-surface: var(--glass);
+  --color-surface-2: var(--glass-strong);
+  --color-text: var(--ink);
+  --color-muted: var(--ink2);
+  --color-muted-2: var(--ink2);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-ink);
+  --color-line: var(--stroke2);
+  --color-line-strong: var(--stroke);
+  --color-warning: var(--danger);
+  --color-presence: var(--accent);
+  --color-proposal: var(--accent);
+  --glass-legacy: var(--glass);
+
+  /* The chat chrome reads this set; keep it pointed at glass. */
+  --km-bg: var(--bg0);
+  --km-wash: var(--glass);
+  --km-surface: var(--glass);
+  --km-surface-2: var(--glass-strong);
+  --km-text: var(--ink);
+  --km-muted: var(--ink2);
+  --km-action: var(--accent);
+  --km-action-fg: var(--accent-ink);
+  --km-hairline: var(--stroke2);
+  --km-glass: var(--glass);
+  --km-glass-edge: var(--stroke);
+  --km-danger: var(--danger);
+  --km-scrim: rgba(0, 0, 0, 0.4);
+  --km-shadow: var(--shadow);
+}
+
+
+/* ── §12 Vibrancy ────────────────────────────────────────────
+   Text over a translucent surface sits on a background that moves as the
+   content behind it scrolls. Flat grey loses its footing there, so secondary
+   text on glass gains a little weight and a touch of tracking rather than
+   relying on colour alone. */
+.kgPanel .kgMeta,
+.kgHeavy .kgMeta,
+.kgPanelStrong .kgMeta {
+  font-weight: 500;
+  letter-spacing: 0.005em;
+}
+
+/* ── §12 Scroll edge, not a hard divider ─────────────────────
+   Where floating chrome overlaps scrolling content, fade the content out
+   beneath it instead of drawing a 1px line. Applied only where chrome
+   genuinely floats over the scroll region. */
+.kgScrollEdge {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 28px);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 28px);
+}
+
+/* Press feedback: see @kayamo/ui/web-motion.css. A second copy lived here with
+   transform: scale(0.98) and its own transition; both fired on every press, and
+   because the two selectors had equal specificity the later transition list won
+   and the transform snapped instead of animating. One contract now. */

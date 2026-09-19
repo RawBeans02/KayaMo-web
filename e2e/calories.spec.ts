@@ -5,7 +5,10 @@ import { waitForUserIndexedDb } from './helpers/idb';
 test.use({ viewport: { width: 1440, height: 800 } });
 
 test.describe('calories diary', () => {
-  test.skip(Boolean(process.env.PLAYWRIGHT_BASE_URL), 'Local IndexedDB log — not the hosted build.');
+  test.skip(
+    Boolean(process.env.PLAYWRIGHT_BASE_URL),
+    'Local IndexedDB log — not the hosted build.',
+  );
 
   test('restyles /calories as the designed log and leaves /today as the dashboard', async ({
     page,
@@ -24,8 +27,10 @@ test.describe('calories diary', () => {
       { timeout: 15_000 },
     );
 
-    await expect(page.getByRole('heading', { name: 'Today' })).toBeVisible();
-    await expect(page.getByText('Dashboard', { exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Home', exact: true })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: "Today's plan", exact: true }),
+    ).toBeVisible();
     await expect(page.locator('[data-calories-log]')).toHaveCount(0);
 
     await seedTodayEntries(page);
@@ -46,13 +51,19 @@ test.describe('calories diary', () => {
     await page.locator('[data-add-meal="meryenda"]').click();
     const palette = page.locator('[data-palette="log"]');
     await expect(palette).toBeVisible();
-    await expect(palette.getByRole('button', { name: /Snack/ })).toHaveAttribute('aria-pressed', 'true');
+    await expect(palette.getByRole('button', { name: /Snack/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     await page.keyboard.press('Escape');
     await expect(palette).toBeHidden();
 
     const firstName = await page.locator('[data-entry-row] strong').first().textContent();
     expect(firstName).toBeTruthy();
-    await page.getByRole('button', { name: `Remove ${firstName}` }).first().click();
+    await page
+      .getByRole('button', { name: `Remove ${firstName}` })
+      .first()
+      .click();
     await expect(page.getByRole('status')).toContainText(`Removed ${firstName}`);
     await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Confirm' })).toHaveCount(0);

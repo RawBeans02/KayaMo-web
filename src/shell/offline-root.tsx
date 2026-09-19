@@ -1,7 +1,7 @@
 'use client';
 
 import { createBrowserSupabaseClient } from '@/lib/supabase/browser';
-import { configureApiClient } from '@kayamo/features';
+import { configureApiClient } from '@kayamo/features/desktop';
 import { setOfflineUserScope, startSync } from '@kayamo/offline';
 import { type ReactNode, useEffect, useState } from 'react';
 import Link from 'next/link';

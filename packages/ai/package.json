@@ -12,7 +12,9 @@
   "scripts": {
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "eval:live": "LIS_EVAL_LIVE=1 vitest run src/evals/live.test.ts",
+    "eval:record": "LIS_EVAL_LIVE=1 LIS_EVAL_RECORD=1 vitest run src/evals/live.test.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2",

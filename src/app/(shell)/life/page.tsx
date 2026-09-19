@@ -1,5 +1,7 @@
-import { redirect } from 'next/navigation';
+import { BotanicalLife } from '@kayamo/features/desktop';
+import { requireShellUserId } from '@/lib/shell-user';
 
-export default function LifePage() {
-  redirect('/today');
+export default async function Page() {
+  await requireShellUserId();
+  return <BotanicalLife />;
 }

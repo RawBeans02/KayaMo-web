@@ -1,0 +1,4 @@
+Use case: identity-preserve
+Asset type: KayaMo web companion expression, transparent PNG
+Input image 1: edit target and exact identity reference, the approved neutral Mus.
+Primary request: Change ONLY the subtle facial expression to gently concerned for the viewer: subtly raised inner brows and a tiny soft neutral mouth, compassionate and attentive; no anger, judgment, crying, disappointment, or distress. Preserve the exact rounded mustard-gold seed body, two green leaves, silhouette, proportions, angle, material texture, lighting, and framing. No arms, legs, costume, props, text, ground, floor shadow, or extra leaves. Match the original gentle softly sculpted rendering; this must clearly be the same character. Genuine alpha transparency around the character, not a painted checkerboard or solid background. Maintain generous transparent padding and the whole silhouette.

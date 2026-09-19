@@ -1,7 +1,12 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('proposal card isolation', () => {
-  test.skip(Boolean(process.env.PLAYWRIGHT_BASE_URL), 'Dev gallery is local-only.');
+  // The gallery route calls notFound() in a production build, so it exists
+  // only under the dev server: not hosted, and not the production-build job.
+  test.skip(
+    Boolean(process.env.PLAYWRIGHT_BASE_URL) || process.env.PLAYWRIGHT_WEB_SERVER === 'start',
+    'Dev gallery is dev-server only.',
+  );
 
   test('renders all three risk tiers and gates high-risk on the word apply', async ({ page }) => {
     await page.goto('/dev/proposal-card');

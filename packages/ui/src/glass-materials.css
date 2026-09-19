@@ -1,0 +1,101 @@
+/* Liquid Glass materials.
+ *
+ * Global utility classes that screens compose onto surfaces. Loaded last so a
+ * material tier wins over the base component styling in glass.css (same package).
+ *
+ * Tokens, keyframes and the accessibility blocks stay in glass.css.
+ *
+ * History: this was a CSS *module* whose every selector was `:global(...)`, on
+ * the theory that the Tailwind/Lightning pipeline behind globals.css strips
+ * `backdrop-filter`. The webpack CSS-module loader rejects a module with no
+ * local selector, so `next build --webpack` failed on it while `next dev`
+ * (Turbopack) accepted it. The premise was also wrong: `.kgGhost` in glass.css
+ * carries `backdrop-filter` through that same pipeline. Verified against the
+ * production build output — see docs/audits/2026-09-18-codebase-review.md.
+ */
+
+/* ── Three material tiers ────────────────────────────────────────────────
+ * Apple's rule is that a heavier material means "this floats above that".
+ * If every surface blurs, weight stops carrying information and the result
+ * is decorative glassmorphism. So:
+ *
+ *   kgSurface  content that sits IN the page      no blur
+ *   kgPanel    chrome that floats OVER content    blur(24px)
+ *   kgHeavy    the topmost layer (sheet, tab bar) blur(40px)
+ *
+ * Pick by what the surface DOES, never by how it should look.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+/* Tier 1 — content. Same fill and edge as the glass, no backdrop work: there
+ * is nothing meaningful behind a content card to refract. */
+.kgSurface {
+  border-radius: 28px;
+  background: var(--glass);
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    inset 0 0 0 1px var(--stroke2),
+    var(--shadow);
+}
+
+/* Tier 2 — floating chrome. Content scrolls under it, so it refracts. */
+.kgPanel {
+  border-radius: 28px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    inset 0 0 0 1px var(--stroke2),
+    var(--shadow);
+}
+
+.kgPanelStrong {
+  border-radius: 28px;
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  backdrop-filter: blur(28px) saturate(170%);
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    inset 0 0 0 1px var(--stroke2),
+    var(--shadow);
+}
+
+.kgGhost {
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+}
+
+/* Sheet and tab bar sit above content and read thicker than a panel. */
+/* Tier 3 — the topmost layer. Thickest blur, deepest shadow. */
+.kgHeavy {
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(40px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    inset 0 0 0 1px var(--stroke2),
+    var(--shadow-deep);
+}
+
+/* Deliberately NOT a blanket `[class*=card] { backdrop-filter }` rule.
+ * Blurring every surface makes material weight meaningless — the whole point of
+ * the material is that a heavier blur means "this floats above that". Screens
+ * opt in by composing kgPanel / kgPanelStrong / kgHeavy on the surfaces that
+ * genuinely float. */
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  html[data-kayamo-web] *,
+  .kgSurface,
+  .kgPanel,
+  .kgPanelStrong,
+  .kgGhost,
+  .kgHeavy {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+html[data-kayamo-web][data-reduce-transparency='true'] * {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}

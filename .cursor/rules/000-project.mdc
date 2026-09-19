@@ -1,57 +1,61 @@
 ---
 name: project-constitution
-description: KayaMo core rules — monorepo layout, hard constraints, naming, and conventions. Applies to all work in this repo.
+description: kayamo-web core rules — repository layout, hard constraints, naming, and conventions. Applies to all work in this repo.
 alwaysApply: true
 ---
 
-KayaMo is a Personal Growth OS (see `Mus_Build_Source_of_Truth.md`). PWA first,
-Capacitor wrap for Android/iOS. Solo developer. First market: Philippines.
-Bundle ID `ph.kayamo.app`. AI companion is named Mus.
+KayaMo is a Personal Growth OS. This repository is the **web app**: kayamo.fit,
+desktop-first with a phone layout. The assistant is named **Lis**.
 
-## Monorepo layout — put code in the right place
-- `apps/pwa`    — mobile-first user app. Routes, nav chrome, thin glue only.
-- `apps/web`    — desktop review shell. Keyboard-first, data-dense.
-- `apps/admin`  — internal tools, auth-gated, never public.
-- `apps/mobile` — Capacitor shell. Native code only, zero business logic.
+Market is **global**, English by default (owner override, 2026-09-14). Filipino
+food is one cuisine among many. Native bundle identifiers, stored meal-slot
+identifiers and nutrition provenance keep their existing values.
+
+## Layout — put code in the right place
+
+- `src/`         — routes, navigation, composition. Next.js 16 App Router.
 - `packages/features` — screen logic, data hooks, layout-neutral components.
-- `packages/db` `core` `food` `ai` `offline` `ui` — all shared logic.
+- `packages/db` `core` `food` `ai` `offline` `ui` `config` — shared logic.
 
-apps/pwa is mobile-first and thumb-driven. apps/web is desktop,
-keyboard-first, data-dense. Neither contains business logic — that
-lives in packages/features. A screen implemented twice is a bug.
+There is no `apps/` directory here, and no turbo. `src/` is the app.
 
-Packages never import from apps. Apps never duplicate package logic.
-If a formula or a resolver appears inside `apps/`, that is a bug.
+Packages never import from `src/`. `src/` never reaches into package internals;
+it imports declared package exports. A formula or a resolver under `src/` is a
+bug. A screen implemented twice is a bug.
+
+`packages/`, `supabase/` and `data/` are **owned by this repository**. They were
+forked from `../kayamo-mobile` on 2026-09-18 and are no longer synced. See
+AGENTS.md.
 
 ## Non-negotiable
+
 - Never call an LLM without a Zod schema on the output.
 - Never write nutrition data without `source` and `confidence`.
 - The LLM extracts text and quantities. Nutrition numbers come from the
   resolver cascade in @kayamo/food, never from the model.
-- Every AI-created entry is editable by the user. Mus proposes; the user confirms.
+- Every AI-created entry is editable by the user. Lis proposes; the user confirms.
 - Stored data is not automatically AI-readable.
 - Offline first: writes go to IndexedDB via @kayamo/offline, then sync.
 - Store UTC, render in the user's timezone. Respect their custom day
-  boundary (night shift) — never assume midnight.
-- All money in PHP.
+  boundary (night shift) — never assume midnight, and never assume Asia/Manila.
 - Calorie floors (1200F / 1500M) are enforced in code, not prompts.
 - Banned vocabulary anywhere in prompts or UI copy: cheat, guilty, earned,
   burn it off, bad food, sinful.
 - Health data never appears in logs or error reports.
 - Never modify a test to make it pass. Fix the code, or tell me the test
-  is wrong and why.
-
-## Conventions
-- pnpm workspaces + turbo. TypeScript strict. No `any`.
+  is wrong and why. Changing a test because the *product decision* changed is
+  allowed, and the commit must say so.
 - The service-role Supabase client is never imported into a "use client" file.
 - All LLM calls route through @kayamo/ai `router.ts`.
-- One chapter per commit. See chapter numbering below.
 
-## Chapter numbering — one system only
-`chNN` in a commit message ALWAYS refers to `docs/build/`. It NEVER refers
-to Mus source-of-truth phase numbers. Build-guide ch20 is the weekly
-check-in; ch23 is the progression engine; ch24 links training to
-nutrition. If work comes from the Mus SoT instead, prefix the commit
-`mus:` and name the feature — never a bare number.
-Before starting any chapter, read `docs/build/README.md` and confirm the
-number against the checklist there.
+## Conventions
+
+- pnpm workspaces. TypeScript strict. No `any`.
+- Add a dependency to the package that uses it, not to the root.
+- Money in PHP only where a stored price already is; there is no billing yet.
+
+## Commit messages
+
+Describe the change and why. No chapter numbers: the build guide is archived at
+`docs/archive/build/` and its `chNN` scheme no longer tracks the work. Reference a document under
+`docs/audits/` or `docs/RELEASE.md` when a commit closes something recorded there.

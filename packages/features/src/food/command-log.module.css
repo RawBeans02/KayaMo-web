@@ -4,10 +4,10 @@
   margin: 132px auto auto;
   padding: 0;
   overflow: hidden;
-  border: 1px solid var(--color-line-strong);
+  border: 1px solid var(--stroke);
   border-radius: 12px;
-  background: var(--color-surface);
-  color: var(--color-text);
+  background: var(--glass);
+  color: var(--ink);
   box-shadow: var(--shadow-palette);
 }
 
@@ -31,7 +31,7 @@
 
 .eyebrow {
   margin: 0;
-  color: var(--color-muted-2);
+  color: var(--ink2);
   font-family: var(--font-data), ui-monospace, monospace;
   font-size: var(--text-mono-xs);
   letter-spacing: 0.14em;
@@ -43,7 +43,7 @@
   gap: 4px;
   padding: 3px;
   border-radius: 7px;
-  background: var(--color-surface-2);
+  background: var(--glass-strong);
 }
 
 .slot {
@@ -55,7 +55,7 @@
   border: 0;
   border-radius: 5px;
   background: transparent;
-  color: var(--color-muted);
+  color: var(--ink2);
   font-family: var(--font-data), ui-monospace, monospace;
   font-size: var(--text-mono-sm);
   font-weight: 400;
@@ -65,8 +65,8 @@
 }
 
 .slot[data-on='true'] {
-  background: var(--color-surface);
-  color: var(--color-text);
+  background: var(--glass);
+  color: var(--ink);
   font-weight: 500;
 }
 
@@ -80,13 +80,13 @@
   align-items: center;
   gap: 0.7rem;
   padding: 0.5rem 1.1rem 0.75rem;
-  border-bottom: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--stroke2);
 }
 
 .searchIcon {
   display: grid;
   place-items: center;
-  color: var(--color-muted-2);
+  color: var(--ink2);
 }
 
 .query input {
@@ -103,7 +103,7 @@
 }
 
 .stateLabel {
-  color: var(--color-muted-2);
+  color: var(--ink2);
   font-family: var(--font-data), ui-monospace, monospace;
   font-size: var(--text-mono-sm);
   letter-spacing: 0.08em;
@@ -127,7 +127,7 @@
 .readyLabel,
 .searchLabel {
   margin: 0 0 8px;
-  color: var(--color-muted-2);
+  color: var(--ink2);
   font-family: var(--font-data), ui-monospace, monospace;
   font-size: var(--text-mono-xs);
   letter-spacing: 0.12em;
@@ -157,12 +157,12 @@
 
 /* Results rows step the name and numeral up one notch from the suggestions. */
 .row[data-kind='results'] .name {
-  font-size: 15.5px;
+  font-size: 0.96875rem;
 }
 
 .row[data-active='true'] {
-  background: var(--color-surface-2);
-  box-shadow: inset 3px 0 0 var(--color-accent);
+  background: var(--glass-strong);
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 .row > span:first-child {
@@ -171,14 +171,14 @@
 
 .name {
   display: block;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 500;
 }
 
 .meta,
 .aliases {
   display: block;
-  color: var(--color-muted-2);
+  color: var(--ink2);
   font-size: 0.75rem;
 }
 
@@ -188,13 +188,13 @@
 
 .freq,
 .serving {
-  color: var(--color-muted);
+  color: var(--ink2);
   font-size: 0.78rem;
   text-align: right;
 }
 
 .freq {
-  color: var(--color-muted-2);
+  color: var(--ink2);
   font-family: var(--font-data), ui-monospace, monospace;
   font-size: var(--text-mono-sm);
 }
@@ -222,7 +222,7 @@
   display: block;
   height: 11px;
   border-radius: 3px;
-  background: var(--color-surface-2);
+  background: var(--glass-strong);
   animation: km-pulse 1.1s ease-in-out infinite;
 }
 
@@ -267,7 +267,7 @@
 .noneBody {
   margin: 0.45rem 0 0;
   max-width: 62ch;
-  color: var(--color-muted);
+  color: var(--ink2);
   font-size: 0.875rem;
   line-height: 1.55;
 }
@@ -285,7 +285,7 @@
   gap: 12px;
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid var(--color-line-strong);
+  border: 1px solid var(--stroke);
   border-radius: 8px;
   background: transparent;
   color: inherit;
@@ -301,7 +301,7 @@
 
 .noneAction span {
   display: block;
-  color: var(--color-muted);
+  color: var(--ink2);
   font-size: 0.78rem;
 }
 
@@ -310,14 +310,14 @@
   align-items: center;
   gap: 0.9rem;
   padding: 0.7rem 1.1rem;
-  border-top: 1px solid var(--color-line-strong);
-  background: var(--color-surface-2);
+  border-top: 1px solid var(--stroke);
+  background: var(--glass-strong);
 }
 
 .qty label {
-  color: var(--color-muted);
+  color: var(--ink2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -326,9 +326,9 @@
   width: 92px;
   height: 38px;
   padding: 0 10px;
-  border: 1px solid var(--color-accent);
+  border: 1px solid var(--accent);
   border-radius: 6px;
-  background: var(--color-surface);
+  background: var(--glass);
   color: inherit;
   font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
   font-size: 1.45rem;
@@ -338,7 +338,7 @@
 }
 
 .qtyServing {
-  color: var(--color-muted);
+  color: var(--ink2);
   font-size: 0.875rem;
 }
 
@@ -354,16 +354,16 @@
 }
 
 .qtyUnit {
-  color: var(--color-muted);
+  color: var(--ink2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .tray {
-  border-top: 1px solid var(--color-line-strong);
-  background: var(--color-surface-2);
+  border-top: 1px solid var(--stroke);
+  background: var(--glass-strong);
 }
 
 .plate {
@@ -372,7 +372,7 @@
   align-items: center;
   gap: 0.9rem;
   padding: 0.65rem 1.1rem 0.55rem;
-  border-bottom: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--stroke2);
 }
 
 .chips {
@@ -387,14 +387,14 @@
   align-items: center;
   gap: 7px;
   padding: 4px 5px 4px 10px;
-  border: 1px solid var(--color-line-strong);
+  border: 1px solid var(--stroke);
   border-radius: 999px;
-  background: var(--color-surface);
+  background: var(--glass);
   font-size: 0.8125rem;
 }
 
 .chipKcal {
-  color: var(--color-muted);
+  color: var(--ink2);
   font-family: var(--font-numeral), 'Barlow Condensed', sans-serif;
   font-size: 0.95rem;
   font-weight: 600;
@@ -406,9 +406,9 @@
   height: 18px;
   border: 0;
   border-radius: 999px;
-  background: var(--color-surface-2);
-  color: var(--color-muted);
-  font-size: 12px;
+  background: var(--glass-strong);
+  color: var(--ink2);
+  font-size: 0.75rem;
   line-height: 1;
   cursor: pointer;
 }
@@ -422,9 +422,9 @@
 
 .plateLabel,
 .plateUnit {
-  color: var(--color-muted);
+  color: var(--ink2);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -455,29 +455,29 @@
   display: inline-flex;
   align-items: baseline;
   gap: 5px;
-  color: var(--color-muted);
+  color: var(--ink2);
   font-size: 0.75rem;
 }
 
 .k {
   display: inline-block;
   padding: 1px 5px;
-  border: 1px solid var(--color-line-strong);
+  border: 1px solid var(--stroke);
   border-radius: 3px;
-  background: var(--color-surface);
+  background: var(--glass);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
 }
 
 .status {
   margin: 0;
-  color: var(--color-muted);
+  color: var(--ink2);
   font-size: 0.78rem;
   white-space: nowrap;
 }
 
 .status[data-ok='true'] {
-  color: var(--color-accent);
+  color: var(--accent);
 }
 
 .toastDock {
@@ -487,6 +487,19 @@
   z-index: 90;
   min-width: 16rem;
   overflow: hidden;
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--stroke2);
   border-radius: 0.4rem;
+}
+
+/* ── Phone widths (from src/app/botanical.css, 2026-09-18) ── */
+@media (max-width: 767px) {
+  .dialog[data-palette='log'] {
+    width: calc(100% - 16px);
+    max-width: 100%;
+  }
+
+  .dialog[data-palette='log'] [role='option'] {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
 }

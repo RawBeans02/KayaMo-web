@@ -1,24 +1,56 @@
 import 'server-only';
 import { createServiceSupabase } from '@kayamo/db/service';
 import { NextResponse } from 'next/server';
+import type { AllowanceOutcome } from '@kayamo/features/mus-respond';
 
-/** A request allowance, not a promise of exact provider-dollar accounting. */
-export async function reserveWebAiRequest(userId: string): Promise<NextResponse | null> {
+/**
+ * A request allowance, not a promise of exact provider-dollar accounting.
+ *
+ * Returns a plain outcome rather than a NextResponse so the caller decides when
+ * to spend it. It is deliberately reserved AFTER the request has been parsed and
+ * after the crisis classifier has run: a malformed body should not cost a slot,
+ * and a crisis reply — which never reaches a provider — must not be reachable
+ * only while quota remains.
+ */
+export async function reserveWebAiRequest(userId: string): Promise<AllowanceOutcome> {
   const configured = Number(process.env.WEB_AI_DAILY_REQUEST_LIMIT ?? '5');
-  const limit = Number.isInteger(configured) && configured >= 1 && configured <= 100 ? configured : 5;
+  const limit =
+    Number.isInteger(configured) && configured >= 1 && configured <= 100 ? configured : 5;
   try {
     const { data, error } = await createServiceSupabase().rpc('reserve_web_ai_request', {
       p_user_id: userId,
       p_daily_limit: limit,
     });
     if (error || typeof data !== 'boolean') throw new Error('Allowance unavailable');
-    if (!data) return NextResponse.json(
-      { error: 'Your daily AI request allowance is used. Try again after 00:00 UTC; manual tracking still works.' },
-      { status: 429, headers: { 'Cache-Control': 'no-store' } },
-    );
-    return null;
+    if (!data) {
+      return {
+        ok: false,
+        status: 429,
+        error:
+          'Your daily AI request allowance is used. It resets at 00:00 UTC; manual tracking still works.',
+      };
+    }
+    return { ok: true };
   } catch {
     // Missing migration/service configuration must never permit unmetered calls.
-    return NextResponse.json({ error: 'Online AI is temporarily unavailable. Manual tracking still works.' }, { status: 503 });
+    return {
+      ok: false,
+      status: 503,
+      error: 'Online AI is temporarily unavailable. Manual tracking still works.',
+    };
   }
+}
+
+/**
+ * Adapter for a route that reserves inline rather than through a handler.
+ * Returns null when the request may proceed. Every route now parses before it
+ * reserves; the four planner routes pass reserveWebAiRequest into their
+ * handler, and gym consult calls this after its own parse.
+ */
+export function allowanceRejection(outcome: AllowanceOutcome): NextResponse | null {
+  if (outcome.ok) return null;
+  return NextResponse.json(
+    { error: outcome.error },
+    { status: outcome.status, headers: { 'Cache-Control': 'no-store' } },
+  );
 }

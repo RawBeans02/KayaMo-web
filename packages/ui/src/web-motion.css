@@ -1,0 +1,68 @@
+/* Shared web interaction contract. Opt-in html scope leaves native defaults alone. */
+html[data-kayamo-web] {
+  --duration-fast: 140ms;
+  --duration-sheet: 280ms;
+  --duration-press: 100ms;
+  --motion-rest: cubic-bezier(0.2, 0.8, 0.2, 1);
+  font-optical-sizing: auto;
+}
+html[data-kayamo-web]
+  :is(button, a[href], summary, [role='button'], input, select, textarea) {
+  /* This is the only press contract; component stylesheets do not add their
+     own transforms. background-color is here so hover fills still fade. */
+  transition-property: opacity, scale, background-color;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--motion-rest);
+}
+html[data-kayamo-web]
+  :is(button, a[href], summary, [role='button']):not(:disabled):not(
+    [aria-disabled='true']
+  ):active {
+  opacity: 0.78;
+  scale: 0.98;
+  transition-duration: var(--duration-press);
+}
+/* Drag geometry must stay 1:1; resizing/scaling a grab target changes its origin. */
+html[data-kayamo-web] [data-drag-handle]:active {
+  scale: none !important;
+}
+html[data-kayamo-web] [data-drag-handle] {
+  touch-action: none;
+}
+html[data-kayamo-web] :is(input, select, textarea):not(:disabled):active {
+  opacity: 0.85;
+}
+html[data-kayamo-web] :is([role='menu'], [popover]) {
+  transform-origin: var(--overlay-origin, top right);
+}
+html[data-kayamo-web] [data-kayamo-sheet] {
+  transform-origin: var(--overlay-origin, bottom center);
+}
+/* Desk surfaces: every button is a 44px target. Attribute hooks are the
+   surfaces' public contract; their class names are not. */
+html[data-kayamo-web]
+  :is([data-todos], [data-gym], [data-foods], [data-verify], [data-calories-log])
+  button {
+  min-height: 44px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-kayamo-web] {
+    --duration-fast: 150ms;
+    --duration-sheet: 150ms;
+  }
+  html[data-kayamo-web] *,
+  html[data-kayamo-web] *::before,
+  html[data-kayamo-web] *::after {
+    /* Preserve feedback, not travel, parallax or decorative loops. */
+    transition-property: opacity, background-color, border-color, color !important;
+    transition-duration: 150ms !important;
+    scroll-behavior: auto !important;
+  }
+  html[data-kayamo-web] :is(button, a[href], summary, [role='button']):active {
+    scale: none !important;
+  }
+  html[data-kayamo-web] [class*='cocoImage'],
+  html[data-kayamo-web] [class*='musImage'] {
+    animation: none !important;
+  }
+}

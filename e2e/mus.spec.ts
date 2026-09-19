@@ -2,17 +2,34 @@ import { expect, test } from '@playwright/test';
 
 test.use({ viewport: { width: 1440, height: 800 } });
 
-test.describe('Mus rail vocabulary', () => {
-  test.skip(Boolean(process.env.PLAYWRIGHT_BASE_URL), 'Local desk — not the hosted build.');
+test.describe('Lis rail vocabulary', () => {
+  test.skip(
+    Boolean(process.env.PLAYWRIGHT_BASE_URL),
+    'Local desk — not the hosted build.',
+  );
 
-  test('server-confirmed context permissions survive navigation and failed writes stay unverified', async ({ page }) => {
+  test('server-confirmed context permissions survive navigation and failed writes stay unverified', async ({
+    page,
+  }) => {
     test.setTimeout(90_000);
-    let permissions = { physical_self: false, goals_planning: false, memory: false, faith: false };
+    // Must match musContextPermissionsSchema exactly: it is .strict(), so a
+    // mock missing a domain fails to parse and every row renders "unverified".
+    let permissions = {
+      physical_self: false,
+      goals_planning: false,
+      memory: false,
+      faith: false,
+      identity: false,
+    };
     let failWrite = false;
     await page.route('**/api/mus/permissions', async (route) => {
       if (route.request().method() === 'PUT') {
-        if (failWrite) return route.fulfill({ status: 503, json: { error: 'unavailable' } });
-        const update = route.request().postDataJSON() as { domain: keyof typeof permissions; allowed: boolean };
+        if (failWrite)
+          return route.fulfill({ status: 503, json: { error: 'unavailable' } });
+        const update = route.request().postDataJSON() as {
+          domain: keyof typeof permissions;
+          allowed: boolean;
+        };
         permissions = { ...permissions, [update.domain]: update.allowed };
       }
       return route.fulfill({ json: { permissions } });
@@ -31,11 +48,9 @@ test.describe('Mus rail vocabulary', () => {
       { timeout: 15_000 },
     );
 
-    await expect(page.locator('[data-desk-shell]')).toHaveAttribute('data-rail', 'collapsed');
-    await page.getByRole('button', { name: 'Expand Mus', exact: true }).first().click();
-    await expect(page.locator('[data-mus-rail="shell"]')).toBeVisible();
+    await page.getByRole('link', { name: 'Ask Lis', exact: true }).click();
+    await expect(page.locator('[data-mus-rail="page"]')).toBeVisible();
     await expect(page.getByText('ask first')).toHaveCount(0);
-    await page.getByRole('button', { name: /of 4 context areas readable/ }).click();
     const todayPerm = page.locator('[data-mus-perm="physical_self"]');
     await expect(todayPerm).toHaveAttribute('data-mus-perm-level', 'off');
     await todayPerm.click();
@@ -49,18 +64,24 @@ test.describe('Mus rail vocabulary', () => {
     await page.getByRole('button', { name: 'Retry access check' }).click();
     await expect(todayPerm).toHaveAttribute('data-mus-perm-level', 'read');
 
+    await page.goto('/today');
     await page.goto('/mus');
     await expect(page.locator('[data-mus-desk]')).toBeVisible();
     await expect(page.locator('[data-mus-rail="page"]')).toBeVisible();
     await expect(page.getByText('ask first')).toHaveCount(0);
-    await expect(page.locator('[data-mus-perm="physical_self"]')).toHaveAttribute('data-mus-perm-level', 'read');
-    await expect(page.locator('[data-mus-face="happy"] img')).toHaveAttribute('src', /mus-happy\.png/);
-    await expect(page.locator('[data-mus-face="concerned"] img')).toHaveAttribute('src', /mus-concerned\.png/);
-    await expect(page.locator('[data-mus-face="neutral"] img')).toHaveAttribute('src', /mus-neutral\.png/);
-    await expect(page.locator('[data-mus-face="thinking"] img')).toHaveAttribute('src', /mus-thinking\.png/);
-    await expect(page.locator('[data-mus-face="concerned"]')).toContainText('Concern for the user');
-    await expect(page.locator('[data-mus-face="happy"]')).toContainText('milestone the user chose');
-    await expect(page.getByRole('navigation', { name: 'Conversations' })).toBeVisible();
-    await expect(page.locator('[data-desk-shell]')).toHaveAttribute('data-rail', 'off');
+    await expect(page.locator('[data-mus-perm="physical_self"]')).toHaveAttribute(
+      'data-mus-perm-level',
+      'read',
+    );
+    // Lis has a face (owner decision, 2026-09-18): the shipped expressions
+    // render on the Lis surface, at rest neutral, and are decorative beside the
+    // name. There is still no expressions gallery and no seed mark.
+    await expect(page.getByText('About Lis’s expressions')).toHaveCount(0);
+    const faces = page.locator('img[data-mus-face]');
+    await expect(faces.first()).toBeVisible();
+    await expect(faces.first()).toHaveAttribute('data-mus-face', 'neutral');
+    await expect(faces.first()).toHaveAttribute('src', /\/botanical\/mus-neutral\.webp$/);
+    await expect(faces.first()).toHaveAttribute('alt', '');
+    await expect(page.locator('img[src*="seed-mark"]')).toHaveCount(0);
   });
 });

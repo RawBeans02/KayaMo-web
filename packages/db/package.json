@@ -13,8 +13,6 @@
     "./load-root-env": "./src/load-root-env.ts"
   },
   "scripts": {
-    "generate": "drizzle-kit generate",
-    "migrate": "drizzle-kit migrate",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -23,7 +21,7 @@
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2",
-    "drizzle-orm": "^0.44",
+    "drizzle-orm": "^0.45.2",
     "postgres": "^3",
     "server-only": "^0.0.1",
     "zod": "^4"
@@ -31,7 +29,6 @@
   "devDependencies": {
     "@kayamo/config": "workspace:*",
     "@types/node": "^20",
-    "drizzle-kit": "^0.31",
     "eslint": "^9",
     "typescript": "^5",
     "vitest": "^3"

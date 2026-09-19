@@ -1,62 +1,72 @@
-/* The Mus thread reuses the phone's chat chrome, which styles itself with the
-   --km-* set defined on the mobile shell's .viewport. That ancestor does not
-   exist on the desk, so every one of those references resolved to nothing and
-   bubbles, borders and the composer lost their fills. Map the set onto the
-   desk's semantic tokens here so the chat renders in the desk palette. */
+/* ─────────────────────────────────────────────────────────────
+   Lis rail — desk chrome (Liquid Glass)
+
+   The rail is chrome the desk sits beside, so the OUTER surface
+   carries the panel material. Everything inside it is content:
+   plain fills and hairlines, never a second blur. Stacking one
+   light translucent surface on another is the single thing this
+   material must not do, so the context card, the permission list
+   and the footer are surface-weight only.
+
+   Where a blur is written here, `-webkit-backdrop-filter` comes
+   FIRST: reversed, this repo's CSS pipeline drops both lines and
+   the panel silently flattens.
+
+   The old --km-* mapping this file used to carry is gone. The
+   thread stopped borrowing the phone's chat chrome and now reads
+   the glass tokens directly (mus-desk.module.css), and glass.css
+   still publishes the --km-* set app-wide for anything that has
+   not been converted yet. The local copy only added a dangling
+   --color-overlay reference.
+   ───────────────────────────────────────────────────────────── */
+
+/* ── Outer surface ──────────────────────────────────────────── */
+
 .rail,
+.page,
 .railCollapsed {
-  --km-bg: var(--color-bg);
-  --km-wash: var(--color-surface-2);
-  --km-surface: var(--color-surface);
-  --km-surface-2: var(--color-surface-2);
-  --km-text: var(--color-text);
-  --km-muted: var(--color-muted);
-  --km-action: var(--color-accent);
-  --km-action-fg: var(--color-accent-fg);
-  --km-growth: var(--color-proposal);
-  --km-growth-fg: var(--color-accent-fg);
-  --km-danger: var(--color-warning);
-  --km-glass: var(--color-surface);
-  --km-glass-clear: var(--color-surface);
-  --km-glass-edge: var(--color-line-strong);
-  --km-hairline: var(--color-line);
-  --km-shadow: none;
-  --km-scrim: var(--color-overlay);
   min-height: 0;
-  border-left: 1px solid var(--color-line);
-  background: var(--color-surface);
+  border-radius: 28px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    inset 0 0 0 1px var(--stroke2),
+    var(--shadow);
+  color: var(--ink);
 }
 
-.rail {
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
-  height: 100%;
-  overflow: hidden;
-}
-
+/* Flex, not a fixed row template: the access alert is conditional,
+   and a template would push the thread and footer out of place the
+   moment it appeared. */
+.rail,
 .page {
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   height: 100%;
-  min-height: 0;
   overflow: hidden;
-  border-left: 1px solid var(--color-line);
-  background: var(--color-surface);
 }
 
+/* A narrow column: the section radius would swallow it, so the
+   collapsed rail steps down to the inner-card radius. */
 .railCollapsed {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   justify-items: center;
   gap: 12px;
   height: 100%;
-  padding: 13px 0 14px;
+  padding: 14px 8px 16px;
+  border-radius: 22px;
 }
 
+/* ── Collapsed spine ────────────────────────────────────────── */
+
 .expand {
-  position: relative;
-  width: 34px;
-  height: 34px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: 0;
   border-radius: 999px;
@@ -64,115 +74,143 @@
   cursor: pointer;
 }
 
-.expand img {
+/* The collapsed rail reads at a glance from the face alone. */
+.expand .face {
   width: 34px;
   height: 34px;
-  border-radius: 999px;
-  object-fit: cover;
-  object-position: 50% 22%;
-  background: var(--color-surface-2);
 }
 
 .spine {
-  color: var(--color-muted-2);
-  font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 8.5px;
-  letter-spacing: 0.1em;
+  color: var(--ink2);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   writing-mode: vertical-rl;
 }
 
-.header {
+/* ── Header ─────────────────────────────────────────────────── */
+
+.header,
+.pageHeader {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) 32px;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.8rem 0.85rem 0.7rem;
-  border-bottom: 1px solid var(--color-line);
+  flex: none;
+  gap: 12px;
+  padding: 16px 12px 14px 16px;
+}
+
+.header {
+  grid-template-columns: 36px minmax(0, 1fr) 44px;
 }
 
 .pageHeader {
-  display: grid;
-  grid-template-columns: 32px minmax(0, 1fr);
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.8rem 0.85rem 0.7rem;
-  border-bottom: 1px solid var(--color-line);
+  grid-template-columns: 36px minmax(0, 1fr);
+  padding-right: 16px;
 }
 
-.avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  object-fit: cover;
-  object-position: 50% 22%;
-  background: var(--color-surface-2);
-}
-
-.slot {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  border: 1px dashed var(--color-line-strong);
-  color: var(--color-muted-2);
-  font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 7px;
-  letter-spacing: 0.04em;
-  text-align: center;
-  line-height: 1.2;
+.title {
+  min-width: 0;
 }
 
 .title p {
   margin: 0;
-  font-size: 0.9rem;
-  font-weight: 600;
-  line-height: 1.2;
 }
 
-.mono {
-  color: var(--color-muted-2);
-  font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.title > p:first-child {
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+/* The state line sits under the name, so it reads as a sentence
+   rather than a second label shouting in caps. */
+.title > p + p {
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.35;
+  text-transform: none;
+  color: var(--ink2);
 }
 
 .collapse {
-  width: 32px;
-  height: 32px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 999px;
   background: transparent;
-  color: var(--color-muted-2);
-  font-size: 1rem;
+  color: var(--ink2);
+  font-size: 1.0625rem;
   line-height: 1;
   cursor: pointer;
+  transition:
+    background var(--swap) linear,
+    color var(--swap) linear,
+    transform 120ms var(--ease-glass);
 }
 
+.collapse:hover {
+  background: var(--glass-strong);
+  color: var(--ink);
+}
+
+/* ── Context card ───────────────────────────────────────────── */
+/* Surface weight: a fill and a hairline, no blur of its own. */
+
 .context {
-  padding: 0.7rem 0.85rem 0.75rem;
-  border-bottom: 1px solid var(--color-line);
-  background: var(--color-surface-2);
-  overflow: auto;
+  flex: 0 1 auto;
   min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0 12px 12px;
+  padding: 14px;
+  border-radius: 22px;
+  background: var(--glass-strong);
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+}
+
+/* In the shell rail the thread is the reason the rail exists, so the
+   context card never grows past half of it — it scrolls instead. */
+.rail .context {
+  max-height: 46%;
 }
 
 .context p {
-  margin: 0 0 0.45rem;
+  margin: 0;
+}
+
+/* Section label. Accent-as-text always goes through --accent-text. */
+.context > p.mono {
+  color: var(--accent-text);
+}
+
+.mono {
+  color: var(--ink2);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  line-height: 1.3;
+  text-transform: uppercase;
 }
 
 .context dl {
   display: grid;
-  gap: 0.35rem;
-  margin: 0;
+  gap: 8px;
+  margin: 10px 0 0;
 }
 
-.context div {
+/* Scoped to the definition list: an unscoped `.context div` also
+   caught the permission list and forced it into two columns. */
+.context dl > div {
   display: grid;
   grid-template-columns: 54px minmax(0, 1fr);
-  gap: 0.55rem;
+  gap: 10px;
   align-items: baseline;
 }
 
@@ -182,67 +220,158 @@
 
 .context dd {
   margin: 0;
-  font-size: 0.84rem;
+  font-size: 0.84375rem;
   font-weight: 600;
+  line-height: 1.35;
 }
 
 .note {
-  margin: 0.65rem 0 0;
-  color: var(--color-muted);
-  font-size: 0.72rem;
-  line-height: 1.45;
+  margin: 12px 0 0;
+  color: var(--ink2);
+  font-size: 0.75rem;
+  line-height: 1.5;
 }
+
+/* ── Permissions ────────────────────────────────────────────── */
 
 .permToggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 8px;
   width: 100%;
-  margin-top: 0.65rem;
+  min-height: 44px;
+  margin-top: 4px;
   padding: 0;
   border: 0;
   background: transparent;
   color: inherit;
   font: inherit;
-  cursor: pointer;
   text-align: left;
+  cursor: pointer;
+}
+
+.permToggle .mono {
+  color: var(--ink);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .perms {
   display: grid;
-  gap: 2px;
-  margin-top: 0.45rem;
+  gap: 0;
 }
 
+/* 5px padding as specified, stretched to a 44px target: the row is
+   the whole control, so it has to be reachable. */
 .perm {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.5rem;
+  gap: 10px;
   width: 100%;
-  padding: 0.4rem 0;
+  min-height: 44px;
+  padding: 5px 0;
   border: 0;
-  border-bottom: 1px solid var(--color-line);
+  border-top: 1px solid var(--stroke2);
   background: transparent;
   color: inherit;
   font: inherit;
-  font-size: 0.84rem;
+  font-size: 0.78125rem;
+  font-weight: 600;
+  line-height: 1.3;
   text-align: left;
   cursor: pointer;
 }
 
-.permLevel {
-  font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 9.5px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.perm:disabled {
+  cursor: default;
+  opacity: 0.62;
 }
 
+/* The level is a state, so it reads as a chip rather than a word
+   that happens to be coloured. */
+.permLevel {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border: 1px solid var(--stroke2);
+  border-radius: 999px;
+  color: var(--ink2);
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  font-size: 0.65625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.perm[data-mus-perm-level='read'] .permLevel {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent-text);
+}
+
+.perm[data-mus-perm-level='unverified'] .permLevel {
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  color: var(--danger-text);
+}
+
+/* ── Access alert ───────────────────────────────────────────── */
+/* Rendered without a class by the rail, so it is matched by role. */
+
+.rail > [role='alert'],
+.page > [role='alert'] {
+  display: grid;
+  flex: none;
+  gap: 10px;
+  justify-items: start;
+  margin: 0 12px 12px;
+  padding: 12px 14px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 30%, transparent);
+  color: var(--ink);
+  font-size: 0.78125rem;
+  line-height: 1.45;
+}
+
+.rail > [role='alert'] p,
+.page > [role='alert'] p {
+  margin: 0;
+}
+
+.rail > [role='alert'] button,
+.page > [role='alert'] button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--stroke);
+}
+
+.rail > [role='alert'] button:disabled,
+.page > [role='alert'] button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+/* ── Thread ─────────────────────────────────────────────────── */
+
 .thread {
+  display: grid;
+  flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
-  display: grid;
 }
 
 .thread :global([data-mus-thread='rail']) {
@@ -250,70 +379,67 @@
   min-height: 0;
 }
 
+/* ── Footer ─────────────────────────────────────────────────── */
+
 .foot {
+  flex: none;
   margin: 0;
-  padding: 0.7rem 0.85rem 0.85rem;
-  border-top: 1px solid var(--color-line);
-  color: var(--color-muted-2);
-  font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.02em;
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--stroke2);
+  color: var(--ink2);
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 
-.states {
-  padding: 0.85rem;
+/* ── Lis's face ─────────────────────────────────────────────── */
+/* LisFace: one of the four shipped expressions, a transparent WebP, so
+   nothing is drawn behind it. */
+
+.face {
+  flex: none;
+  width: 36px;
+  height: 36px;
+}
+
+/* ── Page variant and permission rows (from src/app/botanical.css, 2026-09-18) ── */
+.page[data-mus-rail='page'] {
+  display: flex;
+  flex-direction: column;
   overflow: auto;
 }
 
-.states h2 {
-  margin: 0 0 0.7rem;
+.page[data-mus-rail='page'] > * {
+  flex: none;
 }
 
-.stateGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 9px;
+.page[data-mus-rail='page'] .context {
+  overflow: visible;
 }
 
-.stateCard {
-  display: grid;
-  justify-items: center;
-  gap: 0.4rem;
-  padding: 0.7rem 0.5rem 0.65rem;
-  border: 1px solid var(--color-line);
-  border-radius: 8px;
-  background: var(--color-surface);
-  text-align: center;
+.page[data-mus-rail='page'] :is(.note, .mono) {
+  font-size: 0.8125rem;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
-.stateCard img,
-.stateCard .stateSlot {
-  width: 48px;
-  height: 48px;
-  border-radius: 999px;
-  object-fit: cover;
-  object-position: 50% 22%;
+.permToggle {
+  min-height: 2.75rem;
+  padding-block: 0.75rem;
 }
 
-.stateSlot {
-  display: grid;
-  place-items: center;
-  border: 1px dashed var(--color-line-strong);
-  background: var(--color-surface-2);
-  color: var(--color-muted-2);
-  font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 7.5px;
-  letter-spacing: 0.03em;
-  line-height: 1.25;
+.perms {
+  grid-template-columns: 1fr;
 }
 
-.stateCard strong {
-  font-size: 0.78rem;
+.perm {
+  min-height: 52px;
+  grid-template-columns: minmax(0, 1fr) auto;
 }
 
-.stateCard p {
-  margin: 0;
-  color: var(--color-muted);
-  font-size: 0.68rem;
-  line-height: 1.4;
+@media (max-width: 1000px) {
+  .page[data-mus-rail='page'] {
+    height: auto;
+    overflow: visible;
+    display: block;
+  }
 }

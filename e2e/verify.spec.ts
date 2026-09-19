@@ -67,7 +67,7 @@ test.describe('verify desk', () => {
 
     await page.goto('/verify');
     await expect(page.locator('[data-verify]')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Verify' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Verify', exact: true })).toBeVisible();
     const row = page.locator('[data-verify-row]').first();
     await expect(row).toBeVisible({ timeout: 30_000 });
 

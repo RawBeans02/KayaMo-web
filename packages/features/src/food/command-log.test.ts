@@ -125,7 +125,7 @@ describe('command log helpers', () => {
     expect(clampSelectedIndex(0, 0)).toBe(0);
   });
 
-  it('keeps PH core and user foods, drops USDA and Open Food Facts', () => {
+  it('includes sourced foods across cuisines and providers', () => {
     const per100g = {
       kcal: 100,
       protein_g: 0,
@@ -194,7 +194,7 @@ describe('command log helpers', () => {
         createdBy: null,
       },
     ]);
-    expect(kept.map((row) => row.id)).toEqual(['ph', 'mine']);
+    expect(kept.map((row) => row.id)).toEqual(['ph', 'mine', 'usda', 'off']);
   });
 
   it('keeps four palette states exclusive and labels them', () => {
@@ -309,9 +309,41 @@ describe('command log helpers', () => {
   });
 
   it('maps no-match shortcuts onto leave routes, not writes', () => {
-    expect(leaveHrefFromPaletteKey({ metaKey: true, ctrlKey: false, shiftKey: false, key: 'n' })).toBe('/verify');
+    expect(leaveHrefFromPaletteKey({ metaKey: true, ctrlKey: false, shiftKey: false, key: 'n' })).toBe('/foods');
     expect(leaveHrefFromPaletteKey({ metaKey: true, ctrlKey: false, shiftKey: true, key: 'f' })).toBe('/foods');
     expect(leaveHrefFromPaletteKey({ metaKey: false, ctrlKey: true, shiftKey: false, key: 'm' })).toBe('/mus');
     expect(leaveHrefFromPaletteKey({ metaKey: true, ctrlKey: false, shiftKey: false, key: 'k' })).toBeNull();
   });
 });
+
+describe('locally edited catalog rows', () => {
+  // A row whose numbers came from this browser's Verify overlay still belongs
+  // to its catalog source, but the numbers were resolved by the person, not by
+  // the source. resolved_via says so; source keeps the food's identity.
+  it('logs an overlaid candidate as resolved by the user', () => {
+    const input = toLogInputFromCandidate({
+      userId: 'u',
+      mealSlot: 'tanghalian',
+      candidate: candidate({ locallyEdited: true, confidence: 0.52 }),
+      servingId: null,
+      timeZone: 'Asia/Manila',
+      dayStartsAt: '05:00:00',
+    });
+    expect(input?.source).toBe('ph_core');
+    expect(input?.resolvedVia).toBe('user');
+    expect(input?.confidence).toBe('0.52');
+  });
+
+  it('leaves an untouched catalog row resolved by its source', () => {
+    const input = toLogInputFromCandidate({
+      userId: 'u',
+      mealSlot: 'tanghalian',
+      candidate: candidate(),
+      servingId: null,
+      timeZone: 'Asia/Manila',
+      dayStartsAt: '05:00:00',
+    });
+    expect(input?.resolvedVia).toBe('ph_core');
+  });
+});
+

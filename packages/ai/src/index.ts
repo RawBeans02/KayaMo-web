@@ -55,6 +55,7 @@ export {
   musEntrySchema,
   cocoModeSchema,
   cocoModelOutputSchema,
+  cocoHistoryTurnSchema,
   cocoRequestSchema,
   cocoResponseSchema,
   cocoSafetyResultSchema,
@@ -79,7 +80,7 @@ export type {
   CocoToolCall,
   CocoToolResult,
 } from './contracts';
-export { createCocoRouter } from './coco-router';
+export { createCocoRouter, cocoSafetyResponse } from './coco-router';
 export { allowedMusActions } from './allowed-actions';
 export type {
   CocoProvider,
@@ -90,6 +91,5 @@ export type {
   CocoTelemetryEvent,
   CocoTelemetrySink,
 } from './coco-router';
-export { evaluateCocoSafety } from './safety';
-export { authorizeCocoToolCall } from './tools';
-export type { CocoToolAuthorization } from './tools';
+export { evaluateCocoSafety, normaliseForSafety } from './safety';
+export { CONTEXT_LIMITS, truncateWords } from './context-limits';

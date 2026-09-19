@@ -51,7 +51,7 @@ import {
   openWindows,
   weekDates,
 } from '../todo/timetable';
-import styles from '../food/desk.module.css';
+import styles from './desk.module.css';
 import { DeskMusPane } from './desk-mus';
 import { TodosInspector } from './todos-inspector';
 import { TodosTimeline } from './todos-timeline';
@@ -136,7 +136,7 @@ function TaskBucket({
           const meta = metaByTask.get(task.id);
           const placed = placedIds.has(task.id);
           const due = Boolean(overdue || (task.due_at && task.due_at < new Date().toISOString() && !task.completed_at));
-          const tag = due ? 'due' : task.origin !== 'user' ? 'Mus' : placed ? 'placed' : 'inbox';
+          const tag = due ? 'due' : task.origin !== 'user' ? 'Lis' : placed ? 'placed' : 'inbox';
           return (
             <div
               key={task.id}
@@ -356,7 +356,7 @@ export function TodosDesk({ userId }: { userId: string }) {
           : body,
       );
       if (!parsed.success) {
-        setError('Mus returned a dump I could not use. Split it by hand.');
+        setError('Lis returned a dump I could not use. Split it by hand.');
         return;
       }
       setCapture(parsed.data);
@@ -435,6 +435,31 @@ export function TodosDesk({ userId }: { userId: string }) {
     setSelectedBlockId(null);
     setSelectedId(task.id);
     await load();
+  }
+
+  async function onCommitBlock(id: string, startMin: number, endMin: number) {
+    setError(null);
+    try {
+      const saved = await updateLocalTimeBlock({ id, userId, start_min: startMin, end_min: endMin });
+      if (!saved) throw new Error('Unavailable');
+      setBlocks(current => current.map(block => block.id === id ? saved : block));
+    } catch {
+      setError('Could not move this block. Your saved schedule is unchanged. Please retry.');
+    }
+  }
+
+  async function onCreateAt(startMin: number) {
+    setError(null);
+    try {
+      const row = await createLocalTimeBlock({
+        userId, logicalDate: date, title: 'Block', startMin, endMin: startMin + 30,
+      });
+      setBlocks(current => [...current.filter(block => block.id !== row.id), row]);
+      setSelectedBlockId(row.id);
+      setSelectedId(null);
+    } catch {
+      setError('Could not create this block. Please retry.');
+    }
   }
 
   async function collectPlanContext() {
@@ -520,7 +545,7 @@ export function TodosDesk({ userId }: { userId: string }) {
         body && typeof body === 'object' && 'plan' in body ? body.plan : body,
       );
       if (!parsed.success) {
-        setError('Mus returned a plan we could not read.');
+        setError('Lis returned a plan we could not read.');
         return;
       }
       setPlan(parsed.data);
@@ -573,7 +598,7 @@ export function TodosDesk({ userId }: { userId: string }) {
         body && typeof body === 'object' && 'whatNow' in body ? body.whatNow : body,
       );
       if (!parsed.success) {
-        setError('Mus returned options we could not read.');
+        setError('Lis returned options we could not read.');
         return;
       }
       setWhatNow(parsed.data);
@@ -641,7 +666,7 @@ export function TodosDesk({ userId }: { userId: string }) {
             });
           }}
         >
-          Undo Mus
+          Undo Lis
         </button>
         <span className={styles.energyGroup} role="group" aria-label="Energy">
           <span className={styles.busyLabel}>Energy</span>
@@ -667,8 +692,8 @@ export function TodosDesk({ userId }: { userId: string }) {
 
       {capacityWarn ? (
         <p className={styles.capacityWarn}>
-          {hoursLabel(placedMin)} placed against {hoursLabel(freeMin)} free. Confirm still writes —
-          Mus will not shove the overflow into the evening.
+          {hoursLabel(placedMin)} placed against {hoursLabel(freeMin)} free. Confirm still writes.
+          Lis will not shove the overflow into the evening.
         </p>
       ) : null}
 
@@ -810,7 +835,6 @@ export function TodosDesk({ userId }: { userId: string }) {
                 ghosts={ghosts}
                 conflicts={conflicts}
                 selectedId={selectedBlockId}
-                readOnly
                 doneIds={doneIds}
                 nowMin={date === today ? nowMin : null}
                 dayStart={DESK_DAY_START_MIN}
@@ -821,8 +845,25 @@ export function TodosDesk({ userId }: { userId: string }) {
                   const source = blocks.find((row) => row.id === id)?.source_id;
                   if (source) setSelectedId(source);
                 }}
-                onCommit={() => undefined}
-                onCreateAt={() => undefined}
+                onCommit={onCommitBlock}
+                onCreateAt={(startMin) => void onCreateAt(startMin)}
+                onGhostCommit={(id, startMin, endMin) => {
+                  const index = Number(id.slice('ghost:'.length));
+                  if (!Number.isInteger(index)) return;
+                  setPlan(current => current ? {
+                    ...current,
+                    blocks: current.blocks.map((block, i) => i === index ? {
+                      ...block, start: minutesToLabel(startMin), end: minutesToLabel(endMin),
+                    } : block),
+                  } : current);
+                }}
+                onDelete={(id) => {
+                  if (id.startsWith('ghost:')) return;
+                  void tombstoneLocalTimeBlock({ id, userId }).then(() => {
+                    setBlocks(current => current.filter(block => block.id !== id));
+                    setSelectedBlockId(null);
+                  }).catch(() => setError('Could not remove this block. Please retry.'));
+                }}
               />
             </div>
             <div className={styles.ttLegend}>
@@ -840,7 +881,7 @@ export function TodosDesk({ userId }: { userId: string }) {
               </span>
               <span className={styles.legendItem}>
                 <span className={styles.legendSwatch} data-kind="proposed" />
-                from Mus
+                from Lis
               </span>
             </div>
           </div>
@@ -1040,7 +1081,7 @@ export function TodosDesk({ userId }: { userId: string }) {
                       </span>
                       <span className={styles.taskSub}>{task.scheduled_for ?? 'inbox'}</span>
                       <span className={styles.taskTag} data-due={due ? 'true' : undefined}>
-                        {due ? 'due' : task.origin !== 'user' ? 'Mus' : 'open'}
+                        {due ? 'due' : task.origin !== 'user' ? 'Lis' : 'open'}
                       </span>
                     </div>
                   );

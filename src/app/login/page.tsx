@@ -3,6 +3,13 @@ import { redirect } from 'next/navigation';
 import { isLocalDevLoginEnabled } from '@kayamo/features/auth';
 import { authCallbackPathFromSearch } from '@/lib/auth-landing';
 import { LoginView } from './login-view';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Sign in | KayaMo',
+  description:
+    'Sign in to KayaMo with an email link, or explore the separate local demo.',
+};
 
 export default async function LoginPage({
   searchParams,

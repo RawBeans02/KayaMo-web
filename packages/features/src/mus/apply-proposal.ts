@@ -41,7 +41,7 @@ import { exerciseBySlug } from '../gym/library';
 import { labelToMinutes } from '../todo/timetable';
 import {
   catalogForCommandLog,
-  PREFILL_LOG_EVENT,
+  prefillLogPalette,
   servingIdForLabel,
   toLogInputFromCandidate,
 } from '../food/command-log-model';
@@ -61,7 +61,7 @@ export async function musMayEdit(taskId: string): Promise<boolean> {
 
 export function prefillLogQuery(query: string): void {
   if (typeof window === 'undefined') return;
-  window.dispatchEvent(new CustomEvent(PREFILL_LOG_EVENT, { detail: { query } }));
+  prefillLogPalette(query);
 }
 
 async function activeOrDraftSessionId(userId: string): Promise<string> {
@@ -112,7 +112,7 @@ export async function applyMusProposal(params: {
     }
     case 'edit_task': {
       if (!(await musMayEdit(proposal.arguments.taskId))) {
-        return { ok: false, message: 'That task is locked from Mus edits.' };
+        return { ok: false, message: 'That task is locked from Lis edits.' };
       }
       const row = await updateLocalTask({
         id: proposal.arguments.taskId,
@@ -125,14 +125,14 @@ export async function applyMusProposal(params: {
     }
     case 'delete_task': {
       if (!(await musMayEdit(proposal.arguments.taskId))) {
-        return { ok: false, message: 'That task is locked from Mus edits.' };
+        return { ok: false, message: 'That task is locked from Lis edits.' };
       }
       await tombstoneLocalTask({ id: proposal.arguments.taskId, userId });
       return { ok: true, message: 'Removed that task.' };
     }
     case 'schedule_task': {
       if (!(await musMayEdit(proposal.arguments.taskId))) {
-        return { ok: false, message: 'That task is locked from Mus edits.' };
+        return { ok: false, message: 'That task is locked from Lis edits.' };
       }
       const existing = await getLocalTask(proposal.arguments.taskId, userId);
       if (!existing) return { ok: false, message: 'That task is not on this device.' };
@@ -308,7 +308,7 @@ export async function applyMusProposal(params: {
     }
     case 'add_session_exercise': {
       const exercise = exerciseBySlug(proposal.arguments.slug);
-      if (!exercise) return { ok: false, message: 'Mus can only add catalog lifts.' };
+      if (!exercise) return { ok: false, message: 'Lis can only add catalog lifts.' };
       const prefs = await getLocalGymPrefs(userId);
       if (prefs.avoid_slugs.includes(exercise.slug)) {
         return { ok: false, message: 'You marked that lift as avoid. Add it yourself if you want it.' };
@@ -338,7 +338,7 @@ export async function applyMusProposal(params: {
         return { ok: false, message: 'That lift is locked. Swap it yourself if you want.' };
       }
       const exercise = exerciseBySlug(proposal.arguments.slug);
-      if (!exercise) return { ok: false, message: 'Mus can only swap to catalog lifts.' };
+      if (!exercise) return { ok: false, message: 'Lis can only swap to catalog lifts.' };
       const prefs = await getLocalGymPrefs(userId);
       if (prefs.avoid_slugs.includes(exercise.slug)) {
         return { ok: false, message: 'You marked that lift as avoid. Swap it yourself if you want.' };
@@ -449,7 +449,7 @@ export async function applyMusProposal(params: {
     }
     case 'log_food': {
       const hint = proposal.arguments.inputHint?.trim() ?? '';
-      if (!hint) return { ok: false, message: 'Mus did not name a food to log.' };
+      if (!hint) return { ok: false, message: 'Lis did not name a food to log.' };
       let catalog = catalogForCommandLog(await catalogFromCache());
       if (catalog.length === 0) {
         try {

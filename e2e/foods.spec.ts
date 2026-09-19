@@ -31,14 +31,14 @@ test.describe('foods desk', () => {
 
     await page.goto('/foods');
     await expect(page.locator('[data-foods]')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Foods' })).toBeVisible();
-    await expect(page.getByText('Logging happens in the palette, not here.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Foods', exact: true })).toBeVisible();
+    await expect(page.getByText(/Your saved catalog/)).toBeVisible();
     await expect(page.getByText('Shape of the database')).toBeVisible();
     await expect(page.getByRole('button', { name: /PH core/ })).toBeVisible();
 
     await expect(page.locator('[data-foods-row]').first()).toBeVisible({ timeout: 30_000 });
     await page.getByRole('button', { name: 'PH core' }).click();
-    await page.getByLabel('Filter by name or Taglish alias').fill('adobo');
+    await page.getByLabel('Filter by name or alias').fill('adobo');
     await expect(page.locator('[data-foods-row]').first()).toBeVisible();
     await page.locator('[data-foods-row]').first().click();
     await expect(page.locator('[data-foods-inspector] h2')).toBeVisible();

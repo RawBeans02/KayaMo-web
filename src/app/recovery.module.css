@@ -1,0 +1,67 @@
+/* Shared by the 404, the route error boundary and the global error page.
+ * Materials come from the global kg* classes where the layout is present;
+ * global-error has no layout, so .bare gives it a readable fallback. */
+
+.page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+
+.card {
+  width: min(560px, 100%);
+  padding: 32px 28px;
+  display: grid;
+  gap: 14px;
+}
+
+.lede {
+  margin: 0;
+  color: var(--ink2, inherit);
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.digest {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: var(--ink2, inherit);
+}
+
+.digest code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* global-error only: no globals.css, so give it a legible page on its own. */
+.bare {
+  margin: 0;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0f1412;
+  color: #f2f5f3;
+}
+
+.bare .card {
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+.bare button {
+  min-height: 44px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: #7bd389;
+  color: #0f1412;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}

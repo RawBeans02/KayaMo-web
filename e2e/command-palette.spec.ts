@@ -61,7 +61,7 @@ test.describe('command palette', () => {
 
     const dialog = await openPalette(page);
     await expect(dialog).toHaveAttribute('data-palette-view', 'ready');
-    await expect(dialog.getByText('You usually eat around now')).toBeVisible();
+    await expect(dialog.getByText('Recent and saved foods')).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Confirm' })).toHaveCount(0);
 
     for (const name of ['E2E Palette Kanin', 'E2E Palette Adobo', 'E2E Palette Sinigang']) {
@@ -91,21 +91,27 @@ test.describe('command palette', () => {
     const dialog = await openPalette(page);
     await dialog.getByRole('combobox').fill('zzzzqwertyfood');
     await expect(dialog).toHaveAttribute('data-palette-view', 'none', { timeout: 8_000 });
-    await expect(dialog.getByText(/Nothing in PH core matches/)).toBeVisible();
-    await expect(dialog.getByRole('button', { name: /Create it in PH core/ })).toBeVisible();
-    await expect(dialog.getByText(/Brands and USDA stay out of this palette/)).toBeVisible();
+    await expect(dialog.getByText(/No saved food matches/)).toBeVisible();
+    await expect(dialog.getByRole('button', { name: /Create a custom food/ })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: /Search worldwide foods/ })).toBeVisible();
   });
 });
 
 async function openPalette(page: Page) {
   const dialog = page.locator('[data-palette="log"]');
-  const logFood = page.getByRole('button', { name: 'Log food' });
-  await expect(logFood).toBeVisible();
+  // ⌘K is the palette's own shortcut. The rail's "Log" button opens the Log
+  // sheet, whose Meal route hands off to this same palette, so it is the UI
+  // fallback when the shortcut does not land.
+  const log = page.getByRole('button', { name: 'Log', exact: true });
+  await expect(log).toBeVisible();
   await page.keyboard.press(process.platform === 'darwin' ? 'Meta+K' : 'Control+K');
   try {
     await expect(dialog).toBeVisible({ timeout: 2_000 });
   } catch {
-    await logFood.click();
+    await log.click();
+    await page.getByRole('tab', { name: 'Meal' }).click();
+    await page.getByRole('dialog', { name: 'Log' }).getByRole('textbox').fill('kanin');
+    await page.getByRole('button', { name: 'Find this food' }).click();
     await expect(dialog).toBeVisible();
   }
   return dialog;

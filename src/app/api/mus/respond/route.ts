@@ -1,74 +1,44 @@
 import { reserveWebAiRequest } from '@/lib/server-ai-allowance';
-import { NextResponse } from 'next/server';
-import { allowedMusActions, createCocoRouter, musEntrySchema, type CocoProvider } from '@kayamo/ai';
+import { json, requireUser } from '@/lib/api';
+import type { CocoProvider } from '@kayamo/ai';
 import { createOpenAICocoProvider } from '@kayamo/ai/server';
-import { getAgentSpendUsd, insertAgentRunTelemetry } from '@kayamo/db';
-import { buildServerMusContext } from '@kayamo/features/mus-server';
-import { z } from 'zod';
-import { createServerSupabase } from '@/lib/supabase/server';
-
-const requestSchema = z
-  .object({
-    requestId: z.string().min(1).max(100),
-    mode: z.enum(['chat', 'focus', 'workout']),
-    message: z.string().trim().min(1).max(5000),
-    logicalDate: z.string().date(),
-    entry: musEntrySchema.optional(),
-  })
-  .strict();
-
-function nonnegativeEnvNumber(name: string, fallback: number): number {
-  const value = Number(process.env[name]);
-  return Number.isFinite(value) && value >= 0 ? value : fallback;
-}
+import {
+  getAgentSpendUsd,
+  getProfileTimezone,
+  insertAgentRunTelemetry,
+} from '@kayamo/db';
+import { handleMusRespond } from '@kayamo/features/mus-respond';
+import { readAiBudgetEnv } from '@kayamo/features/mus-plan-server';
 
 function configuredProvider(): CocoProvider {
   try {
     return createOpenAICocoProvider();
   } catch (error) {
     const detail = error instanceof Error ? error.name : 'unknown';
-    console.error(`Mus provider configuration failed (${detail}).`);
+    console.error(`Lis provider configuration failed (${detail}).`);
     return {
       generate: async () => {
-        throw new Error('Mus provider is unavailable');
+        throw new Error('Lis provider is unavailable');
       },
     };
   }
 }
 
+/** Auth and wiring only; the turn itself lives in `handleMusRespond`. */
 export async function POST(request: Request) {
-  const supabase = await createServerSupabase(request);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: 'Sign in to talk with Mus.' }, { status: 401 });
-  }
+  const auth = await requireUser(request, 'Sign in to talk with Lis.');
+  if (!auth.ok) return auth.response;
+  const { supabase, user } = auth;
 
-  const allowanceError = await reserveWebAiRequest(user.id);
-  if (allowanceError) return allowanceError;
-
-  const parsed = requestSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid Mus request.' }, { status: 400 });
-  }
-
-  const { context } = await buildServerMusContext({
+  const result = await handleMusRespond({
     client: supabase,
     userId: user.id,
-    logicalDate: parsed.data.logicalDate,
-  });
-  const contextWithEntry = parsed.data.entry
-    ? { ...context, entry: parsed.data.entry }
-    : context;
-
-  const routeCoco = createCocoRouter({
+    body: await request.json().catch(() => null),
     provider: configuredProvider(),
-    budget: {
-      spentUsd: (userId, logicalDate) =>
-        getAgentSpendUsd(supabase, { userId, logicalDate }),
-      recordUsage: async () => undefined,
-    },
+    reserveAllowance: reserveWebAiRequest,
+    readTimezone: (userId) => getProfileTimezone(supabase, userId),
+    spentUsd: (userId, logicalDate) =>
+      getAgentSpendUsd(supabase, { userId, logicalDate }),
     telemetry: {
       record: (event) =>
         insertAgentRunTelemetry(supabase, {
@@ -89,22 +59,10 @@ export async function POST(request: Request) {
     },
     config: {
       maxRetries: 0,
-      dailyBudgetUsd: nonnegativeEnvNumber('AI_DAILY_BUDGET_USD_PER_USER', 0.05),
-      estimatedRequestCostUsd: nonnegativeEnvNumber('AI_ESTIMATED_REQUEST_USD', 0.01),
+      dailyBudgetUsd: readAiBudgetEnv().dailyBudgetUsd,
+      estimatedRequestCostUsd: readAiBudgetEnv().estimatedRequestCostUsd,
     },
   });
 
-  const result = await routeCoco({
-    requestId: parsed.data.requestId,
-    userId: user.id,
-    mode: parsed.data.mode,
-    message: parsed.data.message,
-    context: contextWithEntry,
-    allowedActions: allowedMusActions({
-      mode: parsed.data.mode,
-      entry: parsed.data.entry,
-      permissions: contextWithEntry.permissions,
-    }),
-  });
-  return NextResponse.json(result);
+  return json(result.body, { status: result.status });
 }

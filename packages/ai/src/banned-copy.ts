@@ -10,6 +10,11 @@ export const BANNED_COPY_PATTERNS = [
   { id: 'burn it off', pattern: /\bburn it off\b/i },
   { id: 'bad food', pattern: /\bbad food\b/i },
   { id: 'sinful', pattern: /\bsinful\b/i },
+  // The assistant is called Lis. "Mus" and "Coco" are former names that still
+  // surfaced on error and crisis paths — the worst moment to look unfinished.
+  // Case-sensitive with word boundaries, so route paths like /api/mus and
+  // identifiers like musEntrySchema are untouched.
+  { id: 'former brand name', pattern: /\b(?:Mus|Coco|Kai)\b/ },
 ] as const;
 
 export type BannedCopyHit = {

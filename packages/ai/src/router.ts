@@ -22,7 +22,7 @@ export class AiBudgetError extends Error {
 }
 
 export class AiTimeoutError extends Error {
-  constructor(message = 'Mus took too long to reply. Try again.') {
+  constructor(message = 'Lis took too long to reply. Try again.') {
     super(message);
     this.name = 'AiTimeoutError';
   }
@@ -51,9 +51,11 @@ export type GenerateObjectArgs<S extends z.ZodType> = {
   abortSignal?: AbortSignal;
 };
 
+export type ModelUsage = { inputTokens?: number; outputTokens?: number };
+
 export type GenerateObjectFn = <S extends z.ZodType>(
   args: GenerateObjectArgs<S>,
-) => Promise<{ object: unknown }>;
+) => Promise<{ object: unknown; usage?: ModelUsage }>;
 
 export type CompleteObjectDeps = {
   generateObject?: GenerateObjectFn;
@@ -85,20 +87,33 @@ function envModel(tier: AiTier): string | undefined {
   return firstEnv('MODEL_COACH');
 }
 
-async function liveGenerateObject<S extends z.ZodType>(
-  args: GenerateObjectArgs<S>,
-  modelIdOverride?: string,
-): Promise<{ object: unknown }> {
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
-  const modelId =
-    modelIdOverride?.trim() || envModel(args.tier) || envModel('small');
-  if (!apiKey || !modelId) {
-    throw new AiConfigError('OCR is not configured. Fill the label by hand.');
-  }
+export type OpenAIObjectCall<S extends z.ZodType> = {
+  apiKey: string;
+  modelId: string;
+  schema: S;
+  system: string;
+  messages: AiMessage[];
+  abortSignal?: AbortSignal;
+  maxOutputTokens: number;
+  reasoningEffort?: 'none' | 'low' | 'medium';
+};
 
+/**
+ * The one place in the codebase that touches the model SDK. completeObject
+ * reaches it through liveGenerateObject; the chat provider in
+ * openai-provider.ts reaches it directly. Before this, the provider imported
+ * the SDK itself and was a second, unguarded entry point. Rule 300 says every
+ * call goes through router.ts; this is what makes that true.
+ *
+ * Dynamic imports keep the SDK out of any client bundle that reaches this
+ * module through the package barrel.
+ */
+export async function callOpenAIObject<S extends z.ZodType>(
+  call: OpenAIObjectCall<S>,
+): Promise<{ object: unknown; usage: ModelUsage }> {
   const { generateObject } = await import('ai');
   const { createOpenAI } = await import('@ai-sdk/openai');
-  const openai = createOpenAI({ apiKey });
+  const openai = createOpenAI({ apiKey: call.apiKey });
   const generate = generateObject as unknown as (args: {
     model: unknown;
     schema: S;
@@ -108,22 +123,45 @@ async function liveGenerateObject<S extends z.ZodType>(
     maxRetries: number;
     maxOutputTokens: number;
     providerOptions?: { openai?: { reasoningEffort?: 'none' | 'low' | 'medium' } };
-  }) => Promise<{ object: unknown }>;
-  return generate({
-    model: openai.responses(modelId),
+  }) => Promise<{ object: unknown; usage?: ModelUsage }>;
+  const result = await generate({
+    model: openai.responses(call.modelId),
+    schema: call.schema,
+    system: call.system,
+    messages: call.messages,
+    abortSignal: call.abortSignal,
+    maxRetries: 0,
+    maxOutputTokens: call.maxOutputTokens,
+    ...(call.reasoningEffort
+      ? { providerOptions: { openai: { reasoningEffort: call.reasoningEffort } } }
+      : {}),
+  });
+  return { object: result.object, usage: result.usage ?? {} };
+}
+
+async function liveGenerateObject<S extends z.ZodType>(
+  args: GenerateObjectArgs<S>,
+  modelIdOverride?: string,
+): Promise<{ object: unknown; usage?: ModelUsage }> {
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  const modelId =
+    modelIdOverride?.trim() || envModel(args.tier) || envModel('small');
+  if (!apiKey || !modelId) {
+    throw new AiConfigError('OCR is not configured. Fill the label by hand.');
+  }
+  return callOpenAIObject({
+    apiKey,
+    modelId,
     schema: args.schema,
     system: args.system,
     messages: args.messages,
     abortSignal: args.abortSignal,
-    maxRetries: 0,
     maxOutputTokens: 1500,
-    ...(args.tier === 'vision' || Boolean(modelIdOverride)
-      ? { providerOptions: { openai: { reasoningEffort: 'low' } } }
-      : {}),
+    ...(args.tier === 'vision' || Boolean(modelIdOverride) ? { reasoningEffort: 'low' as const } : {}),
   });
 }
 
-function assertNoInventedNutrition<S extends z.ZodType>(
+export function assertNoInventedNutrition<S extends z.ZodType>(
   schema: S,
   allowNutritionKeys: boolean | undefined,
 ): void {

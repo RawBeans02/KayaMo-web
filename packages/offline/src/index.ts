@@ -1,4 +1,5 @@
 export const PACKAGE = '@kayamo/offline';
+export { createLocalGoalPlan, type CreateGoalPlanInput } from './goal-plan';
 
 export { backoffMs } from './backoff';
 export {
@@ -258,6 +259,7 @@ export {
 export {
   useLiveFoodEntries,
   useLiveFoodHistory,
+  useLiveFoodLedger,
   useLiveMealTemplates,
   useLivePlanningSnapshot,
   useSyncStatus,
@@ -290,6 +292,8 @@ export {
 export {
   listLocalFoodEntries,
   listLocalFoodHistory,
+  FOOD_ENTRY_UNDO_MS,
+  listLocalFoodLedger,
   listLocalMealTemplates,
   listLocalWeightLogs,
   logFoodEntries,

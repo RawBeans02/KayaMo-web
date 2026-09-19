@@ -1,10 +1,28 @@
 import 'server-only';
+import type { z } from 'zod';
+import { renderLisSystemPrompt } from './persona';
 import { cocoModelOutputSchema } from './contracts';
+import {
+  assertNoInventedNutrition,
+  callOpenAIObject,
+  type AiMessage,
+  type ModelUsage,
+} from './router';
 import type {
   CocoProvider,
   CocoProviderRequest,
   CocoProviderResult,
 } from './coco-router';
+
+/** What the provider needs from the model layer; injectable so it can be tested. */
+export type CocoModelCall = (call: {
+  modelId: string;
+  schema: typeof cocoModelOutputSchema;
+  system: string;
+  messages: AiMessage[];
+  abortSignal?: AbortSignal;
+  maxOutputTokens: number;
+}) => Promise<{ object: unknown; usage?: ModelUsage }>;
 
 export type OpenAICocoProviderOptions = {
   apiKey?: string;
@@ -12,11 +30,28 @@ export type OpenAICocoProviderOptions = {
   inputUsdPerMillion?: number;
   outputUsdPerMillion?: number;
   estimatedRequestCostUsd?: number;
+  /** Test seam. Production leaves this unset and goes through the router. */
+  generate?: CocoModelCall;
 };
 
 function envNumber(name: string): number {
   const value = Number(process.env[name] ?? '0');
   return Number.isFinite(value) && value >= 0 ? value : 0;
+}
+
+/** Prior turns go in as real messages; the current turn is a JSON envelope. */
+export function cocoMessages(request: CocoProviderRequest): AiMessage[] {
+  return [
+    ...request.history.map((turn) => ({ role: turn.role, content: turn.content })),
+    {
+      role: 'user' as const,
+      content: JSON.stringify({
+        mode: request.mode,
+        message: request.message,
+        context: request.context,
+      }),
+    },
+  ];
 }
 
 export function createOpenAICocoProvider(
@@ -35,33 +70,40 @@ export function createOpenAICocoProvider(
   const estimatedRequestCostUsd =
     options.estimatedRequestCostUsd ?? (envNumber('AI_ESTIMATED_REQUEST_USD') || 0.01);
 
-  if (!apiKey) {
+  if (!apiKey && !options.generate) {
     throw new Error('Missing server-only OPENAI_API_KEY');
   }
 
+  // The chat schema carries no nutrition fields. This is the same check every
+  // completeObject call gets; a chat provider is not exempt from the rule.
+  assertNoInventedNutrition(cocoModelOutputSchema as z.ZodType, false);
+
+  const generate: CocoModelCall =
+    options.generate ??
+    ((call) =>
+      callOpenAIObject({
+        apiKey: apiKey ?? '',
+        modelId: call.modelId,
+        schema: call.schema,
+        system: call.system,
+        messages: call.messages,
+        abortSignal: call.abortSignal,
+        maxOutputTokens: call.maxOutputTokens,
+        reasoningEffort: 'low',
+      }));
+
   return {
     async generate(request: CocoProviderRequest): Promise<CocoProviderResult> {
-      const { generateObject } = await import('ai');
-      const { createOpenAI } = await import('@ai-sdk/openai');
-      const openai = createOpenAI({ apiKey });
-      const result = await generateObject({
-        model: openai.responses(model),
+      const result = await generate({
+        modelId: model,
         schema: cocoModelOutputSchema,
-        system: `You are Mus, KayaMo's supportive AI companion.
-
-Use only the supplied confirmed and authorized context. A domain set to false in context.permissions is unavailable; never infer its stored data from another field. Never invent completed activity, Physical Self data, Scripture, or user memories. Faith content is opt-in: use Scripture only when permissions.faith is true and only quote the exact supplied scripture.text with a scripture citation. Never present generated, paraphrased, or remembered text as a Bible quotation, and never claim theological authority. Nutrition calculation is outside your authority: you may explain only the exact code-derived nutritionGuidance values supplied in context and must cite their target or expenditure record. Propose at most three actions and set requiresConfirmation to true for every proposal. Do not claim an action was executed. Use a gentle tone for reflection, a firm but respectful tone during explicit focus or workout sessions, and a balanced tone otherwise. Never shame missed days.`,
-        prompt: JSON.stringify({
-          mode: request.mode,
-          message: request.message,
-          context: request.context,
-        }),
+        system: renderLisSystemPrompt(request.context),
+        messages: cocoMessages(request),
         maxOutputTokens: request.maxOutputTokens,
-        maxRetries: 0,
         abortSignal: request.abortSignal,
-        providerOptions: { openai: { reasoningEffort: 'low' } },
       });
-      const inputTokens = result.usage.inputTokens ?? 0;
-      const outputTokens = result.usage.outputTokens ?? 0;
+      const inputTokens = result.usage?.inputTokens ?? 0;
+      const outputTokens = result.usage?.outputTokens ?? 0;
       const tokenCostUsd =
         (inputTokens * inputUsdPerMillion + outputTokens * outputUsdPerMillion) /
         1_000_000;
@@ -75,8 +117,4 @@ Use only the supplied confirmed and authorized context. A domain set to false in
       };
     },
   };
-}
-
-export function isElevenLabsConfigured(): boolean {
-  return Boolean(process.env.ELEVENLABS_API_KEY?.trim());
 }

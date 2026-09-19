@@ -40,7 +40,7 @@ describe('USDA adapter', () => {
 
     const branded = results.find((food) => food.sourceId === '2187885');
     expect(branded?.brand).toBe('Giant Eagle');
-    expect(branded?.per100g.protein_g).toBeCloseTo(7.183, 3);
+    expect(branded?.per100g.protein_g).toBeCloseTo(20.4, 3);
     expect(branded?.barcode).toBe('030034086411');
   });
 
@@ -61,14 +61,14 @@ describe('USDA adapter', () => {
     expect(food?.servings.some((s) => s.label === '1 piece' && s.grams === 181)).toBe(true);
   });
 
-  it('converts branded detail nutrients from per serving to per 100 g', async () => {
+  it('preserves USDA branded foodNutrients already standardized per 100 g', async () => {
     const fetchMock = vi.fn(async () => jsonResponse(usdaBrandedFixture));
     const food = await getUsdaFood(2187885, {
       apiKey: 'test-key',
       fetch: fetchMock,
       limiter: noopLimiter,
     });
-    expect(food?.per100g.kcal).toBeCloseTo(58.099, 3);
+    expect(food?.per100g.kcal).toBeCloseTo(165, 3);
     expect(food?.servings.some((s) => s.label === '1 Chicken Breast' && s.grams === 284)).toBe(true);
   });
 

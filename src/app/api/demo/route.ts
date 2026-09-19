@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import {
   GUEST_COOKIE,
   GUEST_COOKIE_MAX_AGE,
+  guestCookieSecure,
   isValidGuestId,
   newGuestId,
 } from '@/lib/guest';
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     {
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: guestCookieSecure(request),
       path: '/',
       maxAge: GUEST_COOKIE_MAX_AGE,
     },

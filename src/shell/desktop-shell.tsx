@@ -1,57 +1,59 @@
 'use client';
 
-import Image from 'next/image';
 import {
+  BotanicalIcon,
   CommandLog,
   GymRestBar,
   GymSessionProvider,
   OPEN_LOG_EVENT,
+  prefillLogPalette,
+  type BotanicalIconName,
 } from '@kayamo/features/desktop';
-import { SyncStatusBar } from '@kayamo/features';
+import { SyncStatusBar } from '@kayamo/features/desktop';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState, type ReactNode } from 'react';
-import { MusRailMount } from './mus-rail-mount';
-import { useNavCounts } from './use-nav-counts';
-import { SignOutButton } from './sign-out-button';
-import { LocaleToggle } from './locale-toggle';
-import { ThemeToggle } from './theme-toggle';
-import styles from './shell.module.css';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { paintKayamoTheme, resolveKayamoTheme } from './theme';
+import { GlassToast, LogSheet, openLogSheet } from './log-sheet';
+import styles from './glass-shell.module.css';
 
-const NAV = [
-  { href: '/today', label: 'Today', glyph: '▤', count: null },
-  { href: '/gym', label: 'Gym', glyph: '▬', count: null },
-  { href: '/todos', label: 'Todos', glyph: '◻', count: 'todos' },
-  { href: '/mus', label: 'Mus', glyph: '◉', count: null },
-] as const;
+/**
+ * Desktop rail: the full map. Profile is pinned to the bottom, away from the
+ * content nav, matching the platform convention.
+ *
+ * Gym and Todos are off the rail and the Life hub for the first release
+ * (owner decision, 2026-09-18): both routes still resolve, but they render the
+ * legacy desk skin and are not offered as destinations until converted.
+ */
+const RAIL: Array<{ href: string; label: string; icon: BotanicalIconName }> = [
+  { href: '/today', label: 'Home', icon: 'home' },
+  { href: '/life', label: 'Life', icon: 'life' },
+  { href: '/calories', label: 'Food', icon: 'food' },
+  { href: '/goals', label: 'Goals', icon: 'goals' },
+  { href: '/grove', label: 'Grove', icon: 'grove' },
+  { href: '/mus', label: 'Lis', icon: 'lis' },
+];
 
-const CATALOG_NAV = [
-  { href: '/foods', label: 'Foods', glyph: '▦', count: 'foods' },
-  { href: '/verify', label: 'Verify', glyph: '◈', count: 'verify' },
-] as const;
+/**
+ * Phone tab bar: five slots, Home far left, Profile far right, create in the
+ * centre. Food, Goals and Grove live one level down under Life.
+ */
+const TABS: Array<{ href: string; label: string; icon: BotanicalIconName }> = [
+  { href: '/today', label: 'Home', icon: 'home' },
+  { href: '/life', label: 'Life', icon: 'life' },
+  { href: '/mus', label: 'Lis', icon: 'lis' },
+  { href: '/settings', label: 'Profile', icon: 'profile' },
+];
 
-const PHONE_FIRST = [
-  {
-    name: 'Goals',
-    note: 'Goals stay on the phone until the desk has a layout for them.',
-  },
-  {
-    name: 'Life',
-    note: 'Life areas stay on the phone until the desk has a layout for them.',
-  },
-  {
-    name: 'Grove',
-    note: 'Grove stays on the phone until the desk has a layout for them.',
-  },
-] as const;
+/** Routes that live under the Life hub, so the hub stays lit while inside. */
+const LIFE_ROUTES = ['/life', '/calories', '/foods', '/verify', '/goals', '/grove'];
 
-function isActive(pathname: string, href: string): boolean {
-  if (href === '/today') return pathname === '/today' || pathname === '/calories';
+function isActive(pathname: string, href: string, hubAware: boolean): boolean {
+  if (href === '/today') return ['/today', '/todos'].includes(pathname);
+  if (href === '/life') {
+    return hubAware ? LIFE_ROUTES.includes(pathname) : pathname === '/life';
+  }
   return pathname === href;
-}
-
-function openFoodLog(): void {
-  window.dispatchEvent(new Event(OPEN_LOG_EVENT));
 }
 
 export function DesktopShell({
@@ -63,160 +65,235 @@ export function DesktopShell({
   email: string;
   userId: string;
   children: ReactNode;
-  /** No account: local-only, never synced. */
   guest?: boolean;
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const navCounts = useNavCounts(userId);
-  const hideRail = pathname === '/mus';
-  const [railCollapsed, setRailCollapsed] = useState(true);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [toast, setToast] = useState<{ text: string; undo?: () => void } | null>(null);
 
   useEffect(() => {
-    function onKey(event: KeyboardEvent) {
-      if (!(event.metaKey || event.ctrlKey) || event.key !== '\\') return;
-      event.preventDefault();
-      setRailCollapsed((open) => !open);
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const update = () => paintKayamoTheme(resolveKayamoTheme());
+    update();
+    media.addEventListener('change', update);
+    window.addEventListener('storage', update);
+    return () => {
+      media.removeEventListener('change', update);
+      window.removeEventListener('storage', update);
+    };
   }, []);
 
-  const railState = hideRail ? 'off' : railCollapsed ? 'collapsed' : 'open';
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === '\\') {
+        event.preventDefault();
+        router.push('/mus');
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [router]);
+
+  const showToast = useCallback((text: string, undo?: () => void) => {
+    setToast({ text, undo });
+  }, []);
+
+  // Meal text goes to the food palette, which owns catalog resolution.
+  const onMeal = useCallback((draft: string) => {
+    prefillLogPalette(draft);
+  }, []);
 
   return (
-    <>
-      <div className={styles.narrow} role="dialog" aria-labelledby="narrow-title">
-        <p className={styles.narrowEyebrow}>KayaMo desk</p>
-        <h1 id="narrow-title">This surface needs a wide screen.</h1>
-        <p>
-          The diary and training tools need at least 960px of space. Widen this window to
-          continue, or return to sign in.
-        </p>
-        <Link href={guest ? '/login?from=demo' : '/login'}>Back to sign in</Link>
-      </div>
-      <GymSessionProvider userId={userId}>
-        <div className={styles.shell} data-desk-shell="" data-rail={railState}>
-          <aside className={styles.sidebar} data-shell="sidebar">
-            <div className={styles.brandRow}>
-              <div className={styles.brandAvatar}>
-                <Image src="/mus-neutral.webp" alt="" width={38} height={38} />
-                <span className={styles.presence} aria-hidden="true" />
-              </div>
-              <div>
-                <p className={styles.brand}>KayaMo</p>
-                <p className={styles.brandMeta}>Manila · desk</p>
-              </div>
-            </div>
+    <GymSessionProvider userId={userId}>
+      <a href="#main-content" className={styles.skip}>
+        Skip to content
+      </a>
 
-            <nav className={styles.nav} aria-label="Sections">
-              {NAV.map((link) => {
-                const count = link.count ? navCounts[link.count] : null;
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    aria-current={isActive(pathname, link.href) ? 'page' : undefined}
-                  >
-                    <span aria-hidden="true" className={styles.glyph}>
-                      {link.glyph}
-                    </span>
-                    <span>{link.label}</span>
-                    <span className={styles.navCount}>{count}</span>
-                  </Link>
-                );
-              })}
-              <p className={styles.navGroup}>Food catalog</p>
-              {CATALOG_NAV.map((link) => (
+      <div className={styles.shell} data-desk-shell="">
+        <aside className={`${styles.rail} kgPanel`} data-shell="sidebar">
+          <Link href="/today" className={styles.brand}>
+            <span className={styles.mark} aria-hidden="true" />
+            KayaMo
+          </Link>
+
+          <button
+            type="button"
+            className={`${styles.railLog} kgAccent`}
+            onClick={() => openLogSheet('task')}
+          >
+            <BotanicalIcon name="plus" size={18} weight="bold" />
+            Log
+          </button>
+
+          <nav className={styles.nav} aria-label="Sections">
+            {RAIL.map((link) => {
+              const current = isActive(pathname, link.href, false);
+              return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  aria-current={isActive(pathname, link.href) ? 'page' : undefined}
+                  aria-current={current ? 'page' : undefined}
                 >
-                  <span aria-hidden="true" className={styles.glyph}>
-                    {link.glyph}
-                  </span>
+                  <BotanicalIcon
+                    name={link.icon}
+                    size={20}
+                    weight={current ? 'fill' : 'regular'}
+                  />
                   <span>{link.label}</span>
-                  <span className={styles.navCount}>{navCounts[link.count]}</span>
                 </Link>
-              ))}
-            </nav>
+              );
+            })}
+          </nav>
 
-            <div className={styles.phoneFirst}>
-              <p className={styles.phoneLabel}>Phone-first for now</p>
-              <ul>
-                {PHONE_FIRST.map((item) => (
-                  <li key={item.name} title={item.note}>
-                    <span>{item.name}</span>
-                    <span className={styles.onPhone}>on phone</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className={styles.footer} data-shell="sidebar-footer">
-              <button type="button" className={styles.logFood} onClick={openFoodLog}>
-                <span>Log food</span>
-                <span className={styles.keys} aria-hidden="true">
-                  <kbd>⌘</kbd>
-                  <kbd>K</kbd>
-                </span>
-              </button>
-              <p className={styles.syncLine}>
-                <span className={styles.syncDot} aria-hidden="true" />
-                {guest ? <span className={styles.syncText} data-testid="sync-status" data-sync-kind="local_only">Saved on this device · demo</span> : <SyncStatusBar className={styles.syncText} />}
-              </p>
-              <div className={styles.account}>
-                <span className={styles.email} title={email}>
-                  {email}
-                </span>
-                <LocaleToggle />
-                <ThemeToggle />
-              </div>
-              {guest ? (
-                <a className={styles.signOut} href="/login?from=demo">
-                  Create an account
-                </a>
-              ) : (
-                <SignOutButton />
-              )}
-            </div>
-          </aside>
-
-          <div className={styles.mainStack}>
-            {guest ? (
-              <p className={styles.demoBar} data-shell="demo-bar">
-                <span className={styles.demoTag}>Demo</span>
-                <span>
-                  Demo entries stay in this browser. Clearing browser data removes them.
-                </span>
-                <a className={styles.demoCta} href="/login?from=demo">
-                  Sign in · demo entries won’t transfer
-                </a>
-              </p>
-            ) : null}
-            {pathname === '/gym' ? null : <GymRestBar />}
-            <div
-              className={styles.main}
-              data-shell="main"
-              data-mus-page={pathname === '/mus' ? '' : undefined}
+          <div className={styles.railFoot} data-shell="sidebar-footer">
+            <Link
+              href="/settings"
+              className={styles.railProfile}
+              aria-current={pathname === '/settings' ? 'page' : undefined}
             >
-              {children}
-            </div>
+              <BotanicalIcon
+                name="profile"
+                size={20}
+                weight={pathname === '/settings' ? 'fill' : 'regular'}
+              />
+              <span>Profile</span>
+            </Link>
+            {guest ? (
+              <p
+                className={styles.railMeta}
+                data-testid="sync-status"
+                data-sync-kind="local_only"
+              >
+                Saved on this device · demo
+              </p>
+            ) : (
+              <p className={styles.railMeta}>
+                <SyncStatusBar />
+              </p>
+            )}
+            <p className={styles.railMeta} title={email}>
+              {guest ? 'Demo' : email}
+            </p>
           </div>
+        </aside>
 
-          {hideRail ? null : (
-            <MusRailMount
-              userId={userId}
-              pathname={pathname}
-              collapsed={railCollapsed}
-              onToggle={() => setRailCollapsed((value) => !value)}
-            />
+        <div className={styles.mainStack}>
+          {guest && (
+            <p className={`${styles.demoBar} kgSurface`} data-shell="demo-bar">
+              <span className={styles.demoTag}>Demo</span>
+              <span>
+                Demo entries stay in this browser. Clearing browser data removes them.
+              </span>
+              <a href="/login?from=demo">Sign in · demo entries won’t transfer</a>
+            </p>
           )}
 
-          <CommandLog userId={userId} onLeave={(href) => router.push(href)} />
+          <div className={styles.phoneHeader}>
+            <Link href="/today" className={styles.brand}>
+              <span className={styles.mark} aria-hidden="true" />
+              KayaMo
+            </Link>
+            <button
+              type="button"
+              className="kgGhost"
+              style={{ minHeight: 40, padding: '0 16px', fontSize: 14 }}
+              onClick={() => router.push('/mus')}
+            >
+              <BotanicalIcon name="lis" size={17} />
+              Ask Lis
+            </button>
+          </div>
+
+          {pathname !== '/gym' && <GymRestBar />}
+
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className={styles.main}
+            data-shell="main"
+            data-mus-page={pathname === '/mus' ? '' : undefined}
+          >
+            {children}
+          </main>
         </div>
-      </GymSessionProvider>
-    </>
+
+        <nav
+          className={`${styles.tabBar} kgHeavy`}
+          aria-label="Main"
+          data-sheet={sheetOpen ? 'true' : 'false'}
+        >
+          {TABS.slice(0, 2).map((tab) => {
+            const current = isActive(pathname, tab.href, true);
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={styles.tab}
+                aria-current={current ? 'page' : undefined}
+              >
+                <BotanicalIcon
+                  name={tab.icon}
+                  size={22}
+                  weight={current ? 'fill' : 'regular'}
+                />
+                <span>{tab.label}</span>
+              </Link>
+            );
+          })}
+
+          <button
+            type="button"
+            className={styles.tabAdd}
+            aria-label="Log"
+            onClick={() => openLogSheet('task')}
+          >
+            <BotanicalIcon name="plus" size={24} weight="bold" />
+          </button>
+
+          {TABS.slice(2).map((tab) => {
+            const current = isActive(pathname, tab.href, true);
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={styles.tab}
+                aria-current={current ? 'page' : undefined}
+              >
+                <BotanicalIcon
+                  name={tab.icon}
+                  size={22}
+                  weight={current ? 'fill' : 'regular'}
+                />
+                <span>{tab.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <LogSheet
+          userId={userId}
+          open={sheetOpen}
+          onOpenChange={setSheetOpen}
+          onToast={showToast}
+          onMeal={onMeal}
+        />
+
+        {toast ? (
+          <GlassToast
+            text={toast.text}
+            onUndo={toast.undo}
+            onDone={() => setToast(null)}
+          />
+        ) : null}
+
+        <CommandLog userId={userId} onLeave={(href) => router.push(href)} />
+      </div>
+    </GymSessionProvider>
   );
+}
+
+/** Desktop header action, used by screens that want the create affordance. */
+export function openDesktopLog(): void {
+  window.dispatchEvent(new Event(OPEN_LOG_EVENT));
 }
