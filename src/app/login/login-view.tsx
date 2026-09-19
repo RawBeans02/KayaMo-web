@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useDeskLocale } from '@kayamo/features/desk-locale';
 import { LoginForm } from './login-form';
 import { LoginTheme } from './login-theme';
-import { LEGAL_ROUTES } from '@/lib/legal';
+import { LEGAL_ROUTES, SUPPORT_EMAIL, supportMailto } from '@/lib/legal';
 import styles from './login.module.css';
 
 export function LoginView({ localDev }: { localDev: boolean }) {
@@ -40,7 +40,8 @@ export function LoginView({ localDev }: { localDev: boolean }) {
             {locale === 'en' ? 'Sign in to KayaMo.' : 'Tuloy ka sa KayaMo.'}
           </h1>
           <p className={styles.intro}>
-            Enter your email. We’ll send you a sign-in link, no password needed.
+            Enter your email and password. New here? Create an account with the same
+            form; no confirmation email is needed.
           </p>
           {fromDemo ? (
             <p className={styles.demoNote}>
@@ -54,8 +55,11 @@ export function LoginView({ localDev }: { localDev: boolean }) {
           <details className={styles.help}>
             <summary>Need help signing in?</summary>
             <p>
-              Check your spam folder and make sure the email address is right. If your
-              link has expired, request a new one here and use the latest email.
+              Use the email address you created the account with. If you have forgotten
+              your password, write to{' '}
+              <a href={supportMailto('KayaMo password reset')}>{SUPPORT_EMAIL}</a> from
+              that address and we will reset it by hand; password reset by email is not
+              switched on yet.
             </p>
           </details>
         </section>

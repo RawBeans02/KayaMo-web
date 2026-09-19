@@ -23,8 +23,9 @@ test.describe('public entry pages', () => {
       await expect(
         page.getByRole('textbox', { name: 'Email', exact: true }),
       ).toBeVisible();
+      await expect(page.getByLabel('Password', { exact: true })).toBeVisible();
       await expect(
-        page.getByRole('button', { name: 'Email me a sign-in link' }),
+        page.getByRole('button', { name: 'Sign in', exact: true }),
       ).toBeVisible();
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
@@ -64,9 +65,7 @@ test.describe('public entry pages', () => {
     await page.keyboard.press(
       browserName === 'webkit' && process.platform === 'darwin' ? 'Alt+Tab' : 'Tab',
     );
-    await expect(
-      page.getByRole('button', { name: 'Email me a sign-in link' }),
-    ).toBeFocused();
+    await expect(page.getByLabel('Password', { exact: true })).toBeFocused();
     await page.screenshot({
       path: testInfo.outputPath('login-night.png'),
       fullPage: true,
@@ -91,36 +90,91 @@ test.describe('public entry pages', () => {
     expect(resumed).toBe(original);
   });
 
-  // Intercept every OTP request; no real emails are sent by these tests.
-  test('email success, cooldown, resend, and change-address flow', async ({ page }) => {
+  // Every auth request is intercepted; these tests describe the form's contract
+  // with the person, not the provider. The real round trip is
+  // e2e/password-sign-in.spec.ts against the local Supabase.
+  test('a wrong password reads the same as an unknown email and hides backend details', async ({
+    page,
+  }) => {
     let calls = 0;
-    await page.route('**/auth/v1/otp**', async (route) => {
+    await page.route('**/auth/v1/token?**', async (route) => {
       calls++;
-      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+      await route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          code: 'invalid_credentials',
+          error_code: 'invalid_credentials',
+          msg: 'Invalid login credentials (provider detail)',
+        }),
+      });
     });
     await page.goto('/login');
-    await page.clock.install();
+    await expect(page.locator('[data-hydrated]')).toBeVisible();
     await page
       .getByRole('textbox', { name: 'Email', exact: true })
       .fill('entry-review@example.com');
-    await page.getByRole('button', { name: 'Email me a sign-in link' }).click();
-    await expect(page.getByRole('status')).toContainText('entry-review@example.com');
-    await expect(page.getByRole('status')).not.toContainText('Inbucket');
+    await page.getByLabel('Password', { exact: true }).fill('not-the-password');
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await expect(
-      page.getByRole('button', { name: /Request another link in/ }),
-    ).toBeDisabled();
+      page.getByRole('alert').filter({ hasText: 'Email or password did not match.' }),
+    ).toBeVisible();
+    await expect(page.getByText('provider detail')).toHaveCount(0);
     expect(calls).toBe(1);
-    await page.clock.runFor(61_000);
-    await page.getByRole('button', { name: 'Resend sign-in link' }).click();
-    await expect(page.getByRole('status')).toContainText('Check your inbox');
-    expect(calls).toBe(2);
-    await page.getByRole('button', { name: 'Use a different email' }).click();
-    await expect(page.getByRole('textbox', { name: 'Email', exact: true })).toBeFocused();
-    await expect(page.getByRole('status')).toHaveCount(0);
+    // Typing again clears the message; the person is not nagged. (Scoped to
+    // the form's text: Next's dev overlay mounts an empty alert of its own.)
+    await page.getByLabel('Password', { exact: true }).fill('another-try');
+    await expect(page.getByRole('alert').filter({ hasText: 'did not match' })).toHaveCount(0);
+  });
+
+  test('a short password never leaves the browser', async ({ page }) => {
+    let calls = 0;
+    await page.route('**/auth/v1/**', async (route) => {
+      calls++;
+      await route.fulfill({ status: 500, body: '' });
+    });
+    await page.goto('/login');
+    await expect(page.locator('[data-hydrated]')).toBeVisible();
+    await page
+      .getByRole('textbox', { name: 'Email', exact: true })
+      .fill('entry-review@example.com');
+    await page.getByLabel('Password', { exact: true }).fill('short');
+    // The native minLength check blocks the submit; the create-account button
+    // bypasses it, so the form's own check must speak.
+    await page.getByRole('button', { name: 'New here? Create an account' }).click();
+    await expect(
+      page.getByRole('alert').filter({ hasText: 'at least 8 characters' }),
+    ).toBeVisible();
+    expect(calls).toBe(0);
+  });
+
+  test('creating an account with a taken email points at sign-in', async ({ page }) => {
+    await page.route('**/auth/v1/signup**', (route) =>
+      route.fulfill({
+        status: 422,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          code: 'user_already_exists',
+          error_code: 'user_already_exists',
+          msg: 'User already registered',
+        }),
+      }),
+    );
+    await page.goto('/login');
+    await expect(page.locator('[data-hydrated]')).toBeVisible();
+    await page
+      .getByRole('textbox', { name: 'Email', exact: true })
+      .fill('entry-review@example.com');
+    await page.getByLabel('Password', { exact: true }).fill('a-long-enough-password');
+    await page.getByRole('button', { name: 'New here? Create an account' }).click();
+    await expect(
+      page.getByRole('alert').filter({ hasText: 'already has an account' }),
+    ).toBeVisible();
+    await expect(page.getByText('User already registered')).toHaveCount(0);
   });
 
   test('rate limiting is recoverable and hides backend details', async ({ page }) => {
-    await page.route('**/auth/v1/otp**', (route) =>
+    await page.route('**/auth/v1/token?**', (route) =>
       route.fulfill({
         status: 429,
         contentType: 'application/json',
@@ -128,27 +182,33 @@ test.describe('public entry pages', () => {
       }),
     );
     await page.goto('/login');
+    await page.clock.install();
+    await expect(page.locator('[data-hydrated]')).toBeVisible();
     await page
       .getByRole('textbox', { name: 'Email', exact: true })
       .fill('entry-review@example.com');
-    await page.getByRole('button', { name: 'Email me a sign-in link' }).click();
+    await page.getByLabel('Password', { exact: true }).fill('a-long-enough-password');
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await expect(
-      page.getByRole('alert').filter({ hasText: 'Too many requests' }),
+      page.getByRole('alert').filter({ hasText: 'Too many attempts' }),
     ).toBeVisible();
     await expect(page.getByText('internal provider detail')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /Try again in/ })).toBeDisabled();
     await expect(
-      page.getByRole('button', { name: /Request another link in/ }),
+      page.getByRole('button', { name: 'New here? Create an account' }),
     ).toBeDisabled();
+    await page.clock.runFor(61_000);
+    await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeEnabled();
   });
 
   test('callback states and demo copy are honest', async ({ page }) => {
     await page.goto('/login?sent=1&from=demo');
-    await expect(page.getByRole('status')).toContainText('Check your inbox');
+    // `sent=1` belonged to the emailed link; with passwords there is no inbox
+    // to point at, so the form shows no "check your inbox" status.
+    await expect(page.getByRole('status')).toHaveCount(0);
     await expect(
       page.getByText('Signing in does not transfer', { exact: false }),
     ).toBeVisible();
-    await page.getByRole('button', { name: 'Use a different email' }).click();
-    await expect(page.getByRole('status')).toHaveCount(0);
     await page.goto('/login?error=This%20link%20has%20expired');
     await expect(
       page.getByRole('alert').filter({ hasText: 'This link has expired' }),

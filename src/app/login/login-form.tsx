@@ -10,9 +10,10 @@ const PORTS = {
 } as const;
 
 /**
- * Auth UI lives in packages/features (LoginForm). PWA and web share it.
- * Web sets magicLinkOnly and never uses the native kayamo:// redirect;
- * that callback URL is a port so this is not a fork of PWA auth.
+ * Auth UI lives in packages/features (LoginForm). The web signs in with an
+ * email and password (owner decision 2026-09-20, no confirmation emails yet)
+ * and never uses the native kayamo:// redirect; that callback URL is a port
+ * so this is not a fork of the PWA's auth.
  */
 export function LoginForm({
   sent,
@@ -35,6 +36,7 @@ export function LoginForm({
       localDevAction={localDev ? '/api/auth/local-dev' : undefined}
       localDevEmail={localDev ? LOCAL_DEV_EMAIL : undefined}
       magicLinkOnly
+      method="password"
     />
   );
 }

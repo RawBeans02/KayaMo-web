@@ -37,8 +37,8 @@ export default function TermsPage() {
 
       <h2>Your account</h2>
       <p>
-        You sign in with a link sent to your email. Keep that inbox secure and do not
-        forward sign-in links. You are responsible for what you enter and for checking
+        You sign in with your email and a password. Keep the password to yourself and
+        keep that inbox secure. You are responsible for what you enter and for checking
         the result of a change before relying on it. Demo entries stay in the browser
         they were made in and do not transfer when you sign in. Work that has not
         synchronised can be lost if browser data is cleared.

@@ -41,8 +41,8 @@ export default function PrivacyPage() {
         <li>
           <strong>Account access:</strong> your email address, an account identifier,
           and the session information that keeps you signed in and keeps your data
-          separate from everyone else&rsquo;s. There are no passwords; sign-in is by
-          emailed link.
+          separate from everyone else&rsquo;s, and the password you choose, which our
+          sign-in provider stores only as a hash.
         </li>
         <li>
           <strong>Your entries:</strong> what you choose to record, such as goals,
