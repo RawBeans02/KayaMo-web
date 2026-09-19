@@ -22,10 +22,17 @@ describe('public search metadata', () => {
     expect(robots()).toEqual({ rules: { userAgent: '*', disallow: '/' } });
   });
 
-  it('includes only the real public home in production sitemap', () => {
+  it('includes only the public pages in the production sitemap', () => {
     vi.stubEnv('NODE_ENV', 'production');
     vi.stubEnv('VERCEL_ENV', 'production');
-    expect(sitemap()).toEqual([{ url: `${SITE_URL}/` }]);
+    // The home and the three legal pages, and nothing behind sign-in or the
+    // demo. The legal pages were added on 2026-09-19.
+    expect(sitemap()).toEqual([
+      { url: `${SITE_URL}/` },
+      { url: `${SITE_URL}/privacy` },
+      { url: `${SITE_URL}/terms` },
+      { url: `${SITE_URL}/accessibility` },
+    ]);
     expect(robots()).toEqual({
       rules: { userAgent: '*', allow: '/', disallow: ['/api/', '/auth/'] },
       sitemap: `${SITE_URL}/sitemap.xml`,

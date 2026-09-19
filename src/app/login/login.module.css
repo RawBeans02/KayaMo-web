@@ -233,13 +233,38 @@
 }
 
 .footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
   width: 100%;
   max-width: 78rem;
   margin-inline: auto;
-  padding-block: 20px 26px;
+  padding-block: 14px 22px;
   color: var(--ink2);
   font-size: 0.8125rem;
   box-shadow: inset 0 1px 0 var(--stroke2);
+}
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.footerLinks a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.footerLinks a:hover {
+  background: var(--glass);
 }
 
 /* ── Phone: the card first, the welcome beneath it ────────── */
@@ -278,6 +303,7 @@
   }
 
   .footer {
+    justify-content: center;
     text-align: center;
   }
 }

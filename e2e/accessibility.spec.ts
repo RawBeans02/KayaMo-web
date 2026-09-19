@@ -47,9 +47,9 @@ for (const colorScheme of ['light', 'dark'] as const) {
       page,
     }, info) => {
       test.setTimeout(180_000);
-      for (const route of ['/', '/login']) {
+      for (const route of ['/', '/login', '/privacy', '/terms', '/accessibility']) {
         await page.goto(route);
-        await audit(page, info, route === '/' ? 'landing' : 'login');
+        await audit(page, info, route === '/' ? 'landing' : route.slice(1));
       }
       await demo(page);
       for (const route of [

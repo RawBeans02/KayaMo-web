@@ -4,6 +4,7 @@ import { AppearanceSettings } from '@/shell/appearance-settings';
 import { CompanionSettings } from '@/shell/companion-settings';
 import { SignOutButton } from '@/shell/sign-out-button';
 import { BotanicalIcon } from '@kayamo/features/desktop';
+import { LEGAL_ROUTES, SUPPORT_EMAIL, supportMailto } from '@/lib/legal';
 import styles from '@/shell/settings.module.css';
 
 export const metadata = { title: 'Profile' };
@@ -146,8 +147,23 @@ export default async function SettingsPage() {
               least 44px, and text keeps a 4.5:1 contrast ratio on glass.
             </p>
             <p>
-              Something unreadable or unreachable is a bug. Tell us and we will
-              fix it.
+              Something unreadable or unreachable is a bug. Tell us at{' '}
+              <a className={styles.link} href={supportMailto('KayaMo accessibility')}>
+                {SUPPORT_EMAIL}
+              </a>{' '}
+              and we will fix it.
+            </p>
+            <p>
+              The full texts:{' '}
+              {LEGAL_ROUTES.map((route, index) => (
+                <span key={route.href}>
+                  {index > 0 ? ' · ' : ''}
+                  <a className={styles.link} href={route.href}>
+                    {route.label}
+                  </a>
+                </span>
+              ))}
+              .
             </p>
           </div>
         </details>
@@ -158,7 +174,13 @@ export default async function SettingsPage() {
           </span>
           <span className={styles.rowLabel}>
             Export my data
-            <small className={styles.rowNote}>Not available on the web yet.</small>
+            <small className={styles.rowNote}>
+              Not available on the web yet. Email{' '}
+              <a className={styles.link} href={supportMailto('KayaMo data request')}>
+                {SUPPORT_EMAIL}
+              </a>{' '}
+              for a copy of your records.
+            </small>
           </span>
         </div>
 
@@ -168,7 +190,13 @@ export default async function SettingsPage() {
           </span>
           <span className={styles.rowLabel}>
             Delete account
-            <small className={styles.rowNote}>Not available on the web yet.</small>
+            <small className={styles.rowNote}>
+              Not available on the web yet. Email{' '}
+              <a className={styles.link} href={supportMailto('KayaMo account deletion')}>
+                {SUPPORT_EMAIL}
+              </a>{' '}
+              from your sign-in address.
+            </small>
           </span>
         </div>
       </section>

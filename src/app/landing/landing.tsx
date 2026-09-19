@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ThemeToggle } from '@/shell/theme-toggle';
 import { BotanicalIcon } from '@kayamo/features/desktop';
 import { StartDemo } from './start-demo';
+import { LEGAL_ROUTES } from '@/lib/legal';
 import styles from './landing.module.css';
 
 /**
@@ -171,7 +172,14 @@ export function Landing({ demoStarted = false }: { demoStarted?: boolean }) {
       <footer className={styles.foot}>
         <span className={styles.brand}>KayaMo</span>
         <span>Personal growth, on your terms.</span>
-        <Link href="/login">Sign in</Link>
+        <nav className={styles.footLinks} aria-label="Legal">
+          {LEGAL_ROUTES.map((route) => (
+            <Link key={route.href} href={route.href}>
+              {route.label}
+            </Link>
+          ))}
+          <Link href="/login">Sign in</Link>
+        </nav>
       </footer>
     </main>
   );

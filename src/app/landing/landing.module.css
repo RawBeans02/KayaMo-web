@@ -327,6 +327,12 @@
   font-size: 0.8125rem;
 }
 
+.footLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
 .foot a {
   min-height: 44px;
   display: inline-flex;

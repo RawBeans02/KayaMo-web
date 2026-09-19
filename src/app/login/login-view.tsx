@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useDeskLocale } from '@kayamo/features/desktop';
 import { LoginForm } from './login-form';
 import { LoginTheme } from './login-theme';
+import { LEGAL_ROUTES } from '@/lib/legal';
 import styles from './login.module.css';
 
 export function LoginView({ localDev }: { localDev: boolean }) {
@@ -60,8 +61,9 @@ export function LoginView({ localDev }: { localDev: boolean }) {
         </section>
         <aside className={styles.welcome} aria-label="Welcome to KayaMo">
           <p className={`kgEyebrow ${styles.eyebrow}`}>Small steps. One day at a time.</p>
+          {/* The break is hidden below 480px, so the space before it matters. */}
           <h2>
-            A little more room
+            A little more room{' '}
             <br />
             for your everyday.
           </h2>
@@ -74,7 +76,14 @@ export function LoginView({ localDev }: { localDev: boolean }) {
         </aside>
       </div>
       <footer className={styles.footer}>
-        Small steps. Meaningful goals. Room to grow.
+        <span>Small steps. Meaningful goals. Room to grow.</span>
+        <nav className={styles.footerLinks} aria-label="Legal">
+          {LEGAL_ROUTES.map((route) => (
+            <Link key={route.href} href={route.href}>
+              {route.label}
+            </Link>
+          ))}
+        </nav>
       </footer>
     </main>
   );
