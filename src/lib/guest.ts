@@ -25,6 +25,27 @@ export function isValidGuestId(value: string | null | undefined): value is strin
   return typeof value === 'string' && /^guest-[0-9a-f]{32}$/.test(value);
 }
 
+/**
+ * The guest cookie is `Secure` when the request arrived over HTTPS, which is
+ * every request in production (Vercel terminates TLS and sets
+ * `x-forwarded-proto`). Keying it on NODE_ENV instead meant a production build
+ * served over plain HTTP on localhost, which is how CI exercises `next start`,
+ * could never set the cookie in WebKit, so the demo failed there for a reason
+ * that had nothing to do with the build.
+ */
+export function guestCookieSecure(request: {
+  url: string;
+  headers: { get(name: string): string | null };
+}): boolean {
+  const forwarded = request.headers.get('x-forwarded-proto');
+  if (forwarded) return forwarded.split(',')[0]?.trim() === 'https';
+  try {
+    return new URL(request.url).protocol === 'https:';
+  } catch {
+    return true;
+  }
+}
+
 export function newGuestId(): string {
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);

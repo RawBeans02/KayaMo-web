@@ -79,3 +79,56 @@ jobs:
       - name: Stop disposable Supabase
         if: always()
         run: supabase stop --no-backup
+
+  # The same suite against `next build` + `next start`. Until 2026-09-19 CI
+  # only ever served `next dev`, and the two disagree (webpack vs Turbopack,
+  # NODE_ENV, static analysis of the proxy matcher), so a build-only failure
+  # could reach main unseen. Authenticated specs self-skip here: the local
+  # skip-login is a development-only route.
+  production-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 2.115.0
+      - name: Start disposable Supabase
+        run: |
+          supabase start -x \
+            realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            > /dev/null
+      - name: Apply every migration
+        run: supabase db reset --local --no-seed
+      - name: Export disposable test credentials
+        run: |
+          supabase status -o env \
+            --override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
+            --override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY \
+            --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
+            --override-name db.url=SUPABASE_DB_URL \
+            | node scripts/github-supabase-env.mjs
+      - name: Production build
+        run: pnpm build
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium firefox webkit --with-deps
+      - name: Website regressions against the production build
+        env:
+          PLAYWRIGHT_WEB_SERVER: start
+        run: pnpm exec playwright test
+      - name: Keep the Playwright report and traces when something failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-production
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
+      - name: Stop disposable Supabase
+        if: always()
+        run: supabase stop --no-backup

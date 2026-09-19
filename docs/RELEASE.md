@@ -87,8 +87,11 @@ Things only the owner can do. Most of the release is waiting on these.
 - [x] **Add an error boundary and a 404.** `not-found.tsx`, `error.tsx` and
       `global-error.tsx` on the glass materials; the error page shows only the
       digest. 2026-09-18.
-- [ ] **Add `/privacy`, `/terms` and `/accessibility` routes** and link them.
-      Nothing in the app links to any policy today.
+- [x] **Add `/privacy`, `/terms` and `/accessibility` routes** and link them.
+      Done 2026-09-19 from the drafts with the owner's facts; linked from the
+      landing, login and Settings; in the sitemap. They carry a "Draft, under
+      review" note until the owner sets `LEGAL_APPROVED_ON` in `src/lib/legal.ts`
+      after professional review (still an owner action under legal texts above).
 - [x] **Fix the export claim.** The landing promised data export while Settings
       says it is unavailable and the draft privacy notice forbids implying it
       exists. The claim now says the diary is readable offline. 2026-09-19.
@@ -109,12 +112,16 @@ Things only the owner can do. Most of the release is waiting on these.
 - [ ] **Audit cached USDA branded rows.** Rows cached before the per-100g fix
       hold values divided by serving size, and `cacheOnFirstHit` returns an
       existing row forever, so they will not self-correct.
-- [ ] **Run e2e against a production build.** CI only ever serves `next dev`.
-      Also owed: the AI routes' allowance is now reserved after the body parses
-      in every route (done 2026-09-18), but no e2e exercises them authenticated.
-      Note the guest cookie is `Secure` under `NODE_ENV=production`, so a
-      plain-HTTP localhost run fails the demo; the job needs HTTPS or an
-      accommodation.
+- [x] **Run e2e against a production build.** Done 2026-09-19: a
+      `production-e2e` CI job builds with `next build --webpack`, serves it with
+      `next start`, and runs the whole suite on three engines
+      (`PLAYWRIGHT_WEB_SERVER=start`). The guest cookie is now `Secure` when the
+      request arrived over HTTPS (Vercel's `x-forwarded-proto`, or an `https:`
+      URL) instead of whenever `NODE_ENV=production`, so the demo works on
+      plain-HTTP localhost in that job and is still `Secure` in production.
+      Authenticated specs self-skip there (the local skip-login is a
+      development-only route). Still owed: no e2e exercises the AI routes
+      authenticated.
 - [ ] **Add preview smoke, Lighthouse and a bundle budget.** No production bundle
       has ever been measured.
 - [x] **Add `pnpm check:copy` to CI.** Also: a concurrency group, a read-only
@@ -125,10 +132,9 @@ Things only the owner can do. Most of the release is waiting on these.
       Remaining code work: remove or archive the Drizzle migration path and the
       stale journal so nothing can write a second history.
 - [x] **Take Gym and Todos off the rail and the Life hub** per the v1 scope
-      decision. 2026-09-19. **Owner call left open:** Home still deep-links to
-      both (Open planner, View all N tasks, the Movement glance card, a workout
-      Next-up) and the log sheet's Workout kind opens `/gym`. The decision named
-      the rail and the hub; say whether those entry points go too.
+      decision. 2026-09-19. Home's deep links (Open planner, View all tasks,
+      the Movement glance, a workout Next-up) and the log sheet's Workout kind
+      were removed the same day on the owner's word; both routes still resolve.
 
 ## Design-system work deferred out of Phase 4
 
@@ -152,8 +158,8 @@ Things only the owner can do. Most of the release is waiting on these.
 
 ## Design work deferred out of Phase 5
 
-- **Home's deep links into Gym and Todos** and the log sheet's Workout kind: an
-  owner call, above.
+- ~~Home's deep links into Gym and Todos and the log sheet's Workout kind~~
+  removed 2026-09-19 (owner decision).
 - **`/settings`:** the export and delete rows are inert placeholders that say so;
   demo guests see a companion editor whose save always fails. Both need a product
   decision (ship export, or remove the row) before the route is finished.

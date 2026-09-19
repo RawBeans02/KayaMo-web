@@ -22,10 +22,13 @@ export default defineConfig({
     baseURL,
     trace: 'on-first-retry',
   },
+  // PLAYWRIGHT_WEB_SERVER=start serves the production build (`pnpm build`
+  // first) instead of the dev server; CI runs both. The guest cookie is Secure
+  // only over HTTPS, so the demo works on plain-HTTP localhost either way.
   webServer: hostedBaseURL
     ? undefined
     : {
-        command: 'pnpm dev',
+        command: process.env.PLAYWRIGHT_WEB_SERVER === 'start' ? 'pnpm start' : 'pnpm dev',
         url: 'http://localhost:3002/login',
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
