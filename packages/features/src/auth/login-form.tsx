@@ -28,6 +28,9 @@ function GoogleMark() {
   );
 }
 
+/** The form's own floor; the Supabase project may ask for more. */
+export const MIN_PASSWORD_LENGTH = 8;
+
 export function LoginForm({
   ports,
   sent,
@@ -37,6 +40,7 @@ export function LoginForm({
   localDevAction,
   localDevEmail,
   magicLinkOnly = false,
+  method = 'magic-link',
 }: {
   ports: AuthRedirectPorts;
   sent: boolean;
@@ -47,8 +51,15 @@ export function LoginForm({
   localDevEmail?: string;
   /** Desktop web: magic link only. PWA keeps Google until both surfaces stabilize. */
   magicLinkOnly?: boolean;
+  /**
+   * `password`: email and password, with account creation on the same form
+   * (owner decision 2026-09-20: no confirmation emails for now, so nothing
+   * waits on an inbox). `magic-link`: the emailed link, unchanged.
+   */
+  method?: 'magic-link' | 'password';
 }) {
-  const [pending, setPending] = useState<'email' | 'google' | null>(null);
+  const passwordMethod = method === 'password';
+  const [pending, setPending] = useState<'email' | 'google' | 'password' | 'signup' | null>(null);
   const [clientError, setClientError] = useState<string | null>(null);
   const [serverErrorDismissed, setServerErrorDismissed] = useState(false);
   const [clientSent, setClientSent] = useState(sent);
@@ -134,8 +145,75 @@ export function LoginForm({
     if (oauthError) setClientError(oauthError.message);
   }
 
+  function readCredentials(form: HTMLFormElement): { email: string; password: string } | null {
+    const data = new FormData(form);
+    const email = String(data.get('email') ?? '').trim();
+    const password = String(data.get('password') ?? '');
+    if (!email) {
+      setClientError('Email is required');
+      return null;
+    }
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setClientError(`Use a password of at least ${MIN_PASSWORD_LENGTH} characters.`);
+      return null;
+    }
+    return { email, password };
+  }
+
+  /** Every failure reads the same to the person; the provider's wording never shows. */
+  function passwordFailure(status: number | undefined, code: string | undefined, create: boolean) {
+    if (status === 429) {
+      startCooldown();
+      return 'Too many attempts. Please wait a minute before trying again.';
+    }
+    if (create && code === 'user_already_exists') {
+      return 'That email already has an account. Sign in with its password instead.';
+    }
+    if (create && code === 'weak_password') {
+      return `Choose a stronger password of at least ${MIN_PASSWORD_LENGTH} characters.`;
+    }
+    if (create) return 'We couldn’t create the account. Check the email address and try again.';
+    if (status === 400 || code === 'invalid_credentials') return 'Email or password did not match.';
+    return 'Could not sign in right now. Try again in a moment.';
+  }
+
+  async function withPassword(form: HTMLFormElement, create: boolean) {
+    if (requestInFlight.current || cooldown > 0) return;
+    const credentials = readCredentials(form);
+    if (!credentials) return;
+    setPending(create ? 'signup' : 'password');
+    setClientError(null);
+    setServerErrorDismissed(true);
+    requestInFlight.current = true;
+    try {
+      const supabase = createBrowserSupabase();
+      const { data, error: authError } = create
+        ? await supabase.auth.signUp(credentials)
+        : await supabase.auth.signInWithPassword(credentials);
+      if (authError) {
+        setClientError(passwordFailure(authError.status, authError.code, create));
+        return;
+      }
+      if (!data.session) {
+        // Only possible when the project asks for email confirmation, which
+        // this form does not promise; say what happened instead of hanging.
+        setClientError('The account was created but needs confirmation. Contact support to finish signing in.');
+        return;
+      }
+      // A full navigation: the session cookie was just written and the
+      // server gate reads it on the next request.
+      window.location.assign(ports.afterAuthPath);
+      return;
+    } catch {
+      setClientError('Could not connect. Check your connection and try again.');
+    } finally {
+      requestInFlight.current = false;
+      setPending(null);
+    }
+  }
+
   const shownError = clientError ?? (serverErrorDismissed ? null : error);
-  const shownSent = clientSent;
+  const shownSent = passwordMethod ? false : clientSent;
 
   return (
     <div className={styles.root} data-hydrated={hydrated ? '' : undefined}>
@@ -173,9 +251,13 @@ export function LoginForm({
       ) : null}
 
       <form
-        onSubmit={(event) => void onEmail(event)}
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (passwordMethod) void withPassword(event.currentTarget, false);
+          else void onEmail(event);
+        }}
         className={styles.stack}
-        aria-busy={pending === 'email'}
+        aria-busy={pending !== null && pending !== 'google'}
       >
         <label className={styles.field}>
           <span>Email</span>
@@ -188,7 +270,7 @@ export function LoginForm({
             inputMode="email"
             placeholder="you@example.com"
             aria-describedby={shownError ? errorId : undefined}
-            readOnly={pending === 'email'}
+            readOnly={pending !== null && pending !== 'google'}
             onChange={() => {
               setClientSent(false);
               setClientError(null);
@@ -196,21 +278,56 @@ export function LoginForm({
             }}
           />
         </label>
+        {passwordMethod ? (
+          <label className={styles.field}>
+            <span>Password</span>
+            <input
+              type="password"
+              name="password"
+              required
+              minLength={MIN_PASSWORD_LENGTH}
+              autoComplete="current-password"
+              placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
+              aria-describedby={shownError ? errorId : undefined}
+              readOnly={pending !== null && pending !== 'google'}
+              onChange={() => {
+                setClientError(null);
+                setServerErrorDismissed(true);
+              }}
+            />
+          </label>
+        ) : null}
         <button
           type="submit"
           className={styles.primary}
           disabled={setup || pending !== null || cooldown > 0}
         >
-          {pending === 'email'
-            ? 'Sending…'
-            : cooldown > 0
-              ? `Request another link in ${cooldown}s`
-              : magicLinkOnly
-                ? shownSent
-                  ? 'Resend sign-in link'
-                  : 'Email me a sign-in link'
-                : 'Send magic link'}
+          {passwordMethod
+            ? pending === 'password'
+              ? 'Signing in…'
+              : cooldown > 0
+                ? `Try again in ${cooldown}s`
+                : 'Sign in'
+            : pending === 'email'
+              ? 'Sending…'
+              : cooldown > 0
+                ? `Request another link in ${cooldown}s`
+                : magicLinkOnly
+                  ? shownSent
+                    ? 'Resend sign-in link'
+                    : 'Email me a sign-in link'
+                  : 'Send magic link'}
         </button>
+        {passwordMethod ? (
+          <button
+            type="button"
+            className={styles.ghost}
+            disabled={setup || pending !== null || cooldown > 0}
+            onClick={(event) => void withPassword(event.currentTarget.form!, true)}
+          >
+            {pending === 'signup' ? 'Creating your account…' : 'New here? Create an account'}
+          </button>
+        ) : null}
       </form>
 
       {shownSent ? (
@@ -228,7 +345,7 @@ export function LoginForm({
         </button>
       ) : null}
 
-      {magicLinkOnly ? null : (
+      {magicLinkOnly || passwordMethod ? null : (
         <>
           <p className={styles.rule}>or</p>
           <button

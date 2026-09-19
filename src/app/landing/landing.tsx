@@ -162,7 +162,8 @@ export function Landing({ demoStarted = false }: { demoStarted?: boolean }) {
           <details>
             <summary>How do I sign in?</summary>
             <p>
-              Use your email to request a sign-in link. No password is needed.{' '}
+              With your email and a password. Create the account on the sign-in page;
+              no confirmation email is needed.{' '}
               <Link href="/login">Go to sign in</Link>.
             </p>
           </details>

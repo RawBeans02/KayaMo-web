@@ -11,7 +11,8 @@ Contact: **help.kayamo@gmail.com**. Effective date: [date of approved publicatio
 
 ## Information used by the website
 
-- **Account access:** email address, account identifier and authentication/session
+- **Account access:** email address, the password you choose (held by the sign-in
+  provider only as a hash), account identifier and authentication/session
   information used to sign you in and keep account data separated.
 - **Your entries:** information you choose to record, such as goals, tasks, food
   quantities, workouts and preferences. These may include sensitive health information.

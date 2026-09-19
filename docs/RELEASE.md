@@ -54,8 +54,12 @@ Things only the owner can do. Most of the release is waiting on these.
 - [ ] **Confirm backups and recovery.** Supabase plan, point-in-time recovery or
       daily backups, retention of tombstoned rows and AI logs, and an acceptable
       data-loss and recovery-time target.
-- [ ] **Confirm hosted auth limits.** Magic-link OTP rate limits, and captcha if
-      needed, before a public URL is promoted.
+- [ ] **Confirm hosted auth limits.** Sign-in is by password since Phase 8, so
+      the limits that matter are Supabase's token-endpoint rate limit and the
+      sign-up rate limit (Authentication → Rate Limits), plus captcha if sign-up
+      abuse appears. Email confirmations are off by decision; keep "Confirm
+      email" off in Providers → Email until an outbound email is configured, and
+      set the minimum password length there to 8 to match the form.
 - [ ] **Choose an error-monitoring sink.** Nothing observes production failures
       today.
 - [ ] **Verify `kayamo.fit` in Search Console** and submit the sitemap after
@@ -178,6 +182,32 @@ Things only the owner can do. Most of the release is waiting on these.
   the `@kayamo/ui` primitives still in use on the web (Toast, Button) and is pinned
   by tokens.test.ts; the glass bridge overrides its runtime values. Restyle those
   two on glass tokens, then retire tokens.css's palette and the bridge together.
+
+## Phase 8 — password sign-in (2026-09-20)
+
+Owner decision 2026-09-20: no confirmation emails for now, and sign-in by
+password instead of the emailed link, so nothing on the way in waits on an
+inbox. Done on `phase-8/password-sign-in` from `main`:
+
+- `packages/features/src/auth/login-form.tsx` gained `method="password"`: an
+  email and password field, **Sign in**, and **New here? Create an account** on
+  the same form. Creating an account signs the person in at once (confirmations
+  off). Every failure reads the same to the person and never shows the
+  provider's wording; a 429 starts the same one-minute cooldown the link had.
+  The form's floor is 8 characters (`MIN_PASSWORD_LENGTH`). The magic-link
+  method is untouched for the PWA.
+- Copy: the login intro and help, the landing's "How do I sign in?", the
+  privacy notice's account-access item and the terms' account section, and the
+  two legal drafts they mirror, now describe a password.
+- No password reset yet: it needs an email to go out. The help text says to
+  write to support from the account's address for a manual reset until then.
+- Tests changed as a product decision, stated in the commit: the entry-page and
+  smoke specs assert the password controls and the mocked provider contract
+  (wrong password, short password never sent, taken email, rate limit);
+  `e2e/password-sign-in.spec.ts` runs the real round trip on the local
+  Supabase and skips in hosted mode so no test account reaches production.
+- Owner settings on the hosted project (Authentication → Providers → Email):
+  provider on, "Confirm email" off, minimum password length 8.
 
 ## Design work deferred out of Phase 5
 
