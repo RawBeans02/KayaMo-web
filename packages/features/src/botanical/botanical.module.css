@@ -266,29 +266,87 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Capture field ──────────────────────────────────────────────────── */
+/* ── Capture composer ──────────────────────────────────────────────────
+   The pill the Lis screen types into (mus-desk.module.css .composer), here
+   for the day's plan: a strong glass pill with a soft mark on the left, the
+   field in the middle and an accent send circle on the right. Focus lights
+   the whole pill, not just the text, so the state reads from across the
+   room. The "-webkit-" line comes first, which this pipeline requires. */
 .capture {
-  display: flex;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 44px;
   align-items: center;
   gap: 8px;
-  margin-top: 14px;
-  padding: 0 8px 0 16px;
-  border-radius: 18px;
-  background: var(--field);
-  box-shadow: inset 0 0 0 1px var(--stroke2);
+  margin-top: 16px;
+  padding: 6px 6px 6px 8px;
+  border-radius: 999px;
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   color: var(--ink2);
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    inset 0 0 0 1px var(--stroke2),
+    0 6px 20px rgba(20, 40, 28, 0.08);
+  transition: box-shadow var(--swap) linear;
+}
+.capture:focus-within {
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    inset 0 0 0 1px var(--stroke2),
+    0 0 0 3px var(--accent-glow),
+    0 6px 20px rgba(20, 40, 28, 0.08);
+}
+.captureMark {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--ink2);
+  box-shadow: inset 0 0 0 1px var(--stroke2);
 }
 .capture input {
-  flex: 1;
   min-width: 0;
-  min-height: 52px;
+  min-height: 44px;
+  padding: 0 4px;
   border: 0;
   background: transparent;
   color: var(--ink);
-  font-size: 1rem;
+  font-size: 1.0625rem;
+  outline: none;
 }
 .capture input::placeholder {
   color: var(--ink2);
+}
+.capture input:disabled {
+  color: var(--ink3);
+}
+.captureSend {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 8px 22px var(--accent-glow);
+  transition:
+    background var(--swap) linear,
+    box-shadow var(--swap) linear,
+    opacity var(--swap) linear;
+}
+.captureSend:disabled {
+  background: var(--track);
+  color: var(--ink3);
+  box-shadow: none;
+  cursor: default;
+  opacity: 1;
 }
 
 /* ── Check-off rows ─────────────────────────────────────────────────── */

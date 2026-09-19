@@ -356,8 +356,12 @@ export function BotanicalHome({ userId }: { userId: string }) {
               </ol>
             </>
           )}
+          {/* The composer: the same pill the Lis screen types into, so the
+              two places a person writes something look and behave alike. */}
           <form className={styles.capture} onSubmit={capture}>
-            <BotanicalIcon name="plus" size={20} />
+            <span className={styles.captureMark} aria-hidden="true">
+              <BotanicalIcon name="plus" size={18} weight="bold" />
+            </span>
             <input
               ref={input}
               aria-label="Capture a thought or task"
@@ -368,12 +372,12 @@ export function BotanicalHome({ userId }: { userId: string }) {
               disabled={busy || !draftReady}
             />
             <button
-              className={styles.iconButton}
+              className={styles.captureSend}
               type="submit"
               aria-label="Add task"
               disabled={!draft.trim() || busy}
             >
-              <BotanicalIcon name="send" size={20} />
+              <BotanicalIcon name="send" size={18} weight="bold" />
             </button>
           </form>
         </section>
