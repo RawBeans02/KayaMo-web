@@ -63,6 +63,9 @@ const EXAMPLES = [
   { label: 'Squat a hundred kilos', Icon: Barbell },
 ] as const;
 
+/** The example goals, for surfaces that offer them before the editor opens. */
+export const GOAL_EXAMPLES: readonly string[] = EXAMPLES.map((row) => row.label);
+
 const SAVE_FAILED = 'Could not finish saving. Your input is still here. Please retry.';
 
 type Step = 'empty' | 'draft' | 'active';
@@ -110,6 +113,7 @@ export function GoalEditor({
   goals,
   todayTasks,
   initialGoalId,
+  initialDraft = null,
   onClose,
   onChat,
   onGoToday,
@@ -122,21 +126,26 @@ export function GoalEditor({
   goals: LocalGoal[];
   todayTasks: LocalTask[];
   initialGoalId: string | null;
+  /** Opens straight into the draft form with this as the goal, e.g. a suggestion chip. */
+  initialDraft?: string | null;
   onClose: () => void;
   onChat: () => void;
   onGoToday: () => void;
   onChanged: () => Promise<void>;
 }) {
   const nowMs = useMinuteClock();
-  const [step, setStep] = useState<Step>(initialGoalId ? 'active' : 'empty');
+  const seeded = !initialGoalId && Boolean(initialDraft?.trim());
+  const [step, setStep] = useState<Step>(initialGoalId ? 'active' : seeded ? 'draft' : 'empty');
   const [viewId, setViewId] = useState<string | null>(initialGoalId);
   const [created, setCreated] = useState<LocalGoal | null>(null);
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState(seeded ? initialDraft!.trim() : '');
   const [confirmationId, setConfirmationId] = useState<string>(() => crypto.randomUUID());
   const [why, setWhy] = useState('');
   const [doneLooks, setDoneLooks] = useState('');
   const [firstStep, setFirstStep] = useState('');
-  const [lifeArea, setLifeArea] = useState<LifeArea | null>(null);
+  const [lifeArea, setLifeArea] = useState<LifeArea | null>(
+    seeded ? suggestLifeArea(initialDraft!.trim()) : null,
+  );
   const [doneBy, setDoneBy] = useState('');
   const [milestones, setMilestones] = useState<LocalGoalMilestone[]>([]);
   const [setdownOpen, setSetdownOpen] = useState(false);
@@ -178,6 +187,11 @@ export function GoalEditor({
      change while the form is open, forgotten on save. */
   const [draftReady, setDraftReady] = useState(false);
   useEffect(() => {
+    // A suggestion the person just chose outranks a draft left in the browser.
+    if (seeded) {
+      setDraftReady(true);
+      return;
+    }
     try {
       const raw = sessionStorage.getItem(draftKey(userId));
       const saved: unknown = raw ? JSON.parse(raw) : null;
@@ -205,7 +219,7 @@ export function GoalEditor({
       /* A damaged browser draft never changes saved goals. */
     }
     setDraftReady(true);
-  }, [userId, initialGoalId]);
+  }, [userId, initialGoalId, seeded]);
   useEffect(() => {
     if (!draftReady || step !== 'draft') return;
     try {

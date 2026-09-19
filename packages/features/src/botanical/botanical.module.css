@@ -695,6 +695,90 @@
   font-size: 0.9375rem;
   line-height: 1.55;
 }
+/* ── Goals starter (the empty state as onboarding) ─────────────────── */
+.starter {
+  display: grid;
+  gap: 12px;
+  max-width: 62ch;
+  padding: 8px 0 4px;
+}
+.starter h3 {
+  margin: 0;
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+.starter > p {
+  margin: 0;
+  color: var(--ink2);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+.howto {
+  display: grid;
+  gap: 10px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.howto li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--ink2);
+}
+.howto li strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.howto b {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+.starterLabel {
+  margin: 10px 0 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.starterChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.starterChip {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--glass);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+  transition: background var(--swap) linear;
+}
+.starterChip:hover {
+  background: var(--glass-strong);
+}
+.starter .actions {
+  margin-top: 10px;
+}
+
 .notice {
   display: flex;
   align-items: center;
