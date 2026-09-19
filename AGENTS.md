@@ -65,7 +65,10 @@ reply's register or its safety verdict calls for it. Concern is for wellbeing,
 never for a missed log, an over-target day or a gap; `happy` is for a milestone
 the person chose and has no web trigger yet. In navigation and on buttons Lis
 is the `lis` sparkle icon, not the face. `e2e/mus.spec.ts` asserts a face is
-present; do not add an expressions gallery.
+present; do not add an expressions gallery. Home's daily greeting
+(`botanical/greeting.ts`, pure, no model call) shows a second character, the
+bee in `public/botanical/lis-bee.webp`; which of the two Lis is remains an
+owner call recorded in `docs/RELEASE.md` under Phase 9.
 
 ## Design
 
