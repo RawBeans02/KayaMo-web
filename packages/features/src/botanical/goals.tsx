@@ -7,7 +7,7 @@ import {
 } from '@kayamo/offline';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDeskClock } from '../desk/use-desk-clock';
-import { GoalEditor } from './goal-editor';
+import { GOAL_EXAMPLES, GoalEditor } from './goal-editor';
 import { BotanicalIcon } from './icons';
 import { useRecords } from './use-records';
 import styles from './botanical.module.css';
@@ -40,6 +40,11 @@ export function BotanicalGoals({ userId }: { userId: string }) {
   const { data, error, refresh } = useRecords(load);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const [seed, setSeed] = useState<string | null>(null);
+  const close = () => closeDialog(dialog.current, () => {
+    setOpen(false);
+    setSeed(null);
+  });
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     if (open) openDialog(dialog.current);
@@ -82,23 +87,74 @@ export function BotanicalGoals({ userId }: { userId: string }) {
           Loading your goals…
         </p>
       ) : data.goals.length === 0 ? (
-        <section className={`${styles.panel} kgSurface`}>
-          <div className={styles.empty}>
-            <h3>What would you like to grow toward?</h3>
+        /* The empty state is the onboarding: what a goal is here, how it moves,
+           five examples to start from, and one primary action. Nothing is
+           saved until the person confirms it inside the editor. */
+        <section className={`${styles.panel} kgSurface`} aria-labelledby="goals-start-title">
+          <div className={styles.starter}>
+            <p className="kgEyebrow">Start here</p>
+            <h3 id="goals-start-title">Start your first goal today.</h3>
             <p>
-              Choose something meaningful, describe a first step, and bring it into your
-              day. You can pause or release a goal whenever you need.
+              One thing worth working toward, and a first step small enough for today.
+              You can pause or set a goal down whenever you need; nothing is deducted.
             </p>
-            <button
-              className="kgGhost"
-              onClick={(event) => {
-                event.currentTarget.focus();
-                setSelected(null);
-                setOpen(true);
-              }}
-            >
-              Create your first goal
-            </button>
+            <ol className={styles.howto}>
+              <li>
+                <b>1</b>
+                <span>
+                  <strong>Name it in your words.</strong> Why it matters and what done
+                  looks like are optional.
+                </span>
+              </li>
+              <li>
+                <b>2</b>
+                <span>
+                  <strong>The first step lands on Home</strong> as an ordinary task for
+                  today.
+                </span>
+              </li>
+              <li>
+                <b>3</b>
+                <span>
+                  <strong>You confirm each step here.</strong> Lis never marks one for
+                  you.
+                </span>
+              </li>
+            </ol>
+            <p className={styles.starterLabel}>Try one of these, or write your own.</p>
+            <div className={styles.starterChips}>
+              {GOAL_EXAMPLES.map((label) => (
+                <button
+                  key={label}
+                  type="button"
+                  className={styles.starterChip}
+                  onClick={(event) => {
+                    event.currentTarget.focus();
+                    setSelected(null);
+                    setSeed(label);
+                    setOpen(true);
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className={styles.actions}>
+              <button
+                className="kgAccent"
+                onClick={(event) => {
+                  event.currentTarget.focus();
+                  setSelected(null);
+                  setSeed(null);
+                  setOpen(true);
+                }}
+              >
+                Create your first goal
+              </button>
+              <a className="kgGhost" href="/mus">
+                Talk it through with Lis
+              </a>
+            </div>
           </div>
         </section>
       ) : (
@@ -176,7 +232,7 @@ export function BotanicalGoals({ userId }: { userId: string }) {
         onKeyDown={trapDialogTab}
         onCancel={(event) => {
           event.preventDefault();
-          closeDialog(dialog.current, () => setOpen(false));
+          close();
         }}
       >
         {open && data && (
@@ -187,7 +243,8 @@ export function BotanicalGoals({ userId }: { userId: string }) {
             goals={data.goals}
             todayTasks={data.tasks}
             initialGoalId={selected}
-            onClose={() => closeDialog(dialog.current, () => setOpen(false))}
+            initialDraft={seed}
+            onClose={close}
             onChat={() => {
               window.location.href = '/mus';
             }}

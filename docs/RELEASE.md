@@ -65,7 +65,17 @@ Things only the owner can do. Most of the release is waiting on these.
       deployment.
 - [ ] **Confirm rollback.** Check the recorded deployment is still retained in
       Vercel and rehearse restoring it.
-- [ ] **Approve the preview** after the hosted smoke below.
+- [ ] **Approve the preview** after the hosted smoke below. The automated part
+      ran 2026-09-19 against the PR #1 preview through the automation bypass
+      (see *Add preview smoke* under Code actions); still owner-only: sign in
+      with a real inbox, send Lis one message and get a reply, open Profile.
+- [ ] **Move the Vercel functions next to the database.** The preview's
+      functions run in `iad1` (Washington) while the KayaMo Supabase project is
+      in `ap-south-1` (Mumbai) and the audience is in the Philippines, so every
+      server round trip crosses two oceans: opening the demo took 3.5 s on
+      WebKit from Manila in the smoke. Set the function region to `bom1` in
+      Vercel's project settings (or `"regions": ["bom1"]` in `vercel.json`)
+      before promotion; one region is enough for the plan in use.
 
 ## Code actions
 
@@ -146,8 +156,37 @@ Things only the owner can do. Most of the release is waiting on these.
       `e2e/bundle-budget.spec.ts` holds every public page and Home to a ceiling
       in the production-build CI job. Still owed: Home on mobile (467 KB of
       shared app JavaScript, LCP 4.8 s throttled) needs the Lis thread and the
-      palette split out of the first load; the hosted preview smoke and a
-      Lighthouse run on the real deployment once the Vercel environment is set.
+      palette split out of the first load.
+
+      Hosted preview smoke, 2026-09-19, PR #1 preview with the Vercel
+      environment set and the automation bypass in place. Every public route
+      answered 200, `/today` signed out 307 to login, an unknown path a real
+      404; HSTS, the CSP frame-ancestors rule, nosniff, Referrer-Policy and
+      Permissions-Policy were present; the preview is `noindex` and its
+      robots disallows, which is right for a preview and explains the SEO
+      score below; the guest cookie is `Secure`, `HttpOnly`, `SameSite=Lax`;
+      the API routes answer 401 signed out. The Playwright suite in hosted
+      mode: Chromium clean; Firefox and WebKit failed only on timing (the demo
+      opens in about 3.5 s there against a 5 s expectation), and pass with the
+      hosted-mode timeouts in `playwright.config.ts`. A WebKit-only failure of
+      `web-release.spec.ts` turned out to be the rail's route prefetches being
+      cancelled by the spec's own hard navigation, which WebKit reports as an
+      "access control" rejection; the spec now lets them settle first, and the
+      markup assertion is unchanged. Lighthouse on the preview, run idle (an
+      earlier pass ran while the e2e suite was hammering the same machine and
+      is not recorded):
+
+      | Page | Perf | A11y | Best | SEO | LCP | CLS | TBT |
+      | --- | --- | --- | --- | --- | --- | --- | --- |
+      | Landing, mobile | 97 | 100 | 100 | 58* | 2.1 s | 0 | 140 ms |
+      | Landing, desktop | 100 | 100 | 100 | 58* | 0.6 s | 0 | 0 |
+      | Privacy, mobile | 97 | 100 | 100 | 58* | 1.2 s | 0 | 210 ms |
+      | Login, mobile | 99 | 100 | 100 | 54* | 1.3 s | 0 | 130 ms |
+      | Home (demo), desktop | 92 | 100 | 100 | 54* | 1.1 s | 0.02 | 60 ms |
+      | Home (demo), mobile | 69 | 100 | 100 | 54* | 4.2 s | 0.06 | 480 ms |
+
+      *The preview is `noindex`, so SEO is meaningless there; production keeps
+      the local numbers' meaning. Home on mobile stays the open item above.
 - [x] **Add `pnpm check:copy` to CI.** Also: a concurrency group, a read-only
       token, one retry in CI so traces record, and the report kept on failure.
       2026-09-18.
@@ -182,6 +221,73 @@ Things only the owner can do. Most of the release is waiting on these.
   by tokens.test.ts; the glass bridge overrides its runtime values. Restyle those
   two on glass tokens, then retire tokens.css's palette and the bridge together.
 
+## Phase 7 — progress, guidance and motion (second release, 2026-09-19)
+
+Built on `phase-7/progress-and-motion` after v1 (PR #1) was frozen for its own
+deploy; it lands as a second release. What it adds, each verified in the
+browser and by the affected specs on chromium:
+
+- The Home capture bar is a glass composer pill matching the Lis composer.
+- Goals' empty state is the onboarding: a three-line guide, five suggestion
+  chips that open the editor seeded, one primary action; Home nudges to the
+  first goal.
+- Life reads back the record: five readings and four SVG charts (steps, food,
+  tasks, workouts) from the local ledgers.
+- Grove shows the stage ring, the six milestones with the date each was
+  reached, personal records, a labelled month grid and the trail by month.
+- Motion: a route entrance animation, sheet and toast exits, spring pops on
+  state changes, staggered row entrances, count-up readings; all
+  reduced-motion aware. (React's ViewTransition was tried for a cross-fade and
+  reverted: it left Linux WebKit in CI stuck on the shell's loading state.)
+- Audit against the 29-clip checklist: `docs/audits/2026-09-19-build-sot-audit-v2.md`.
+  It found one spend gap (`/api/foods/parse` unmetered), fixed the same day.
+
+Deferred from Phase 7, recorded in the audit's release decision: product
+analytics (none wired, so the empty-state funnel is unmeasured; needs an owner
+decision on consent), the Home mobile bundle (467 KB; split the Lis thread and
+the palette out of the first load), a retention schedule, a screen-reader pass
+by a person.
+
+## Phase 9 — onboarding, a human Lis, meters and counters (in progress)
+
+Plan and prompts: `docs/research/2026-09-20-phase-9-prompts.md`. Inputs: the
+evidence brief `docs/research/2026-09-20-onboarding-and-lis-research.md` and the
+Claude design export under `docs/design/2026-09-20-phase-9/` (onboarding, Home
+greeting, meters, tokens). Branch `phase-9/home-greeting` on top of Phase 7.
+
+Shipped in this slice, from `KayaMo Home Greeting.dc.html` (2026-09-20):
+
+- **Lis speaks first on Home.** `packages/features/src/botanical/greeting.ts`
+  is a pure function over the person's own records (today's entries, the
+  ledger of logged days, yesterday's total, the headline target, the local
+  hour, the companion display name). Four variants: first day, quiet day,
+  normal day, back after a gap of more than three days. No model call, one
+  line, never about a missed day; every variant is unit-tested against the
+  banned-copy list. It shows only on today, under the date line, which gains
+  "· your first day" on the first day.
+- **Readings row** replaces the Energy glance: a calorie ring (`role="meter"`,
+  `aria-valuetext` in words, fills and never depletes; "—" and "No target yet
+  · one comes with your profile" until onboarding writes a target), a meals
+  counter ("1 of 4", the app's four slots, not the design's three), and a
+  streak chip from `currentRun` in `progress-model.ts` ("Starts with today" /
+  "Picks up today" / "3 days"; the run tolerates today being empty). All three
+  read from the same offline records Home already uses; the target comes
+  from `listEffectiveNutritionTargets` for signed-in people only.
+- **Lis's avatar on Home is the new bee** (`public/botanical/lis-bee.webp`,
+  160 px, from the owner's image in the design export). **Owner call
+  recorded, not made:** the Lis surface and rail still draw the four seed
+  faces in `public/botanical/mus-*.webp`. Two characters are one too many;
+  either the bee gets its four expressions and replaces the seed, or the
+  greeting switches to the seed's neutral face. Until then the greeting is
+  the only place the bee appears.
+- Tests: `greeting.test.ts` (11), `e2e/home-greeting.spec.ts` (first day,
+  then one logged food turns the greeting into a reading and moves the
+  counter and the streak), three engines.
+
+Still to come in Phase 9, in order: the profile and target write path, the
+onboarding screens, Lis preset and verbosity, the Lis tool loop (food lookup,
+profile proposal, goal with a first step), the meters system on Food, Goals and
+Grove, and the hide-counters setting the evidence brief asks for.
 ## Phase 10 — Clerk in front (2026-09-20)
 
 Owner decision 2026-09-20: Clerk owns accounts and the sign-in surface
@@ -286,12 +392,17 @@ Recorded so the refactor's remaining shape is knowable. None blocks the ship.
 ## Verification before promotion
 
 - [ ] Typecheck, lint, unit tests, `test:security`, production build, `pnpm audit --prod`
-- [ ] Full Playwright suite, three engines, against a production build
+- [x] Full Playwright suite, three engines, against a production build (CI's
+      `production-e2e` job, green on PR #1; and in hosted mode against the
+      preview, 2026-09-19)
 - [ ] Database integration suite against a disposable Supabase
-- [ ] Lighthouse mobile and desktop on the preview: performance, accessibility,
-      best practices, SEO, LCP, INP, CLS, TBT, bundle sizes
+- [x] Lighthouse mobile and desktop on the preview: performance, accessibility,
+      best practices, SEO, LCP, INP, CLS, TBT, bundle sizes (2026-09-19, table
+      under *Add preview smoke*; INP is not measured by a lab run)
 - [ ] Manual screen-reader pass and native browser zoom to 200%
-- [ ] Hosted smoke: sign-in, demo, log a food, Lis replies, sign out
+- [~] Hosted smoke: demo, log a food and the guest AI boundary ran under
+      Playwright on the preview 2026-09-19; sign-in, a Lis reply and sign out
+      are the owner's manual pass
 - [ ] Apex and www redirect, HTTPS, and the production canonical
 
 ## Out of scope for v1

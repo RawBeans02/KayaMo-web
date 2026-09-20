@@ -57,6 +57,10 @@ where they are load-bearing, and renaming them is a migration, not a cleanup:
 | Table `lis_companion_profile` | lis | already current |
 | Stored origin `coco_confirmed`, env `MUS_*_MODEL` | coco / mus | frozen; stored data |
 
+Lis says what is, never what is not: no litotes ("not a bad day"), no irony,
+no sarcasm (owner rule, 2026-09-20). The persona carries it and
+`packages/ai/src/evals/rubric.ts` catches the common shapes as a robot tell.
+
 Lis has a character: the four expressions in `public/botanical/mus-*.webp` ship,
 drawn by `packages/features/src/mus/lis-face.tsx` on the Lis surface (thread
 header and rail). Which face shows is decided in `mus/mus-faces.ts` and nowhere
@@ -65,7 +69,10 @@ reply's register or its safety verdict calls for it. Concern is for wellbeing,
 never for a missed log, an over-target day or a gap; `happy` is for a milestone
 the person chose and has no web trigger yet. In navigation and on buttons Lis
 is the `lis` sparkle icon, not the face. `e2e/mus.spec.ts` asserts a face is
-present; do not add an expressions gallery.
+present; do not add an expressions gallery. Home's daily greeting
+(`botanical/greeting.ts`, pure, no model call) shows a second character, the
+bee in `public/botanical/lis-bee.webp`; which of the two Lis is remains an
+owner call recorded in `docs/RELEASE.md` under Phase 9.
 
 ## Auth
 
@@ -84,7 +91,14 @@ One visual system: **Liquid Glass**. `packages/ui/src/glass.css` owns the
 tokens (`--ink`, `--ink2`, `--stroke`, `--stroke2`, `--glass`, `--glass-strong`,
 `--field`, `--accent`, `--bg0`) and the type and radius scale;
 `packages/ui/src/glass-materials.css` owns the `kg*` material tiers. New styles
-read those tokens directly. The `--color-*` names still resolve through an alias
+read those tokens directly. Motion: `packages/ui/src/web-motion.css` is the only
+press contract; `glass.css` owns the keyframes (`kgRise`, `kgFall`, `kgPop`, `kgRouteIn`) and
+`--ease-spring` for replies to a state change, never for travel. Every shell
+page wraps its content in `src/shell/route-transition.tsx`, a CSS entrance;
+do not switch it to React's ViewTransition, which broke Linux WebKit in CI. Reduce Motion keeps cross-fades and drops
+travel; new animations inherit that rule. Progress readings, charts and
+achievements come from `packages/features/src/botanical/progress-model.ts`
+(pure, unit-tested) and `charts.tsx` (hand-drawn SVG, no chart library). The `--color-*` names still resolve through an alias
 bridge in glass.css for `src/shell/shell.module.css` and the Tailwind primitives
 in `packages/ui`; do not add new reads of them. `src/app/botanical.css` is gone
 (2026-09-18). Do not start a third system.

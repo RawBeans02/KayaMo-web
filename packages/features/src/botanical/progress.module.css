@@ -1,0 +1,308 @@
+/* Progress surfaces — Life's record and Grove's milestones (Liquid Glass).
+ *
+ * Readings, charts and achievement rows compose the global kg* materials from
+ * the markup; this module owns layout and the SVG colours. Every colour is a
+ * glass token so themes and forced colours apply to the bars too. Nothing
+ * here draws a "missed" state: a quiet day is an empty bar, the same grey as
+ * the track behind a switch. */
+
+/* ── Readings strip ─────────────────────────────────────────────────── */
+
+.readings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.reading {
+  display: grid;
+  gap: 2px;
+  padding: 16px 18px;
+  border-radius: 22px;
+}
+
+.readingNum {
+  font-size: 1.75rem;
+  line-height: 1.05;
+}
+
+.readingUnit {
+  margin-left: 4px;
+  color: var(--ink2);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.readingLabel {
+  color: var(--ink2);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+/* ── Chart cards ────────────────────────────────────────────────────── */
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.chartCard {
+  display: grid;
+  gap: 10px;
+  padding: 20px 22px 16px;
+}
+
+.chartHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chartHead h2 {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.chartHead p {
+  margin: 0;
+  color: var(--ink2);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.chart {
+  display: block;
+  width: 100%;
+  height: 120px;
+}
+
+.baseline {
+  stroke: var(--stroke2);
+  stroke-width: 1;
+}
+
+.barOn {
+  fill: var(--accent);
+}
+
+.barOff {
+  fill: var(--track);
+}
+
+.tick {
+  fill: var(--ink2);
+  font-size: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.chartFoot {
+  margin: 0;
+  color: var(--ink2);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+/* ── Stage ring ─────────────────────────────────────────────────────── */
+
+.stage {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ring {
+  flex: none;
+}
+
+.ringTrack {
+  fill: none;
+  stroke: var(--track);
+}
+
+.ringFill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 600ms var(--ease-glass);
+}
+
+.stageBody {
+  min-width: 0;
+}
+
+.stageBody p {
+  margin: 0;
+}
+
+.stageName {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.stageNote {
+  color: var(--ink2);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+/* ── Achievements ───────────────────────────────────────────────────── */
+
+.badges {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.badge {
+  animation: kgRise var(--rise) var(--ease-glass) both;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: var(--glass);
+  box-shadow: inset 0 0 0 1px var(--stroke2);
+}
+
+.badge[data-reached='true'] {
+  background: color-mix(in srgb, var(--accent) 12%, var(--glass-strong));
+  box-shadow:
+    inset 0 1px 0 var(--stroke),
+    inset 0 0 0 1px var(--stroke2);
+}
+
+.badgeMark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: var(--track);
+  color: var(--ink3);
+}
+
+.badge[data-reached='true'] .badgeMark {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.badgeBody {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+}
+
+.badgeTitle {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.badgeNote {
+  color: var(--ink2);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.badgeBar {
+  display: block;
+  height: 4px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.badgeBarFill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* ── Records ────────────────────────────────────────────────────────── */
+
+.records {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.record {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  padding: 10px 0;
+}
+
+.record + .record {
+  box-shadow: inset 0 1px 0 var(--stroke2);
+}
+
+.recordLabel {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.recordWhen {
+  display: block;
+  color: var(--ink2);
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+
+.recordValue {
+  flex: none;
+  font-size: 1.25rem;
+}
+
+/* ── Trail, grouped by month ─────────────────────────────────────────── */
+
+.trailMonth + .trailMonth {
+  margin-top: 18px;
+}
+
+.trailMonthTitle {
+  margin: 0 0 2px;
+}
+
+@media (max-width: 900px) {
+  .charts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .reading {
+    padding: 14px 16px;
+  }
+
+  .chartCard {
+    padding: 18px 16px 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ringFill {
+    transition: none;
+  }
+}

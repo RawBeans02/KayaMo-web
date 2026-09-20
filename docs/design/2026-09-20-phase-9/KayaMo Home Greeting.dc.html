@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<style>
+body{margin:0;background:#d9ddd9;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Manrope',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;color:inherit}
+[data-theme="light"]{--bg0:#eef3ee;--glow1:#c6f2d4;--glow2:#d6e6ff;--glass:rgba(255,255,255,.52);--glass-strong:rgba(255,255,255,.78);--stroke:rgba(255,255,255,.9);--stroke2:rgba(10,20,12,.06);--field:rgba(255,255,255,.7);--track:rgba(10,20,12,.08);--ink:#0b0f0c;--ink2:rgba(11,15,12,.62);--ink3:rgba(11,15,12,.4);--accent:#30d158;--accent-text:#157a34;--accent-ink:#04120a;--accent-glow:#30d15866;--danger:#ff453a;--danger-text:#c9271b;--shadow:0 12px 36px rgba(20,40,28,.12);--shadow-deep:0 18px 48px rgba(20,40,28,.2);color-scheme:light}
+[data-theme="dark"]{--bg0:#0a0d0b;--glow1:#0f3a24;--glow2:#0e1c30;--glass:rgba(255,255,255,.07);--glass-strong:rgba(255,255,255,.12);--stroke:rgba(255,255,255,.22);--stroke2:rgba(255,255,255,.07);--field:rgba(255,255,255,.08);--track:rgba(255,255,255,.1);--ink:#f5f7f5;--ink2:rgba(245,247,245,.66);--ink3:rgba(245,247,245,.42);--accent:#30d158;--accent-text:#3ade63;--accent-ink:#04120a;--accent-glow:#30d15855;--danger:#ff453a;--danger-text:#ffa9a2;--shadow:0 14px 40px rgba(0,0,0,.45);--shadow-deep:0 20px 50px rgba(0,0,0,.6);color-scheme:dark}
+</style>
+</helmet>
+
+<section style="display:grid;gap:56px;padding:40px">
+
+<sc-for list="{{ variants }}" as="v" hint-placeholder-count="3">
+<div style="display:grid;gap:14px">
+  <p style="margin:0;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4a5a4e">{{ v.title }}</p>
+  <div style="display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap">
+
+  <sc-for list="{{ themes }}" as="t" hint-placeholder-count="2">
+    <!-- Desktop 1440: shell from glass-shell.module.css (.shell 236px | 1fr, .rail, .nav, .main) -->
+    <div data-theme="{{ t }}" data-screen-label="home {{ v.key }} {{ t }} 1440" style="position:relative;overflow:hidden;flex:none;box-sizing:border-box;width:1440px;height:900px;display:grid;grid-template-columns:236px minmax(0,1fr);color:var(--ink);background-color:var(--bg0);background-image:radial-gradient(40% 50% at 10% 0%, var(--glow1) 0%, transparent 70%),radial-gradient(40% 40% at 95% 20%, var(--glow2) 0%, transparent 70%),radial-gradient(60% 40% at 60% 110%, var(--glow1) 0%, transparent 70%)">
+      <aside style="box-sizing:border-box;height:868px;margin:16px 0 16px 16px;padding:18px 12px;border-radius:26px;display:grid;grid-template-rows:auto auto 1fr auto;gap:16px;background:var(--glass);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow)">
+        <a href="#" style="display:flex;align-items:center;gap:10px;padding:4px 8px;min-height:44px;font-family:'Manrope',system-ui,sans-serif;font-weight:800;font-size:17px;letter-spacing:-.02em"><span style="width:28px;height:28px;flex:none;border-radius:9px;background:var(--accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.5)"></span>KayaMo</a>
+        <button style="width:100%;margin-top:4px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:15px;font-weight:700;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 24px var(--accent-glow)"><i class="ph-bold ph-plus" style="font-size:18px"></i>Log</button>
+        <nav aria-label="Sections" style="display:grid;gap:4px;align-content:start">
+          <a href="#" aria-current="page" style="display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:14px;background:var(--glass-strong);box-shadow:inset 0 0 0 1px var(--stroke2);color:var(--ink);font-weight:600;font-size:15px"><i class="ph-fill ph-house" style="font-size:20px"></i><span>Home</span></a>
+          <a href="#" style="display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:14px;color:var(--ink2);font-weight:600;font-size:15px"><i class="ph ph-leaf" style="font-size:20px"></i><span>Life</span></a>
+          <a href="#" style="display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:14px;color:var(--ink2);font-weight:600;font-size:15px"><i class="ph ph-fork-knife" style="font-size:20px"></i><span>Food</span></a>
+          <a href="#" style="display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:14px;color:var(--ink2);font-weight:600;font-size:15px"><i class="ph ph-target" style="font-size:20px"></i><span>Goals</span></a>
+          <a href="#" style="display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:14px;color:var(--ink2);font-weight:600;font-size:15px"><i class="ph ph-plant" style="font-size:20px"></i><span>Grove</span></a>
+          <a href="#" style="display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:14px;color:var(--ink2);font-weight:600;font-size:15px"><i class="ph ph-sparkle" style="font-size:20px"></i><span>Lis</span></a>
+        </nav>
+        <div style="display:grid;gap:10px">
+          <a href="#" style="display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:14px;color:var(--ink2);font-weight:600;font-size:15px"><i class="ph ph-user-circle" style="font-size:20px"></i><span>Profile</span></a>
+          <p style="margin:0;padding:0 12px;color:var(--ink2);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Synced · 2 min ago</p>
+          <p style="margin:0;padding:0 12px;color:var(--ink2);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">ana@example.ph</p>
+        </div>
+      </aside>
+      <main style="min-width:0;padding:36px 40px 40px;display:grid;gap:28px;align-content:start">
+        <div style="display:grid;gap:14px;max-width:760px">
+          <p style="margin:0;font-size:13px;font-weight:600;color:var(--ink2)">{{ v.date }}</p>
+          <div style="display:flex;gap:16px;align-items:flex-start">
+            <img src="assets/lis-bee.png" alt="" width="48" height="48" style="flex:none;width:48px;height:48px;border-radius:50%;object-fit:cover;box-shadow:inset 0 0 0 1px var(--stroke2)">
+            <p style="margin:0;font-size:22px;font-weight:600;letter-spacing:-.01em;line-height:1.3;text-wrap:pretty;padding-top:8px">{{ v.greeting }}</p>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;max-width:900px">
+          <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:20px;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center">
+            <div role="meter" aria-label="Calories today" aria-valuemin="0" aria-valuemax="1480" aria-valuenow="{{ v.kcal }}" aria-valuetext="{{ v.kcalText }}" style="position:relative;width:72px;height:72px">
+              <svg viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" style="transform:rotate(-90deg);display:block"><circle cx="36" cy="36" r="30" fill="none" stroke="var(--track)" stroke-width="8"></circle><circle cx="36" cy="36" r="30" fill="none" stroke="var(--accent)" stroke-width="8" stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="{{ v.dash }}"></circle></svg>
+              <div style="position:absolute;inset:0;display:grid;place-items:center"><span style="font-family:'Manrope',system-ui,sans-serif;font-size:15px;font-weight:800;letter-spacing:-.03em">{{ v.pct }}</span></div>
+            </div>
+            <div style="display:grid;gap:4px"><span style="font-size:13px;font-weight:600;color:var(--ink2)">Calories</span><span style="font-family:'Manrope',system-ui,sans-serif;font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1">{{ v.kcalFmt }}</span><span style="font-size:13px;color:var(--ink2)">of 1,480</span></div>
+          </div>
+          <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:20px;display:grid;gap:4px;align-content:center">
+            <span style="font-size:13px;font-weight:600;color:var(--ink2)">Meals logged</span>
+            <div style="display:flex;align-items:baseline;gap:6px"><span style="font-family:'Manrope',system-ui,sans-serif;font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1">{{ v.meals }}</span><span style="font-size:15px;font-weight:600;color:var(--ink2)">of 3</span></div>
+            <span style="font-size:13px;color:var(--ink2)">{{ v.mealsNote }}</span>
+          </div>
+          <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:20px;display:grid;gap:10px;align-content:center;justify-items:start">
+            <span style="font-size:13px;font-weight:600;color:var(--ink2)">Streak</span>
+            <div aria-label="{{ v.streakAria }}" style="display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 14px 0 12px;border-radius:999px;background:var(--glass-strong);box-shadow:inset 0 0 0 1px var(--stroke);font-size:14px;font-weight:600"><span aria-hidden="true" style="width:8px;height:8px;border-radius:999px;background:{{ v.dot }};box-shadow:{{ v.dotRing }}"></span><span>{{ v.streak }}</span></div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Phone 390: .phoneHeader + .main (12px 18px) + floating .tabBar (64 tall, 16 inset, 30 from bottom) -->
+    <div data-theme="{{ t }}" data-screen-label="home {{ v.key }} {{ t }} 390" style="position:relative;overflow:hidden;flex:none;box-sizing:border-box;width:390px;height:844px;color:var(--ink);background-color:var(--bg0);background-image:radial-gradient(40% 50% at 10% 0%, var(--glow1) 0%, transparent 70%),radial-gradient(40% 40% at 95% 20%, var(--glow2) 0%, transparent 70%),radial-gradient(60% 40% at 60% 110%, var(--glow1) 0%, transparent 70%)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:58px 18px 4px">
+        <a href="#" style="display:flex;align-items:center;gap:10px;min-height:44px;font-family:'Manrope',system-ui,sans-serif;font-weight:800;font-size:17px;letter-spacing:-.02em"><span style="width:28px;height:28px;flex:none;border-radius:9px;background:var(--accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.5)"></span>KayaMo</a>
+        <button style="display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border:0;border-radius:999px;background:var(--glass);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);box-shadow:inset 0 0 0 1px var(--stroke);font-size:14px;font-weight:600;cursor:pointer"><i class="ph ph-sparkle" style="font-size:17px"></i>Ask Lis</button>
+      </div>
+      <main style="padding:12px 18px 140px;display:grid;gap:20px;align-content:start">
+        <div style="display:grid;gap:12px">
+          <p style="margin:0;font-size:13px;font-weight:600;color:var(--ink2)">{{ v.date }}</p>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <img src="assets/lis-bee.png" alt="" width="40" height="40" style="flex:none;width:40px;height:40px;border-radius:50%;object-fit:cover;box-shadow:inset 0 0 0 1px var(--stroke2)">
+            <p style="margin:0;font-size:20px;font-weight:600;letter-spacing:-.01em;line-height:1.3;text-wrap:pretty;padding-top:6px">{{ v.greeting }}</p>
+          </div>
+        </div>
+        <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:20px;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center">
+          <div role="meter" aria-label="Calories today" aria-valuemin="0" aria-valuemax="1480" aria-valuenow="{{ v.kcal }}" aria-valuetext="{{ v.kcalText }}" style="position:relative;width:72px;height:72px">
+            <svg viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" style="transform:rotate(-90deg);display:block"><circle cx="36" cy="36" r="30" fill="none" stroke="var(--track)" stroke-width="8"></circle><circle cx="36" cy="36" r="30" fill="none" stroke="var(--accent)" stroke-width="8" stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="{{ v.dash }}"></circle></svg>
+            <div style="position:absolute;inset:0;display:grid;place-items:center"><span style="font-family:'Manrope',system-ui,sans-serif;font-size:15px;font-weight:800;letter-spacing:-.03em">{{ v.pct }}</span></div>
+          </div>
+          <div style="display:grid;gap:4px"><span style="font-size:13px;font-weight:600;color:var(--ink2)">Calories</span><span style="font-family:'Manrope',system-ui,sans-serif;font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1">{{ v.kcalFmt }}</span><span style="font-size:13px;color:var(--ink2)">of 1,480</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:18px;display:grid;gap:4px;align-content:center">
+            <span style="font-size:13px;font-weight:600;color:var(--ink2)">Meals</span>
+            <div style="display:flex;align-items:baseline;gap:6px"><span style="font-family:'Manrope',system-ui,sans-serif;font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1">{{ v.meals }}</span><span style="font-size:15px;font-weight:600;color:var(--ink2)">of 3</span></div>
+          </div>
+          <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:18px;display:grid;gap:8px;align-content:center;justify-items:start">
+            <span style="font-size:13px;font-weight:600;color:var(--ink2)">Streak</span>
+            <div aria-label="{{ v.streakAria }}" style="display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 12px 0 10px;border-radius:999px;background:var(--glass-strong);box-shadow:inset 0 0 0 1px var(--stroke);font-size:13px;font-weight:600"><span aria-hidden="true" style="width:8px;height:8px;border-radius:999px;background:{{ v.dot }};box-shadow:{{ v.dotRing }}"></span><span>{{ v.streakShort }}</span></div>
+          </div>
+        </div>
+      </main>
+      <nav aria-label="Main" style="position:absolute;left:16px;right:16px;bottom:30px;height:64px;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:0 6px;box-sizing:border-box;border-radius:999px;background:var(--glass-strong);backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow-deep)">
+        <a href="#" aria-current="page" style="height:52px;display:grid;place-items:center;gap:2px;color:var(--ink)"><i class="ph-fill ph-house" style="font-size:22px"></i><span style="font-size:10px;font-weight:600">Home</span></a>
+        <a href="#" style="height:52px;display:grid;place-items:center;gap:2px;color:var(--ink2)"><i class="ph ph-leaf" style="font-size:22px"></i><span style="font-size:10px;font-weight:600">Life</span></a>
+        <button aria-label="Log" style="width:54px;height:54px;margin:auto;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 8px 22px var(--accent-glow)"><i class="ph-bold ph-plus" style="font-size:24px"></i></button>
+        <a href="#" style="height:52px;display:grid;place-items:center;gap:2px;color:var(--ink2)"><i class="ph ph-sparkle" style="font-size:22px"></i><span style="font-size:10px;font-weight:600">Lis</span></a>
+        <a href="#" style="height:52px;display:grid;place-items:center;gap:2px;color:var(--ink2)"><i class="ph ph-user-circle" style="font-size:22px"></i><span style="font-size:10px;font-weight:600">Profile</span></a>
+      </nav>
+    </div>
+  </sc-for>
+
+  </div>
+</div>
+</sc-for>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const C = 188.5, target = 1480;
+    const mk = (v) => {
+      const frac = Math.min(1, v.kcal / target);
+      return { ...v, kcalFmt: v.kcal.toLocaleString('en-PH'), pct: `${Math.round(frac * 100)}%`, dash: C * (1 - frac), kcalText: v.kcal === 0 ? 'Nothing logged yet' : `${v.kcal.toLocaleString('en-PH')} of 1,480 kcal`, dot: v.hasStreak ? 'var(--accent)' : 'transparent', dotRing: v.hasStreak ? 'none' : 'inset 0 0 0 1.5px var(--ink3)', streakAria: `Streak: ${v.streak}` };
+    };
+    return {
+      themes: ['light', 'dark'],
+      variants: [
+        mk({ key: 'first', title: 'Home greeting · first day', date: 'Sunday, 20 September · your first day', greeting: 'Hi Ana. Nothing logged yet, which is exactly right for a first day. When you eat, tell me and I’ll do the numbers.', kcal: 0, meals: 0, mealsNote: 'First meal whenever you like', streak: 'Starts with today', streakShort: 'Starts today', hasStreak: false }),
+        mk({ key: 'normal', title: 'Home greeting · normal day', date: 'Tuesday, 22 September', greeting: 'Morning, Ana. You’re at 640 of 1,480 with lunch still ahead, and yesterday landed right on target.', kcal: 640, meals: 1, mealsNote: 'Lunch and hapunan still to come', streak: '3 days', streakShort: '3 days', hasStreak: true }),
+        mk({ key: 'gap', title: 'Home greeting · returning after a gap', date: 'Monday, 28 September', greeting: 'Welcome back, Ana. It’s been six days, and the numbers pick up from today. Your target is still 1,480 unless you’d like to look at it again.', kcal: 0, meals: 0, mealsNote: 'Today counts from the first meal', streak: 'Picks up today', streakShort: 'Picks up today', hasStreak: false }),
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

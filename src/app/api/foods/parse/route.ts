@@ -2,6 +2,7 @@ import { parseFoodMessage } from '@kayamo/ai';
 import { foodParseSchema } from '@kayamo/food';
 import { z } from 'zod';
 import { json, jsonError, requireUser } from '@/lib/api';
+import { reserveWebAiRequest } from '@/lib/server-ai-allowance';
 
 const bodySchema = z.object({
   message: z.string().trim().min(1).max(2000),
@@ -28,6 +29,15 @@ export async function POST(request: Request) {
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return jsonError(400, 'Invalid parse request.');
+
+  // The same per-user daily allowance every Lis route reserves, after the body
+  // has parsed. Without a provider key the parser answers from its heuristic
+  // and costs nothing, so no slot is spent. This was the one route that could
+  // reach the model unmetered (found in the 2026-09-19 checklist audit).
+  if (process.env.OPENAI_API_KEY?.trim()) {
+    const allowance = await reserveWebAiRequest(user.id);
+    if (!allowance.ok) return jsonError(allowance.status, allowance.error);
+  }
 
   const result = await parseFoodMessage({
     userId: user.id,

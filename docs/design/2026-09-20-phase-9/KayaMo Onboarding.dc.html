@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<style>
+body{margin:0;background:#d9ddd9;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Manrope',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+a{color:inherit}a:hover{color:inherit}
+input,button{font:inherit;color:inherit}
+input::placeholder{color:var(--ink3)}
+[data-theme="light"]{--bg0:#eef3ee;--glow1:#c6f2d4;--glow2:#d6e6ff;--glass:rgba(255,255,255,.52);--glass-strong:rgba(255,255,255,.78);--stroke:rgba(255,255,255,.9);--stroke2:rgba(10,20,12,.06);--field:rgba(255,255,255,.7);--track:rgba(10,20,12,.08);--ink:#0b0f0c;--ink2:rgba(11,15,12,.62);--ink3:rgba(11,15,12,.4);--accent:#30d158;--accent-text:#157a34;--accent-ink:#04120a;--accent-glow:#30d15866;--danger:#ff453a;--danger-text:#c9271b;--shadow:0 12px 36px rgba(20,40,28,.12);--shadow-deep:0 18px 48px rgba(20,40,28,.2);color-scheme:light}
+[data-theme="dark"]{--bg0:#0a0d0b;--glow1:#0f3a24;--glow2:#0e1c30;--glass:rgba(255,255,255,.07);--glass-strong:rgba(255,255,255,.12);--stroke:rgba(255,255,255,.22);--stroke2:rgba(255,255,255,.07);--field:rgba(255,255,255,.08);--track:rgba(255,255,255,.1);--ink:#f5f7f5;--ink2:rgba(245,247,245,.66);--ink3:rgba(245,247,245,.42);--accent:#30d158;--accent-text:#3ade63;--accent-ink:#04120a;--accent-glow:#30d15855;--danger:#ff453a;--danger-text:#ffa9a2;--shadow:0 14px 40px rgba(0,0,0,.45);--shadow-deep:0 20px 50px rgba(0,0,0,.6);color-scheme:dark}
+</style>
+</helmet>
+
+<section style="display:grid;gap:56px;padding:40px">
+
+<div style="display:grid;gap:14px">
+  <p style="margin:0;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4a5a4e">a · Welcome and what Lis is</p>
+  <div style="display:flex;gap:32px;align-items:flex-start">
+  <sc-for list="{{ frames }}" as="f" hint-placeholder-count="4">
+    <div data-theme="{{ f.theme }}" data-screen-label="a welcome {{ f.theme }} {{ f.w }}" style="position:relative;overflow:hidden;flex:none;box-sizing:border-box;width:{{ f.w }}px;height:{{ f.h }}px;padding:{{ f.pad }};display:flex;align-items:center;justify-content:center;color:var(--ink);background-color:var(--bg0);background-image:radial-gradient(40% 50% at 10% 0%, var(--glow1) 0%, transparent 70%),radial-gradient(40% 40% at 95% 20%, var(--glow2) 0%, transparent 70%),radial-gradient(60% 40% at 60% 110%, var(--glow1) 0%, transparent 70%)">
+      <div style="width:100%;max-width:1040px;display:flex;flex-wrap:wrap;gap:40px 64px;align-items:center;justify-content:center">
+        <div style="flex:1 1 300px;max-width:440px;display:grid;gap:20px">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><div style="display:flex;gap:6px"><div style="width:28px;height:4px;border-radius:999px;background:var(--ink)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--track)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--track)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--track)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--track)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--track)"></div></div><span style="font-size:13px;color:var(--ink2);margin-left:6px">1 of 6 · skip anything</span></div>
+          <img src="assets/lis-bee.png" alt="" width="112" height="112" style="display:block;width:112px;height:112px;border-radius:50%;object-fit:cover;box-shadow:inset 0 0 0 1px var(--stroke2),var(--shadow)">
+          <h1 style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1">Hi, I'm Lis.</h1>
+          <p style="margin:0;font-size:17px;line-height:1.5;color:var(--ink2);text-wrap:pretty">I keep the numbers so you don't have to. I'll suggest things as we go, a target, a meal, a rest day, and you say yes or no. Nothing changes unless you confirm it.</p>
+        </div>
+        <div style="flex:1 1 320px;max-width:460px;display:grid;gap:12px">
+          <div style="border-radius:28px;background:var(--glass);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:22px 22px 18px;display:grid;gap:14px">
+            <p style="margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-text)">How this works</p>
+            <div style="display:flex;gap:12px;align-items:flex-start"><img src="assets/lis-bee.png" alt="" width="36" height="36" style="flex:none;width:36px;height:36px;border-radius:50%;object-fit:cover"><p style="margin:0;font-size:15px;line-height:1.45;padding:12px 16px;border-radius:18px;background:var(--glass-strong);box-shadow:inset 0 0 0 1px var(--stroke2)">Lunch looks like about 620 kcal. Shall I add it to today?</p></div>
+            <div style="display:flex;gap:8px;justify-content:flex-end"><button style="min-height:44px;padding:0 18px;border:0;border-radius:999px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke);font-size:15px;font-weight:600;cursor:pointer">Not now</button><button style="min-height:44px;padding:0 20px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:15px;font-weight:700;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 24px var(--accent-glow)">Confirm</button></div>
+            <p style="margin:0;font-size:13px;color:var(--ink2);text-align:right">Lis proposes. You confirm.</p>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button style="min-height:48px;padding:0 20px;border:0;border-radius:999px;background:transparent;color:var(--ink2);font-size:15px;font-weight:600;cursor:pointer">Skip setup</button><button style="min-height:48px;padding:0 24px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:15px;font-weight:700;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 24px var(--accent-glow);display:inline-flex;align-items:center;gap:8px">Let's start <i class="ph-bold ph-arrow-right" style="font-size:16px"></i></button></div>
+        </div>
+      </div>
+    </div>
+  </sc-for>
+  </div>
+</div>
+
+<div style="display:grid;gap:14px">
+  <p style="margin:0;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4a5a4e">b · Body basics, every field skippable</p>
+  <div style="display:flex;gap:32px;align-items:flex-start">
+  <sc-for list="{{ frames }}" as="f" hint-placeholder-count="4">
+    <div data-theme="{{ f.theme }}" data-screen-label="b body {{ f.theme }} {{ f.w }}" style="position:relative;overflow:hidden;flex:none;box-sizing:border-box;width:{{ f.w }}px;height:{{ f.h }}px;padding:{{ f.pad }};display:flex;align-items:center;justify-content:center;color:var(--ink);background-color:var(--bg0);background-image:radial-gradient(40% 50% at 10% 0%, var(--glow1) 0%, transparent 70%),radial-gradient(40% 40% at 95% 20%, var(--glow2) 0%, transparent 70%),radial-gradient(60% 40% at 60% 110%, var(--glow1) 0%, transparent 70%)">
+      <div style="width:100%;max-width:1040px;display:flex;flex-wrap:wrap;gap:40px 64px;align-items:center;justify-content:center">
+        <div style="flex:1 1 300px;max-width:440px;display:grid;gap:20px">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><div style="display:flex;gap:6px"><div style="width:28px;height:4px;border-radius:999px;background:var(--accent)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--ink)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--track)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--track)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--track)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--track)"></div></div><span style="font-size:13px;color:var(--ink2);margin-left:6px">2 of 6 · skip anything</span></div>
+          <h1 style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1">A few basics</h1>
+          <div style="display:flex;gap:12px;align-items:flex-start"><img src="assets/lis-bee.png" alt="" width="40" height="40" style="flex:none;width:40px;height:40px;border-radius:50%;object-fit:cover"><p style="margin:0;font-size:17px;line-height:1.5;color:var(--ink2);text-wrap:pretty">These help me estimate what your body uses in a day. Leave anything blank and I'll work from a wider range instead.</p></div>
+        </div>
+        <div style="flex:1 1 320px;max-width:460px;display:grid;gap:12px">
+          <div style="border-radius:28px;background:var(--glass);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:22px;display:grid;gap:16px">
+            <div style="display:grid;gap:8px">
+              <span style="font-size:13px;font-weight:600;color:var(--ink2)">Sex</span>
+              <div role="radiogroup" aria-label="Sex" style="display:grid;grid-template-columns:repeat(3,1fr);padding:3px;border-radius:999px;background:var(--track)">
+                <sc-for list="{{ sexOptions }}" as="o" hint-placeholder-count="3">
+                  <button role="radio" onClick="{{ o.pick }}" aria-checked="{{ o.on }}" style="min-height:38px;border:0;border-radius:999px;background:{{ o.bg }};box-shadow:{{ o.shadow }};color:{{ o.color }};font-size:14px;font-weight:600;cursor:pointer;transition:background 180ms linear,color 180ms linear">{{ o.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px">
+              <label style="display:grid;gap:8px"><span style="font-size:13px;font-weight:600;color:var(--ink2)">Birth year</span><input inputmode="numeric" placeholder="1997" style="min-height:52px;padding:0 18px;border:0;border-radius:18px;background:var(--field);font-size:17px;outline:none;box-shadow:inset 0 0 0 1px var(--stroke2);width:100%;box-sizing:border-box"></label>
+              <label style="display:grid;gap:8px"><span style="font-size:13px;font-weight:600;color:var(--ink2)">Height, cm</span><input inputmode="decimal" placeholder="162" style="min-height:52px;padding:0 18px;border:0;border-radius:18px;background:var(--field);font-size:17px;outline:none;box-shadow:inset 0 0 0 1px var(--stroke2);width:100%;box-sizing:border-box"></label>
+              <label style="display:grid;gap:8px"><span style="font-size:13px;font-weight:600;color:var(--ink2)">Weight now, kg</span><input inputmode="decimal" placeholder="68" style="min-height:52px;padding:0 18px;border:0;border-radius:18px;background:var(--field);font-size:17px;outline:none;box-shadow:inset 0 0 0 1px var(--stroke2);width:100%;box-sizing:border-box"></label>
+            </div>
+            <p style="margin:0;font-size:13px;color:var(--ink2);line-height:1.45">Blank is fine. Each one you add narrows the estimate a little.</p>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button style="min-height:48px;padding:0 20px;border:0;border-radius:999px;background:transparent;color:var(--ink2);font-size:15px;font-weight:600;cursor:pointer">Skip</button><button style="min-height:48px;padding:0 24px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:15px;font-weight:700;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 24px var(--accent-glow)">Continue</button></div>
+        </div>
+      </div>
+    </div>
+  </sc-for>
+  </div>
+</div>
+
+<div style="display:grid;gap:14px">
+  <p style="margin:0;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4a5a4e">c · Activity, five-step pill picker</p>
+  <div style="display:flex;gap:32px;align-items:flex-start">
+  <sc-for list="{{ frames }}" as="f" hint-placeholder-count="4">
+    <div data-theme="{{ f.theme }}" data-screen-label="c activity {{ f.theme }} {{ f.w }}" style="position:relative;overflow:hidden;flex:none;box-sizing:border-box;width:{{ f.w }}px;height:{{ f.h }}px;padding:{{ f.pad }};display:flex;align-items:center;justify-content:center;color:var(--ink);background-color:var(--bg0);background-image:radial-gradient(40% 50% at 10% 0%, var(--glow1) 0%, transparent 70%),radial-gradient(40% 40% at 95% 20%, var(--glow2) 0%, transparent 70%),radial-gradient(60% 40% at 60% 110%, var(--glow1) 0%, transparent 70%)">
+      <div style="width:100%;max-width:1040px;display:flex;flex-wrap:wrap;gap:40px 64px;align-items:center;justify-content:center">
+        <div style="flex:1 1 300px;max-width:440px;display:grid;gap:20px">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><div style="display:flex;gap:6px"><div style="width:28px;height:4px;border-radius:999px;background:var(--accent)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--accent)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--ink)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--track)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--track)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--track)"></div></div><span style="font-size:13px;color:var(--ink2);margin-left:6px">3 of 6 · skip anything</span></div>
+          <h1 style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1">A normal week</h1>
+          <div style="display:flex;gap:12px;align-items:flex-start"><img src="assets/lis-bee.png" alt="" width="40" height="40" style="flex:none;width:40px;height:40px;border-radius:50%;object-fit:cover"><p style="margin:0;font-size:17px;line-height:1.5;color:var(--ink2);text-wrap:pretty">Pick the one that sounds like an ordinary week, not your best one. I'll adjust this as your logging tells me more.</p></div>
+        </div>
+        <div style="flex:1 1 320px;max-width:460px;display:grid;gap:12px">
+          <div style="border-radius:28px;background:var(--glass);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:22px;display:grid;gap:14px">
+            <div role="radiogroup" aria-label="Activity" style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ activityOptions }}" as="o" hint-placeholder-count="5">
+                <button role="radio" aria-checked="{{ o.on }}" onClick="{{ o.pick }}" style="min-height:44px;padding:0 16px;border:0;border-radius:999px;background:{{ o.bg }};color:{{ o.color }};box-shadow:{{ o.shadow }};font-size:15px;font-weight:600;cursor:pointer;transition:background 180ms linear,color 180ms linear">{{ o.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:0 2px">
+              <sc-for list="{{ activityOptions }}" as="o" hint-placeholder-count="5">
+                <div style="height:4px;border-radius:999px;background:{{ o.stepBg }};transition:background 180ms linear"></div>
+              </sc-for>
+            </div>
+            <div style="padding:14px 16px;border-radius:18px;background:var(--glass-strong);box-shadow:inset 0 0 0 1px var(--stroke2);display:grid;gap:4px">
+              <span style="font-size:15px;font-weight:700">{{ activityTitle }}</span>
+              <span style="font-size:14px;line-height:1.45;color:var(--ink2)">{{ activityDesc }}</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button style="min-height:48px;padding:0 20px;border:0;border-radius:999px;background:transparent;color:var(--ink2);font-size:15px;font-weight:600;cursor:pointer">Skip</button><button style="min-height:48px;padding:0 24px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:15px;font-weight:700;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 24px var(--accent-glow)">Continue</button></div>
+        </div>
+      </div>
+    </div>
+  </sc-for>
+  </div>
+</div>
+
+<div style="display:grid;gap:14px">
+  <p style="margin:0;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4a5a4e">d · Goal and pace</p>
+  <div style="display:flex;gap:32px;align-items:flex-start">
+  <sc-for list="{{ frames }}" as="f" hint-placeholder-count="4">
+    <div data-theme="{{ f.theme }}" data-screen-label="d goal {{ f.theme }} {{ f.w }}" style="position:relative;overflow:hidden;flex:none;box-sizing:border-box;width:{{ f.w }}px;height:{{ f.h }}px;padding:{{ f.pad }};display:flex;align-items:center;justify-content:center;color:var(--ink);background-color:var(--bg0);background-image:radial-gradient(40% 50% at 10% 0%, var(--glow1) 0%, transparent 70%),radial-gradient(40% 40% at 95% 20%, var(--glow2) 0%, transparent 70%),radial-gradient(60% 40% at 60% 110%, var(--glow1) 0%, transparent 70%)">
+      <div style="width:100%;max-width:1040px;display:flex;flex-wrap:wrap;gap:40px 64px;align-items:center;justify-content:center">
+        <div style="flex:1 1 300px;max-width:440px;display:grid;gap:20px">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><div style="display:flex;gap:6px"><div style="width:28px;height:4px;border-radius:999px;background:var(--accent)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--accent)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--accent)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--ink)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--track)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--track)"></div></div><span style="font-size:13px;color:var(--ink2);margin-left:6px">4 of 6 · skip anything</span></div>
+          <h1 style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1">Where to, roughly</h1>
+          <div style="display:flex;gap:12px;align-items:flex-start"><img src="assets/lis-bee.png" alt="" width="40" height="40" style="flex:none;width:40px;height:40px;border-radius:50%;object-fit:cover"><p style="margin:0;font-size:17px;line-height:1.5;color:var(--ink2);text-wrap:pretty">There's no rush here. A gentle pace tends to hold better than a hard one, and you can change it whenever you like.</p></div>
+        </div>
+        <div style="flex:1 1 320px;max-width:460px;display:grid;gap:12px">
+          <div style="border-radius:28px;background:var(--glass);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:22px;display:grid;gap:18px">
+            <div style="display:grid;gap:8px">
+              <span style="font-size:13px;font-weight:600;color:var(--ink2)">Goal</span>
+              <div role="radiogroup" aria-label="Goal" style="display:grid;grid-template-columns:repeat(3,1fr);padding:3px;border-radius:999px;background:var(--track)">
+                <sc-for list="{{ goalOptions }}" as="o" hint-placeholder-count="3">
+                  <button role="radio" onClick="{{ o.pick }}" aria-checked="{{ o.on }}" style="min-height:38px;border:0;border-radius:999px;background:{{ o.bg }};box-shadow:{{ o.shadow }};color:{{ o.color }};font-size:14px;font-weight:600;cursor:pointer;transition:background 180ms linear,color 180ms linear">{{ o.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+            <sc-if value="{{ showPace }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;gap:8px">
+                <span style="font-size:13px;font-weight:600;color:var(--ink2)">Pace</span>
+                <div role="radiogroup" aria-label="Pace" style="display:grid;gap:8px">
+                  <sc-for list="{{ paceOptions }}" as="o" hint-placeholder-count="3">
+                    <button role="radio" aria-checked="{{ o.on }}" onClick="{{ o.pick }}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:48px;padding:0 18px;border:0;border-radius:999px;background:{{ o.bg }};color:{{ o.color }};box-shadow:{{ o.shadow }};font-size:15px;font-weight:600;cursor:pointer;text-align:left;transition:background 180ms linear,color 180ms linear"><span>{{ o.label }}</span><span style="font-size:13px;font-weight:500;color:{{ o.subColor }}">{{ o.sub }}</span></button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <p style="margin:0;font-size:13px;color:var(--ink2);line-height:1.45">{{ paceNote }}</p>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button style="min-height:48px;padding:0 20px;border:0;border-radius:999px;background:transparent;color:var(--ink2);font-size:15px;font-weight:600;cursor:pointer">Skip</button><button style="min-height:48px;padding:0 24px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:15px;font-weight:700;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 24px var(--accent-glow)">Continue</button></div>
+        </div>
+      </div>
+    </div>
+  </sc-for>
+  </div>
+</div>
+
+<div style="display:grid;gap:14px">
+  <p style="margin:0;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4a5a4e">e · How Lis speaks</p>
+  <div style="display:flex;gap:32px;align-items:flex-start">
+  <sc-for list="{{ frames }}" as="f" hint-placeholder-count="4">
+    <div data-theme="{{ f.theme }}" data-screen-label="e voice {{ f.theme }} {{ f.w }}" style="position:relative;overflow:hidden;flex:none;box-sizing:border-box;width:{{ f.w }}px;height:{{ f.h }}px;padding:{{ f.pad }};display:flex;align-items:center;justify-content:center;color:var(--ink);background-color:var(--bg0);background-image:radial-gradient(40% 50% at 10% 0%, var(--glow1) 0%, transparent 70%),radial-gradient(40% 40% at 95% 20%, var(--glow2) 0%, transparent 70%),radial-gradient(60% 40% at 60% 110%, var(--glow1) 0%, transparent 70%)">
+      <div style="width:100%;max-width:1040px;display:flex;flex-wrap:wrap;gap:40px 64px;align-items:center;justify-content:center">
+        <div style="flex:1 1 300px;max-width:440px;display:grid;gap:20px">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><div style="display:flex;gap:6px"><div style="width:28px;height:4px;border-radius:999px;background:var(--accent)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--accent)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--accent)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--accent)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--ink)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--track)"></div></div><span style="font-size:13px;color:var(--ink2);margin-left:6px">5 of 6 · skip anything</span></div>
+          <h1 style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1">How I sound</h1>
+          <div style="display:flex;gap:12px;align-items:flex-start"><img src="assets/lis-bee.png" alt="" width="40" height="40" style="flex:none;width:40px;height:40px;border-radius:50%;object-fit:cover"><p style="margin:0;font-size:17px;line-height:1.5;color:var(--ink2);text-wrap:pretty">Try a few and read the sample. Whatever you pick here is easy to change later in Profile.</p></div>
+          <div style="display:flex;gap:12px;align-items:flex-start;padding-top:8px"><img src="assets/lis-bee.png" alt="" width="36" height="36" style="flex:none;width:36px;height:36px;border-radius:50%;object-fit:cover"><p aria-live="polite" style="margin:0;font-size:15px;line-height:1.45;padding:12px 16px;border-radius:18px;background:var(--glass-strong);box-shadow:inset 0 0 0 1px var(--stroke2);max-width:360px">{{ voicePreview }}</p></div>
+        </div>
+        <div style="flex:1 1 320px;max-width:460px;display:grid;gap:12px">
+          <div style="border-radius:28px;background:var(--glass);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:22px;display:grid;gap:18px">
+            <div style="display:grid;gap:8px">
+              <span style="font-size:13px;font-weight:600;color:var(--ink2)">Personality</span>
+              <div role="radiogroup" aria-label="Personality" style="display:flex;flex-wrap:wrap;gap:8px">
+                <sc-for list="{{ personaOptions }}" as="o" hint-placeholder-count="3">
+                  <button role="radio" aria-checked="{{ o.on }}" onClick="{{ o.pick }}" style="min-height:44px;padding:0 16px;border:0;border-radius:999px;background:{{ o.bg }};color:{{ o.color }};box-shadow:{{ o.shadow }};font-size:15px;font-weight:600;cursor:pointer;transition:background 180ms linear,color 180ms linear">{{ o.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:grid;gap:8px">
+              <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:var(--ink2)"><span>Concise</span><span>Talkative</span></div>
+              <div role="radiogroup" aria-label="How much Lis says" style="display:grid;grid-template-columns:repeat(3,1fr);padding:3px;border-radius:999px;background:var(--track)">
+                <sc-for list="{{ lengthOptions }}" as="o" hint-placeholder-count="3">
+                  <button role="radio" aria-checked="{{ o.on }}" onClick="{{ o.pick }}" aria-label="{{ o.label }}" style="min-height:38px;border:0;border-radius:999px;background:{{ o.bg }};box-shadow:{{ o.shadow }};color:{{ o.color }};font-size:14px;font-weight:600;cursor:pointer;letter-spacing:.1em;transition:background 180ms linear,color 180ms linear">{{ o.mark }}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:grid;gap:8px">
+              <span style="font-size:13px;font-weight:600;color:var(--ink2)">Language</span>
+              <div role="radiogroup" aria-label="Language" style="display:grid;grid-template-columns:repeat(3,1fr);padding:3px;border-radius:999px;background:var(--track)">
+                <sc-for list="{{ langOptions }}" as="o" hint-placeholder-count="3">
+                  <button role="radio" aria-checked="{{ o.on }}" onClick="{{ o.pick }}" style="min-height:38px;border:0;border-radius:999px;background:{{ o.bg }};box-shadow:{{ o.shadow }};color:{{ o.color }};font-size:14px;font-weight:600;cursor:pointer;transition:background 180ms linear,color 180ms linear">{{ o.label }}</button>
+                </sc-for>
+              </div>
+              <p style="margin:0;font-size:13px;color:var(--ink2);line-height:1.45">Match me follows whatever you write in.</p>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button style="min-height:48px;padding:0 20px;border:0;border-radius:999px;background:transparent;color:var(--ink2);font-size:15px;font-weight:600;cursor:pointer">Skip</button><button style="min-height:48px;padding:0 24px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:15px;font-weight:700;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 24px var(--accent-glow)">Continue</button></div>
+        </div>
+      </div>
+    </div>
+  </sc-for>
+  </div>
+</div>
+
+<div style="display:grid;gap:14px">
+  <p style="margin:0;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4a5a4e">f · Privacy, and you can change any of this later</p>
+  <div style="display:flex;gap:32px;align-items:flex-start">
+  <sc-for list="{{ frames }}" as="f" hint-placeholder-count="4">
+    <div data-theme="{{ f.theme }}" data-screen-label="f privacy {{ f.theme }} {{ f.w }}" style="position:relative;overflow:hidden;flex:none;box-sizing:border-box;width:{{ f.w }}px;height:{{ f.h }}px;padding:{{ f.pad }};display:flex;align-items:center;justify-content:center;color:var(--ink);background-color:var(--bg0);background-image:radial-gradient(40% 50% at 10% 0%, var(--glow1) 0%, transparent 70%),radial-gradient(40% 40% at 95% 20%, var(--glow2) 0%, transparent 70%),radial-gradient(60% 40% at 60% 110%, var(--glow1) 0%, transparent 70%)">
+      <div style="width:100%;max-width:1040px;display:flex;flex-wrap:wrap;gap:40px 64px;align-items:center;justify-content:center">
+        <div style="flex:1 1 300px;max-width:440px;display:grid;gap:20px">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><div style="display:flex;gap:6px"><div style="width:28px;height:4px;border-radius:999px;background:var(--accent)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--accent)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--accent)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--accent)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--accent)"></div><div style="width:28px;height:4px;border-radius:999px;background:var(--ink)"></div></div><span style="font-size:13px;color:var(--ink2);margin-left:6px">6 of 6</span></div>
+          <h1 style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1">Yours, and only yours</h1>
+          <div style="display:flex;gap:12px;align-items:flex-start"><img src="assets/lis-bee.png" alt="" width="40" height="40" style="flex:none;width:40px;height:40px;border-radius:50%;object-fit:cover"><p style="margin:0;font-size:17px;line-height:1.5;color:var(--ink2);text-wrap:pretty">I read only what you turn on, and nothing here is ever posted, shared or sold. You can change any of this later in Profile.</p></div>
+        </div>
+        <div style="flex:1 1 320px;max-width:460px;display:grid;gap:12px">
+          <div style="border-radius:28px;background:var(--glass);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:22px;display:grid;gap:10px">
+            <div style="display:flex;gap:14px;align-items:center;min-height:56px;padding:0 4px"><i class="ph ph-shield-check" style="font-size:24px;color:var(--accent-text)"></i><div style="display:grid;gap:2px"><span style="font-size:15px;font-weight:600">Saved on this device first</span><span style="font-size:13px;color:var(--ink2)">Synced to your account only once you sign in.</span></div></div>
+            <div style="height:1px;background:var(--stroke2)"></div>
+            <div style="display:flex;gap:14px;align-items:center;min-height:56px;padding:0 4px"><i class="ph ph-lock-simple" style="font-size:24px;color:var(--accent-text)"></i><div style="display:grid;gap:2px"><span style="font-size:15px;font-weight:600">Lis reads what you switch on</span><span style="font-size:13px;color:var(--ink2)">Food, weight and activity each have their own switch.</span></div></div>
+            <div style="height:1px;background:var(--stroke2)"></div>
+            <div style="display:flex;gap:14px;align-items:center;min-height:56px;padding:0 4px"><i class="ph ph-trash" style="font-size:24px;color:var(--accent-text)"></i><div style="display:grid;gap:2px"><span style="font-size:15px;font-weight:600">Delete everything in one tap</span><span style="font-size:13px;color:var(--ink2)">Profile › Your data. No questions asked.</span></div></div>
+            <p style="margin:6px 0 0;font-size:13px;color:var(--ink2);line-height:1.45">Everything you answered, or skipped, can be changed later. Skipped steps stay skipped until you decide otherwise.</p>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button style="min-height:48px;padding:0 20px;border:0;border-radius:999px;background:transparent;color:var(--ink2);font-size:15px;font-weight:600;cursor:pointer">Read the privacy notice</button><button style="min-height:48px;padding:0 24px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:15px;font-weight:700;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 24px var(--accent-glow)">Show my target</button></div>
+        </div>
+      </div>
+    </div>
+  </sc-for>
+  </div>
+</div>
+
+<div style="display:grid;gap:14px">
+  <p style="margin:0;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4a5a4e">End of onboarding · target card</p>
+  <div style="display:flex;gap:32px;align-items:flex-start">
+  <sc-for list="{{ frames }}" as="f" hint-placeholder-count="4">
+    <div data-theme="{{ f.theme }}" data-screen-label="target {{ f.theme }} {{ f.w }}" style="position:relative;overflow:auto;flex:none;box-sizing:border-box;width:{{ f.w }}px;height:{{ f.h }}px;padding:{{ f.pad }};display:flex;align-items:{{ f.align }};justify-content:center;color:var(--ink);background-color:var(--bg0);background-image:radial-gradient(40% 50% at 10% 0%, var(--glow1) 0%, transparent 70%),radial-gradient(40% 40% at 95% 20%, var(--glow2) 0%, transparent 70%),radial-gradient(60% 40% at 60% 110%, var(--glow1) 0%, transparent 70%)">
+      <div style="width:100%;max-width:1040px;display:flex;flex-wrap:wrap;gap:40px 64px;align-items:center;justify-content:center">
+        <div style="flex:1 1 300px;max-width:440px;display:grid;gap:20px">
+          <p style="margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-text)">Your starting target</p>
+          <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span style="font-family:'Manrope',system-ui,sans-serif;font-size:76px;font-weight:800;letter-spacing:-.035em;line-height:1">1,480</span><span style="font-size:22px;font-weight:600;color:var(--ink2)">kcal a day</span></div>
+          <div style="display:flex;gap:12px;align-items:flex-start"><img src="assets/lis-bee.png" alt="" width="40" height="40" style="flex:none;width:40px;height:40px;border-radius:50%;object-fit:cover"><p style="margin:0;font-size:17px;line-height:1.5;color:var(--ink2);text-wrap:pretty">Your body uses about 1,660 kcal a day in a mostly-sitting week, so I took 180 off for a gentle quarter-percent a week. Log a few days and I'll tune it to you.</p></div>
+          <div style="display:flex;gap:10px;align-items:center;padding:12px 16px;border-radius:18px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke)"><i class="ph ph-lock-simple" style="font-size:18px;color:var(--ink2)"></i><span style="font-size:14px;line-height:1.4;color:var(--ink2)">We never go below <span style="color:var(--ink);font-weight:600">1,200</span> a day for women or <span style="color:var(--ink);font-weight:600">1,500</span> for men, whatever the pace.</span></div>
+        </div>
+        <div style="flex:1 1 320px;max-width:460px;display:grid;gap:12px">
+          <div style="border-radius:28px;background:var(--glass);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:8px 8px 18px;display:grid;gap:8px">
+            <button onClick="{{ toggleWhy }}" aria-expanded="{{ whyOpen }}" style="display:flex;justify-content:space-between;align-items:center;min-height:52px;padding:0 16px;border:0;border-radius:20px;background:transparent;font-size:15px;font-weight:700;cursor:pointer;text-align:left"><span>Why this number</span><i class="ph-bold ph-caret-right" style="font-size:16px;color:var(--ink2);transition:transform 180ms cubic-bezier(.22,1,.36,1);transform:{{ whyRotate }}"></i></button>
+            <sc-if value="{{ whyOpen }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;gap:6px;padding:0 4px">
+                <sc-for list="{{ adjustments }}" as="a" hint-placeholder-count="4">
+                  <div style="display:grid;grid-template-columns:20px 1fr auto;gap:12px;align-items:start;padding:12px;border-radius:18px;background:var(--glass-strong);box-shadow:inset 0 0 0 1px var(--stroke2)">
+                    <i class="{{ a.icon }}" style="font-size:18px;margin-top:1px;color:var(--ink2)"></i>
+                    <div style="display:grid;gap:2px"><span style="font-size:14px;font-weight:600">{{ a.name }}</span><span style="font-size:13px;line-height:1.4;color:var(--ink2)">{{ a.rule }}</span></div>
+                    <span style="font-size:12px;font-weight:600;color:var(--ink2);white-space:nowrap;padding:3px 9px;border-radius:999px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke2)">{{ a.status }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <div style="display:grid;gap:10px;padding:8px 12px 0">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px"><span style="font-size:13px;font-weight:600;color:var(--ink2)">How sure Lis is</span><span style="font-size:13px;font-weight:600">Starting estimate</span></div>
+              <div role="meter" aria-label="Confidence in this target" aria-valuemin="0" aria-valuemax="100" aria-valuenow="25" aria-valuetext="Starting estimate, from a formula" style="position:relative;height:8px;border-radius:999px;background:var(--track)"><div style="position:absolute;inset:0 auto 0 0;width:25%;border-radius:999px;background:var(--accent)"></div></div>
+              <p style="margin:0;font-size:13px;line-height:1.45;color:var(--ink2)">This comes from a formula. About two weeks of meals and a few weigh-ins make it your number rather than a formula's.</p>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button style="min-height:48px;padding:0 20px;border:0;border-radius:999px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke);font-size:15px;font-weight:600;cursor:pointer">Adjust</button><button style="min-height:48px;padding:0 24px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:15px;font-weight:700;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 24px var(--accent-glow)">Use this and log a meal</button></div>
+        </div>
+      </div>
+    </div>
+  </sc-for>
+  </div>
+</div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { sex: 0, activity: 0, goal: 0, pace: 0, persona: 1, length: 1, lang: 0, whyOpen: true };
+  seg(list, key) {
+    return list.map((o, i) => {
+      const sel = this.state[key] === i;
+      return { ...o, on: sel, pick: () => this.setState({ [key]: i }), bg: sel ? 'var(--glass-strong)' : 'transparent', shadow: sel ? 'inset 0 1px 0 var(--stroke), 0 2px 8px rgba(0,0,0,.12)' : 'none', color: sel ? 'var(--ink)' : 'var(--ink2)' };
+    });
+  }
+  pills(list, key) {
+    return list.map((o, i) => {
+      const sel = this.state[key] === i;
+      return { ...o, on: sel, pick: () => this.setState({ [key]: i }), bg: sel ? 'var(--accent)' : 'var(--glass)', color: sel ? 'var(--accent-ink)' : 'var(--ink)', subColor: sel ? 'var(--accent-ink)' : 'var(--ink2)', shadow: sel ? 'inset 0 1px 0 rgba(255,255,255,.45), 0 8px 24px var(--accent-glow)' : 'inset 0 0 0 1px var(--stroke)', stepBg: i <= this.state[key] ? 'var(--accent)' : 'var(--track)' };
+    });
+  }
+  renderVals() {
+    const s = this.state;
+    const activities = [
+      { label: 'Mostly sitting', desc: 'Desk or study most of the day, little walking beyond errands.' },
+      { label: 'Lightly active', desc: 'On your feet part of the day, or a walk most days.' },
+      { label: 'Moderately active', desc: 'Regular movement, plus training two or three times a week.' },
+      { label: 'Active', desc: 'Physical work or training most days.' },
+      { label: 'Very active', desc: 'Hard physical work or heavy training nearly every day.' },
+    ];
+    const paceLose = [
+      { label: 'Gentle', sub: '¼ % of body weight a week' },
+      { label: 'Steady', sub: '½ % a week' },
+      { label: 'Quicker', sub: '1 % a week, the most Lis will set' },
+    ];
+    const paceGain = [
+      { label: 'Gentle', sub: '¼ % of body weight a week' },
+      { label: 'Steady', sub: '½ % a week, the most Lis will set' },
+    ];
+    const paceNotes = [
+      'Lis keeps loss under 1 % a week and never more than 25 % below what you use.',
+      'Your target simply matches what your body uses. No pace to choose.',
+      'Lis keeps gain under ½ % a week so most of it is the kind you want.',
+    ];
+    const lengths = [{ label: 'Concise', mark: '•' }, { label: 'In between', mark: '••' }, { label: 'Talkative', mark: '•••' }];
+    const P = {
+      0: ['You’re at 640 so far, and lunch is still ahead.', 'You’re at 640 so far, with lunch still ahead. Plenty of room, no need to think about it yet.', 'You’re at 640 so far, with lunch still ahead. That leaves plenty of room for the rest of the day, so there is nothing to think about yet. Shall I pencil in your usual lunch?'],
+      1: ['640 in, lunch still ahead.', '640 in so far, and lunch is still ahead. Right on track for the day.', '640 in so far, and lunch is still ahead. That is right on track for the day, with room to spare for hapunan. Shall I pencil in your usual lunch?'],
+      2: ['640 in. 840 to go.', '640 in, 840 to go. Lunch will cover most of that.', '640 in, 840 to go. Lunch will cover most of that, and hapunan takes the rest. Shall I pencil in your usual lunch?'],
+    };
+    const T = {
+      0: ['640 ka na so far, at may lunch pa.', '640 ka na so far, may lunch pa. Maluwag pa, wala pang dapat isipin.', '640 ka na so far, may lunch pa. Maluwag pa para sa buong araw, kaya wala pang dapat isipin. Ilagay ko na ba ang usual lunch mo?'],
+      1: ['640 na, lunch pa ang kasunod.', '640 na so far, lunch pa ang kasunod. On track ka para sa araw.', '640 na so far, lunch pa ang kasunod. On track ka para sa araw, at may sobra pa para sa hapunan. Ilagay ko na ba ang usual lunch mo?'],
+      2: ['640 na. 840 pa.', '640 na, 840 pa. Lunch na ang bubuo ng karamihan nito.', '640 na, 840 pa. Lunch na ang bubuo ng karamihan nito, at hapunan ang bahala sa natitira. Ilagay ko na ba ang usual lunch mo?'],
+    };
+    const bank = s.lang === 1 ? T : P;
+    const paceList = s.goal === 2 ? paceGain : paceLose;
+    const paceIdx = Math.min(s.pace, paceList.length - 1);
+    return {
+      frames: [
+        { theme: 'light', w: 1440, h: 900, pad: '64px', align: 'center' },
+        { theme: 'dark', w: 1440, h: 900, pad: '64px', align: 'center' },
+        { theme: 'light', w: 390, h: 844, pad: '56px 16px 40px', align: 'flex-start' },
+        { theme: 'dark', w: 390, h: 844, pad: '56px 16px 40px', align: 'flex-start' },
+      ],
+      sexOptions: this.seg([{ label: 'Female' }, { label: 'Male' }, { label: 'Skip' }], 'sex'),
+      activityOptions: this.pills(activities, 'activity'),
+      activityTitle: activities[s.activity].label,
+      activityDesc: activities[s.activity].desc,
+      goalOptions: this.seg([{ label: 'Lose' }, { label: 'Maintain' }, { label: 'Gain' }], 'goal'),
+      showPace: s.goal !== 1,
+      paceOptions: this.pills(paceList, 'pace').map((o, i) => ({ ...o, on: paceIdx === i, bg: paceIdx === i ? 'var(--accent)' : 'var(--glass)', color: paceIdx === i ? 'var(--accent-ink)' : 'var(--ink)', subColor: paceIdx === i ? 'var(--accent-ink)' : 'var(--ink2)', shadow: paceIdx === i ? 'inset 0 1px 0 rgba(255,255,255,.45), 0 8px 24px var(--accent-glow)' : 'inset 0 0 0 1px var(--stroke)' })),
+      paceNote: paceNotes[s.goal],
+      personaOptions: this.pills([{ label: 'Gentle' }, { label: 'Balanced' }, { label: 'Straight-talking' }], 'persona'),
+      lengthOptions: this.seg(lengths, 'length'),
+      langOptions: this.seg([{ label: 'English' }, { label: 'Taglish' }, { label: 'Match me' }], 'lang'),
+      voicePreview: bank[s.persona][s.length],
+      whyOpen: s.whyOpen,
+      whyRotate: s.whyOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+      toggleWhy: () => this.setState({ whyOpen: !s.whyOpen }),
+      adjustments: [
+        { icon: 'ph ph-gauge', name: 'Weekly pace', rule: 'Loss is kept under 1 % of body weight a week; gain under ½ %.', status: 'Gentle, ¼ %' },
+        { icon: 'ph ph-arrows-in-line-vertical', name: 'Deficit cap', rule: 'Never more than 25 % below what your body uses.', status: 'Not needed' },
+        { icon: 'ph ph-lock-simple', name: 'Calorie floor', rule: '1,200 kcal a day for women, 1,500 for men.', status: 'Clear by 280' },
+        { icon: 'ph ph-shield-check', name: 'Protein-and-fat floor', rule: 'Room for 136 g protein and 61 g fat is protected first.', status: 'Kept' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

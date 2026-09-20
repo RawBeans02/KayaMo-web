@@ -281,6 +281,7 @@ export function DesktopShell({
 
         {toast ? (
           <GlassToast
+            key={toast.text}
             text={toast.text}
             onUndo={toast.undo}
             onDone={() => setToast(null)}

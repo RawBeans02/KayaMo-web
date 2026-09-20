@@ -29,6 +29,8 @@ describe('the persona cannot drift silently', () => {
     // 1 was the same wording under the name Kai, before the rename to Lis.
     // 2 was that wording renamed — still eight prohibitions and one tone clause.
     3: '433c0eaae6b8e5980325604e3da0bad5c7b3570c4e0ecd3ec90fd23ab0351439',
+    // 4: plain speech. Say what is, not what is not; no irony (owner, 2026-09-20).
+    4: '15c36de350a32416e1cb45e59832e256042e8ecabe36fd2b8ef77dc57285bcbd',
   };
 
   it('matches the fingerprint recorded for its version', () => {
