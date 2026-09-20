@@ -93,3 +93,4 @@ export type {
 } from './coco-router';
 export { evaluateCocoSafety, normaliseForSafety } from './safety';
 export { CONTEXT_LIMITS, truncateWords } from './context-limits';
+export { findBannedCopy, BANNED_COPY_PATTERNS, type BannedCopyHit } from './banned-copy';

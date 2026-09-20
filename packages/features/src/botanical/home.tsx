@@ -9,11 +9,18 @@ import {
   setLocalTaskCompleted,
   type LocalTask,
   useLiveFoodEntries,
+  useLiveFoodLedger,
 } from '@kayamo/offline';
-import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { createBrowserSupabase, listEffectiveNutritionTargets } from '@kayamo/db';
+import { MEAL_SLOTS } from '@kayamo/food/quick-log';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useDeskClock } from '../desk/use-desk-clock';
+import { pickHeadlineTarget, type TargetRow } from '../food/week-headline';
 import { minutesToLabel, weekDates } from '../todo/timetable';
+import { ProgressRing } from './charts';
+import { homeGreeting, streakLabel } from './greeting';
 import { BotanicalIcon } from './icons';
+import { currentRun, shiftDay } from './progress-model';
 import { useRecords } from './use-records';
 import { TaskEditor } from './task-editor';
 import styles from './botanical.module.css';
@@ -25,8 +32,23 @@ function windowStart(date: string) {
   return start.toISOString().slice(0, 10);
 }
 
+/** The person's local hour, from the same clock the logical day comes from. */
+function localHour(nowMs: number, timeZone: string): number {
+  try {
+    const parts = new Intl.DateTimeFormat('en-PH', {
+      hour: 'numeric',
+      hourCycle: 'h23',
+      timeZone,
+    }).formatToParts(new Date(nowMs));
+    return Number(parts.find((part) => part.type === 'hour')?.value ?? 12);
+  } catch {
+    return new Date(nowMs).getHours();
+  }
+}
+
 export function BotanicalHome({ userId }: { userId: string }) {
-  const { clock, today } = useDeskClock(userId);
+  const { clock, today, nowMs } = useDeskClock(userId);
+  const guest = userId.startsWith('guest-');
   const [selected, setSelected] = useState<string | null>(null);
   const [editing, setEditing] = useState<LocalTask | null>(null);
   const date = selected ?? today;
@@ -41,6 +63,36 @@ export function BotanicalHome({ userId }: { userId: string }) {
   }, [userId, date]);
   const { data, error, refresh } = useRecords(load);
   const entries = useLiveFoodEntries(userId, date);
+  const ledger = useLiveFoodLedger(userId);
+
+  /* ── What Lis knows about the person: a name and a target, both optional.
+        Guests have neither; a signed-in person has them once onboarding and
+        the companion profile are filled in. Nothing here blocks the page. ── */
+  const [targetRows, setTargetRows] = useState<TargetRow[]>([]);
+  const [displayName, setDisplayName] = useState<string | null>(null);
+  useEffect(() => {
+    if (guest) return;
+    let cancelled = false;
+    void listEffectiveNutritionTargets(createBrowserSupabase(), { userId, date: today })
+      .then((rows) => {
+        if (!cancelled) setTargetRows(rows);
+      })
+      .catch(() => {
+        if (!cancelled) setTargetRows([]);
+      });
+    void fetch('/api/mus/profile')
+      .then((response) => (response.ok ? response.json() : null))
+      .then((body: { display_name?: string | null } | null) => {
+        if (!cancelled) setDisplayName(body?.display_name?.trim() || null);
+      })
+      .catch(() => {
+        if (!cancelled) setDisplayName(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [guest, today, userId]);
+  const targetKcal = useMemo(() => pickHeadlineTarget(targetRows)?.kcal ?? null, [targetRows]);
   const [draft, setDraft] = useState('');
   const [draftReady, setDraftReady] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -101,6 +153,37 @@ export function BotanicalHome({ userId }: { userId: string }) {
   /* ── Glance figures, read straight from confirmed records ────────── */
   const kcal = Math.round(entries.reduce((sum, row) => sum + (Number(row.kcal) || 0), 0));
   const mealsLogged = new Set(entries.map((row) => row.meal_slot)).size;
+  const loggedDates = useMemo(
+    () => new Set(ledger.map((row) => String(row.logical_date))),
+    [ledger],
+  );
+  const yesterday = shiftDay(today, -1);
+  const yesterdayKcal = useMemo(() => {
+    const rows = ledger.filter((row) => String(row.logical_date) === yesterday);
+    return rows.length
+      ? Math.round(rows.reduce((sum, row) => sum + (Number(row.kcal) || 0), 0))
+      : null;
+  }, [ledger, yesterday]);
+  const run = currentRun(loggedDates, today);
+  const greeting =
+    date === today
+      ? homeGreeting({
+          name: displayName,
+          today,
+          hour: localHour(nowMs, clock.timeZone),
+          todayKcal: kcal,
+          mealsLogged,
+          targetKcal,
+          loggedDates,
+          yesterdayKcal,
+        })
+      : null;
+  const kcalFraction = targetKcal ? Math.min(1, kcal / targetKcal) : 0;
+  const kcalText = entries.length
+    ? targetKcal
+      ? kcal.toLocaleString('en-PH') + ' of ' + targetKcal.toLocaleString('en-PH') + ' kcal'
+      : kcal.toLocaleString('en-PH') + ' kcal logged, no target yet'
+    : 'Nothing logged yet';
   const from = windowStart(date);
   const activeDays = new Set(
     (data?.workouts ?? [])
@@ -173,6 +256,7 @@ export function BotanicalHome({ userId }: { userId: string }) {
               year: 'numeric',
               timeZone: 'UTC',
             })}
+            {greeting?.dateNote ? ' · ' + greeting.dateNote : ''}
           </p>
           <h1 id="home-title" className="kgTitle">
             Home
@@ -185,6 +269,20 @@ export function BotanicalHome({ userId }: { userId: string }) {
           Ask Lis
         </a>
       </header>
+      {greeting ? (
+        /* Lis speaks first, once a day, from the person's own records only:
+           no model call, no memory, and never about a missed day. */
+        <div className={styles.greeting} data-home-greeting={greeting.kind}>
+          <img
+            className={styles.greetingAvatar}
+            src="/botanical/lis-bee.webp"
+            alt=""
+            width={48}
+            height={48}
+          />
+          <p className={styles.greetingText}>{greeting.text}</p>
+        </div>
+      ) : null}
       <div className={`${styles.week} kgSurface`} role="group" aria-label="Choose a day">
         {weekDates(date).map((day) => (
           <button
@@ -242,6 +340,69 @@ export function BotanicalHome({ userId }: { userId: string }) {
           {notice}
         </p>
       )}
+      {/* Readings: the ring only ever fills, the counter only ever adds, and
+          the streak names a run, never a debt (the evidence brief's "additive,
+          never depleting" rule). */}
+      <div className={styles.readings} data-home-readings="">
+        <a className={`${styles.reading} ${styles.readingRing} kgSurface`} href="/calories">
+          <span
+            className={styles.ringWrap}
+            role="meter"
+            aria-label="Calories today"
+            aria-valuemin={0}
+            aria-valuemax={targetKcal ?? undefined}
+            aria-valuenow={kcal}
+            aria-valuetext={kcalText}
+          >
+            <ProgressRing fraction={kcalFraction} size={72} />
+            <span className={`${styles.ringValue} kgNum`}>
+              {targetKcal ? Math.round(kcalFraction * 100) + '%' : '—'}
+            </span>
+          </span>
+          <span className={styles.readingBody}>
+            <span className={styles.readingLabel}>Calories</span>
+            <span className={`${styles.readingNum} kgNum`}>
+              {kcal.toLocaleString('en-PH')}
+              <span className={styles.readingOf}>
+                {targetKcal ? 'of ' + targetKcal.toLocaleString('en-PH') : 'kcal'}
+              </span>
+            </span>
+            <span className={styles.readingMeta}>
+              {targetKcal
+                ? entries.length
+                  ? 'From your confirmed entries'
+                  : 'Nothing logged yet'
+                : 'No target yet · one comes with your profile'}
+            </span>
+          </span>
+        </a>
+        <section className={`${styles.reading} kgSurface`} aria-label="Meals logged">
+          <span className={styles.readingLabel}>Meals logged</span>
+          <span className={`${styles.readingNum} kgNum`}>
+            {mealsLogged}
+            <span className={styles.readingOf}>of {MEAL_SLOTS.length}</span>
+          </span>
+          <span className={styles.readingMeta}>
+            {mealsLogged === 0
+              ? 'First meal whenever you like'
+              : mealsLogged >= MEAL_SLOTS.length
+                ? 'Every slot has something in it'
+                : MEAL_SLOTS.length - mealsLogged + ' still to come'}
+          </span>
+        </section>
+        <section className={`${styles.reading} kgSurface`} aria-label="Streak">
+          <span className={styles.readingLabel}>Streak</span>
+          <span
+            className={styles.streakChip}
+            data-live={run > 0 ? 'true' : 'false'}
+            data-home-streak={run}
+          >
+            <span className={styles.streakDot} aria-hidden="true" />
+            <span>{streakLabel(run, loggedDates.size > 0)}</span>
+          </span>
+          <span className={styles.readingMeta}>Days with something logged</span>
+        </section>
+      </div>
       <div className={styles.grid}>
         <section
           className={`${styles.panel} kgSurface`}
@@ -450,30 +611,6 @@ export function BotanicalHome({ userId }: { userId: string }) {
               </button>
             </div>
           </section>
-          <a className={`${styles.glance} kgSurface`} href="/calories">
-            <span className={styles.glanceHead}>
-              <BotanicalIcon name="food" size={20} />
-              Energy
-              <span className={styles.caret}>
-                <BotanicalIcon name="next" size={18} />
-              </span>
-            </span>
-            <span className={`${styles.glanceNum} kgNum`}>
-              {kcal.toLocaleString('en-PH')}
-              <span className={styles.glanceUnit}>kcal logged</span>
-            </span>
-            <span className={styles.bar} aria-hidden="true">
-              <span
-                className={styles.barFill}
-                style={{ width: Math.min(100, (mealsLogged / 4) * 100) + '%' }}
-              />
-            </span>
-            <span className={styles.glanceMeta}>
-              {entries.length
-                ? mealsLogged + ' of 4 meals logged'
-                : 'Nothing logged yet'}
-            </span>
-          </a>
           <section className={`${styles.glance} kgSurface`} aria-label="Movement">
             <span className={styles.glanceHead}>
               <BotanicalIcon name="workout" size={20} />

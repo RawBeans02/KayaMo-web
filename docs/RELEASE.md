@@ -245,6 +245,47 @@ decision on consent), the Home mobile bundle (467 KB; split the Lis thread and
 the palette out of the first load), a retention schedule, a screen-reader pass
 by a person.
 
+## Phase 9 — onboarding, a human Lis, meters and counters (in progress)
+
+Plan and prompts: `docs/research/2026-09-20-phase-9-prompts.md`. Inputs: the
+evidence brief `docs/research/2026-09-20-onboarding-and-lis-research.md` and the
+Claude design export under `docs/design/2026-09-20-phase-9/` (onboarding, Home
+greeting, meters, tokens). Branch `phase-9/home-greeting` on top of Phase 7.
+
+Shipped in this slice, from `KayaMo Home Greeting.dc.html` (2026-09-20):
+
+- **Lis speaks first on Home.** `packages/features/src/botanical/greeting.ts`
+  is a pure function over the person's own records (today's entries, the
+  ledger of logged days, yesterday's total, the headline target, the local
+  hour, the companion display name). Four variants: first day, quiet day,
+  normal day, back after a gap of more than three days. No model call, one
+  line, never about a missed day; every variant is unit-tested against the
+  banned-copy list. It shows only on today, under the date line, which gains
+  "· your first day" on the first day.
+- **Readings row** replaces the Energy glance: a calorie ring (`role="meter"`,
+  `aria-valuetext` in words, fills and never depletes; "—" and "No target yet
+  · one comes with your profile" until onboarding writes a target), a meals
+  counter ("1 of 4", the app's four slots, not the design's three), and a
+  streak chip from `currentRun` in `progress-model.ts` ("Starts with today" /
+  "Picks up today" / "3 days"; the run tolerates today being empty). All three
+  read from the same offline records Home already uses; the target comes
+  from `listEffectiveNutritionTargets` for signed-in people only.
+- **Lis's avatar on Home is the new bee** (`public/botanical/lis-bee.webp`,
+  160 px, from the owner's image in the design export). **Owner call
+  recorded, not made:** the Lis surface and rail still draw the four seed
+  faces in `public/botanical/mus-*.webp`. Two characters are one too many;
+  either the bee gets its four expressions and replaces the seed, or the
+  greeting switches to the seed's neutral face. Until then the greeting is
+  the only place the bee appears.
+- Tests: `greeting.test.ts` (11), `e2e/home-greeting.spec.ts` (first day,
+  then one logged food turns the greeting into a reading and moves the
+  counter and the streak), three engines.
+
+Still to come in Phase 9, in order: the profile and target write path, the
+onboarding screens, Lis preset and verbosity, the Lis tool loop (food lookup,
+profile proposal, goal with a first step), the meters system on Food, Goals and
+Grove, and the hide-counters setting the evidence brief asks for.
+
 ## Design work deferred out of Phase 5
 
 - ~~Home's deep links into Gym and Todos and the log sheet's Workout kind~~

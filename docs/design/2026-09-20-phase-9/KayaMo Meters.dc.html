@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#d9ddd9;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Manrope',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+a{color:inherit}a:hover{color:inherit}
+[data-theme="light"]{--bg0:#eef3ee;--glow1:#c6f2d4;--glow2:#d6e6ff;--glass:rgba(255,255,255,.52);--glass-strong:rgba(255,255,255,.78);--stroke:rgba(255,255,255,.9);--stroke2:rgba(10,20,12,.06);--field:rgba(255,255,255,.7);--track:rgba(10,20,12,.08);--ink:#0b0f0c;--ink2:rgba(11,15,12,.62);--ink3:rgba(11,15,12,.4);--accent:#30d158;--accent-text:#157a34;--accent-ink:#04120a;--accent-glow:#30d15866;--danger:#ff453a;--danger-text:#c9271b;--shadow:0 12px 36px rgba(20,40,28,.12);--shadow-deep:0 18px 48px rgba(20,40,28,.2);color-scheme:light}
+[data-theme="dark"]{--bg0:#0a0d0b;--glow1:#0f3a24;--glow2:#0e1c30;--glass:rgba(255,255,255,.07);--glass-strong:rgba(255,255,255,.12);--stroke:rgba(255,255,255,.22);--stroke2:rgba(255,255,255,.07);--field:rgba(255,255,255,.08);--track:rgba(255,255,255,.1);--ink:#f5f7f5;--ink2:rgba(245,247,245,.66);--ink3:rgba(245,247,245,.42);--accent:#30d158;--accent-text:#3ade63;--accent-ink:#04120a;--accent-glow:#30d15855;--danger:#ff453a;--danger-text:#ffa9a2;--shadow:0 14px 40px rgba(0,0,0,.45);--shadow-deep:0 20px 50px rgba(0,0,0,.6);color-scheme:dark}
+</style>
+</helmet>
+
+<section style="display:flex;gap:40px;padding:40px;align-items:flex-start">
+<sc-for list="{{ themes }}" as="t" hint-placeholder-count="2">
+<div data-theme="{{ t }}" data-screen-label="meters {{ t }}" style="position:relative;overflow:hidden;flex:none;width:1440px;box-sizing:border-box;padding:56px 64px 64px;color:var(--ink);background-color:var(--bg0);background-image:radial-gradient(40% 50% at 10% 0%, var(--glow1) 0%, transparent 70%),radial-gradient(40% 40% at 95% 20%, var(--glow2) 0%, transparent 70%),radial-gradient(60% 40% at 60% 110%, var(--glow1) 0%, transparent 70%)">
+
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;gap:24px">
+    <div>
+      <p style="margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-text)">KayaMo · Meters and counters</p>
+      <h1 style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1">Four ways to show a number</h1>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button onClick="{{ replay }}" style="min-height:44px;padding:0 18px;border:0;border-radius:999px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke);font-size:14px;font-weight:600;cursor:pointer;color:inherit">Replay motion</button>
+      <p style="margin:0;font-size:14px;color:var(--ink2)">{{ t }} · over target stays in accent and ink, never danger</p>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:200px repeat(4,1fr) 1fr;gap:14px;align-items:stretch">
+    <div></div>
+    <sc-for list="{{ stateHeads }}" as="h" hint-placeholder-count="5">
+      <p style="margin:0;padding:0 4px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)">{{ h }}</p>
+    </sc-for>
+
+    <!-- Percent ring -->
+    <div style="display:grid;gap:8px;align-content:start;padding:20px 4px">
+      <p style="margin:0;font-size:17px;font-weight:700">Percent ring</p>
+      <p style="margin:0;font-size:13px;line-height:1.45;color:var(--ink2)">Track in track, progress in accent. Past 100 % a second lap draws in ink at 35 %, thinner.</p>
+    </div>
+    <sc-for list="{{ rings }}" as="r" hint-placeholder-count="5">
+      <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:20px;display:grid;gap:12px;justify-items:center">
+        <div role="meter" aria-label="{{ r.aria }}" aria-valuemin="0" aria-valuemax="{{ r.target }}" aria-valuenow="{{ r.value }}" aria-valuetext="{{ r.text }}" style="position:relative;width:112px;height:112px">
+          <svg viewBox="0 0 112 112" width="112" height="112" aria-hidden="true" style="transform:rotate(-90deg);display:block">
+            <circle cx="56" cy="56" r="48" fill="none" stroke="var(--track)" stroke-width="10"></circle>
+            <circle cx="56" cy="56" r="48" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="301.6" stroke-dashoffset="{{ r.dash }}" style="transition:{{ r.transition }}"></circle>
+            <circle cx="56" cy="56" r="48" fill="none" stroke="var(--ink)" stroke-opacity=".35" stroke-width="5" stroke-linecap="round" stroke-dasharray="301.6" stroke-dashoffset="{{ r.overDash }}" style="transition:{{ r.transition }}"></circle>
+          </svg>
+          <div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center">
+            <span style="font-family:'Manrope',system-ui,sans-serif;font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1">{{ r.pct }}</span>
+          </div>
+        </div>
+        <span style="font-size:13px;color:var(--ink2);text-align:center;line-height:1.4">{{ r.text }}</span>
+      </div>
+    </sc-for>
+
+    <!-- x of y counter -->
+    <div style="display:grid;gap:8px;align-content:start;padding:20px 4px">
+      <p style="margin:0;font-size:17px;font-weight:700">“x of y” counter</p>
+      <p style="margin:0;font-size:13px;line-height:1.45;color:var(--ink2)">Current in ink, target in ink2. Over target the extra reads as a plain fact.</p>
+    </div>
+    <sc-for list="{{ counters }}" as="c" hint-placeholder-count="5">
+      <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:20px;display:grid;gap:6px;align-content:center">
+        <span style="font-size:13px;font-weight:600;color:var(--ink2)">{{ c.label }}</span>
+        <div aria-label="{{ c.aria }}" style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap">
+          <span style="font-family:'Manrope',system-ui,sans-serif;font-size:44px;font-weight:800;letter-spacing:-.035em;line-height:1">{{ c.value }}</span>
+          <span style="font-size:17px;font-weight:600;color:var(--ink2)">of {{ c.target }}</span>
+        </div>
+        <span style="font-size:13px;color:var(--ink2)">{{ c.note }}</span>
+      </div>
+    </sc-for>
+
+    <!-- Horizontal meter -->
+    <div style="display:grid;gap:8px;align-content:start;padding:20px 4px">
+      <p style="margin:0;font-size:17px;font-weight:700">Horizontal meter</p>
+      <p style="margin:0;font-size:13px;line-height:1.45;color:var(--ink2)">Scale runs to 125 % of target so the tick has room on both sides. Tick is 2 px ink.</p>
+    </div>
+    <sc-for list="{{ bars }}" as="b" hint-placeholder-count="5">
+      <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:20px;display:grid;gap:12px;align-content:center">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:13px;font-weight:600;color:var(--ink2)">{{ b.label }}</span><span style="font-size:15px;font-weight:700">{{ b.reading }}</span></div>
+        <div role="meter" aria-label="{{ b.aria }}" aria-valuemin="0" aria-valuemax="{{ b.target }}" aria-valuenow="{{ b.value }}" aria-valuetext="{{ b.text }}" style="position:relative;height:24px">
+          <div style="position:absolute;left:0;right:0;top:8px;height:8px;border-radius:999px;background:var(--track)"></div>
+          <div style="position:absolute;left:0;top:8px;height:8px;border-radius:999px;background:var(--accent);width:{{ b.fill }};transition:{{ b.transition }}"></div>
+          <div aria-hidden="true" style="position:absolute;left:80%;top:0;width:2px;height:24px;margin-left:-1px;border-radius:1px;background:var(--ink)"></div>
+        </div>
+        <span style="font-size:13px;color:var(--ink2)">{{ b.text }}</span>
+      </div>
+    </sc-for>
+
+    <!-- Streak chip -->
+    <div style="display:grid;gap:8px;align-content:start;padding:20px 4px">
+      <p style="margin:0;font-size:17px;font-weight:700">Streak chip</p>
+      <p style="margin:0;font-size:13px;line-height:1.45;color:var(--ink2)">Dot fills in accent once a streak exists. Zero and a return read as an invitation, not a reset.</p>
+    </div>
+    <sc-for list="{{ chips }}" as="s" hint-placeholder-count="5">
+      <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:20px;display:grid;gap:10px;align-content:center;justify-items:start">
+        <div aria-label="{{ s.aria }}" style="display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 14px 0 12px;border-radius:999px;background:var(--glass-strong);box-shadow:inset 0 0 0 1px var(--stroke);font-size:14px;font-weight:600">
+          <span aria-hidden="true" style="width:8px;height:8px;border-radius:999px;background:{{ s.dot }};box-shadow:{{ s.dotRing }}"></span>
+          <span>{{ s.text }}</span>
+        </div>
+        <span style="font-size:13px;color:var(--ink2)">{{ s.note }}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:32px">
+    <sc-for list="{{ a11y }}" as="n" hint-placeholder-count="4">
+      <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:20px;display:grid;gap:10px;align-content:start">
+        <p style="margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-text)">Accessibility · {{ n.name }}</p>
+        <div style="display:grid;gap:2px"><span style="font-size:13px;font-weight:700">Text alternative</span><span style="font-size:13px;line-height:1.45;color:var(--ink2)">{{ n.alt }}</span></div>
+        <div style="display:grid;gap:2px"><span style="font-size:13px;font-weight:700">Minimum contrast</span><span style="font-size:13px;line-height:1.45;color:var(--ink2)">{{ n.contrast }}</span></div>
+        <div style="display:grid;gap:2px"><span style="font-size:13px;font-weight:700">Colour is never the only signal</span><span style="font-size:13px;line-height:1.45;color:var(--ink2)">{{ n.signal }}</span></div>
+        <div style="display:grid;gap:2px"><span style="font-size:13px;font-weight:700">Reduced motion</span><span style="font-size:13px;line-height:1.45;color:var(--ink2)">{{ n.motion }}</span></div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</sc-for>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { live: false, t: 0 };
+  componentDidMount() { this.play(); }
+  componentWillUnmount() { cancelAnimationFrame(this.raf); clearTimeout(this.timer); }
+  play() {
+    cancelAnimationFrame(this.raf); clearTimeout(this.timer);
+    this.setState({ live: false, t: 0 });
+    this.timer = setTimeout(() => {
+      this.setState({ live: true });
+      const start = performance.now(), dur = 900;
+      const step = (now) => {
+        const p = Math.min(1, (now - start) / dur);
+        this.setState({ t: 1 - Math.pow(1 - p, 3) });
+        if (p < 1) this.raf = requestAnimationFrame(step);
+      };
+      this.raf = requestAnimationFrame(step);
+    }, 60);
+  }
+  renderVals() {
+    const { live, t } = this.state;
+    const C = 301.6, target = 1480, k = live ? t : 0;
+    const fmt = (n) => n.toLocaleString('en-PH');
+    const states = [{ key: 'zero', value: 0 }, { key: 'partial', value: 640 }, { key: 'at', value: 1480 }, { key: 'over', value: 1620 }];
+    const trans = 'stroke-dashoffset 900ms cubic-bezier(.22,1,.36,1)';
+    const kcalText = (v) => v === 0 ? 'Nothing logged yet' : v > target ? `${fmt(v)} of ${fmt(target)} · ${fmt(v - target)} over` : v === target ? `${fmt(target)} of ${fmt(target)} · on target` : `${fmt(v)} of ${fmt(target)} kcal`;
+    const ring = (s, motion) => {
+      const v = motion ? Math.round(s.value * k) : s.value;
+      const frac = Math.min(1, v / target), over = Math.max(0, v / target - 1);
+      return { target, value: s.value, pct: `${Math.round((v / target) * 100)}%`, text: kcalText(s.value), aria: 'Calories today', dash: motion && !live ? C : C * (1 - frac), overDash: motion && !live ? C : C * (1 - over), transition: motion ? trans : 'none' };
+    };
+    const counter = (s, motion) => {
+      const m = { zero: [0, 3, 'First meal whenever you like'], partial: [1, 3, 'Lunch and hapunan still to come'], at: [3, 3, 'All three, logged'], over: [4, 3, 'One extra, a meryenda'] }[s.key];
+      return { label: 'Meals logged', value: motion ? Math.round(m[0] * k) : m[0], target: m[1], note: m[2], aria: `${m[0]} of ${m[1]} meals logged` };
+    };
+    const bar = (s, motion) => {
+      const v = motion ? Math.round(s.value * k) : s.value;
+      return { label: 'Calories today', reading: `${fmt(v)} kcal`, target, value: s.value, text: s.value === 0 ? 'Empty so far, and that is fine' : kcalText(s.value), aria: 'Calories today against target', fill: `${Math.min(100, (v / (target * 1.25)) * 100)}%`, transition: motion ? 'width 900ms cubic-bezier(.22,1,.36,1)' : 'none' };
+    };
+    const chip = (s) => {
+      const m = { zero: ['Starts with today', 'No streak yet · zero is an invitation', false], partial: ['3 days', 'Three logged days in a row', true], at: ['7 days · a full week', 'The milestone you chose', true], over: ['12 days', 'Past the milestone; the chip just keeps counting', true] }[s.key];
+      return { text: m[0], note: m[1], aria: `Streak: ${m[0]}`, dot: m[2] ? 'var(--accent)' : 'transparent', dotRing: m[2] ? 'none' : 'inset 0 0 0 1.5px var(--ink3)' };
+    };
+    const withRm = (fn) => [...states.map((s) => fn(s, true)), fn(states[1], false)];
+    return {
+      themes: ['light', 'dark'],
+      replay: () => this.play(),
+      stateHeads: ['Zero', 'Partial', 'At target', 'Over target', 'Reduced motion · no sweep, no count-up'],
+      rings: withRm(ring),
+      counters: withRm(counter),
+      bars: withRm(bar),
+      chips: withRm(chip),
+      a11y: [
+        { name: 'Percent ring', alt: 'role="meter" with aria-valuenow / aria-valuemax and aria-valuetext reading “640 of 1,480 kcal”; the SVG is aria-hidden.', contrast: 'Centre numeral is ink on glass, ≥ 7:1. Accent arc against track ≥ 3:1 (non-text). Over-lap in ink at 35 % opacity still clears 3:1 on both grounds.', signal: 'Percentage and the “x of y” caption carry the value; the over-target lap is also thinner, so it reads without colour.', motion: 'Sweep is a single 900 ms transition; under prefers-reduced-motion the arc renders at its final offset with no transition.' },
+        { name: '“x of y” counter', alt: 'A single text node, “1 of 3”, so screen readers read it as written; the group carries aria-label with the unit (“meals logged”).', contrast: 'Current value ink ≥ 7:1; “of 3” and the note in ink2 ≥ 4.5:1 on glass over the lightest and darkest wash.', signal: 'No colour change between states. The note sentence names the state (“One extra, a meryenda”).', motion: 'Count-up runs 900 ms from 0; reduced motion shows the final number immediately.' },
+        { name: 'Horizontal meter', alt: 'role="meter" with min / max / now and aria-valuetext; the tick is aria-hidden because the text already says the target.', contrast: 'Accent fill on track ≥ 3:1. Tick is 2 px solid ink, ≥ 7:1, so it survives forced-colours.', signal: 'The tick is a shape, not a colour; the reading and the sentence repeat the numbers. Over target the fill simply crosses the tick.', motion: 'Fill width transitions 900 ms; reduced motion sets width directly.' },
+        { name: 'Streak chip', alt: 'aria-label “Streak: 3 days”; the dot is aria-hidden decoration.', contrast: 'Text ink on glass-strong ≥ 7:1. Filled dot accent vs surface ≥ 3:1; the empty dot is a 1.5 px ink3 ring.', signal: 'Dot fill and text change together; zero reads “Starts with today”, never “0” or “broken”.', motion: 'No motion at any state. Nothing to reduce.' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

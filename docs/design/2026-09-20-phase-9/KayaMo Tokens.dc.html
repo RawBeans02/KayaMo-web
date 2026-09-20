@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#d9ddd9;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Manrope',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+a{color:inherit}a:hover{color:inherit}
+[data-theme="light"]{--bg0:#eef3ee;--glow1:#c6f2d4;--glow2:#d6e6ff;--glass:rgba(255,255,255,.52);--glass-strong:rgba(255,255,255,.78);--stroke:rgba(255,255,255,.9);--stroke2:rgba(10,20,12,.06);--field:rgba(255,255,255,.7);--track:rgba(10,20,12,.08);--ink:#0b0f0c;--ink2:rgba(11,15,12,.62);--ink3:rgba(11,15,12,.4);--accent:#30d158;--accent-text:#157a34;--accent-ink:#04120a;--accent-glow:#30d15866;--danger:#ff453a;--danger-text:#c9271b;--shadow:0 12px 36px rgba(20,40,28,.12);--shadow-deep:0 18px 48px rgba(20,40,28,.2);color-scheme:light}
+[data-theme="dark"]{--bg0:#0a0d0b;--glow1:#0f3a24;--glow2:#0e1c30;--glass:rgba(255,255,255,.07);--glass-strong:rgba(255,255,255,.12);--stroke:rgba(255,255,255,.22);--stroke2:rgba(255,255,255,.07);--field:rgba(255,255,255,.08);--track:rgba(255,255,255,.1);--ink:#f5f7f5;--ink2:rgba(245,247,245,.66);--ink3:rgba(245,247,245,.42);--accent:#30d158;--accent-text:#3ade63;--accent-ink:#04120a;--accent-glow:#30d15855;--danger:#ff453a;--danger-text:#ffa9a2;--shadow:0 14px 40px rgba(0,0,0,.45);--shadow-deep:0 20px 50px rgba(0,0,0,.6);color-scheme:dark}
+</style>
+</helmet>
+
+<section style="display:flex;gap:40px;padding:40px;align-items:flex-start">
+<sc-for list="{{ themes }}" as="t" hint-placeholder-count="2">
+<div data-theme="{{ t }}" style="position:relative;overflow:hidden;flex:none;width:1440px;min-height:900px;padding:56px 64px 64px;box-sizing:border-box;color:var(--ink);background-color:var(--bg0);background-image:radial-gradient(40% 50% at 10% 0%, var(--glow1) 0%, transparent 70%),radial-gradient(40% 40% at 95% 20%, var(--glow2) 0%, transparent 70%),radial-gradient(60% 40% at 60% 110%, var(--glow1) 0%, transparent 70%)">
+
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:36px">
+    <div>
+      <p style="margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-text)">KayaMo · Liquid Glass</p>
+      <h1 style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1">Token sheet</h1>
+    </div>
+    <p style="margin:0;font-size:14px;color:var(--ink2)">{{ t }} · values from packages/ui/src/glass.css</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:20px;align-items:start">
+
+    <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:24px 24px 20px">
+      <p style="margin:0 0 4px;font-size:17px;font-weight:700">Colour, by role</p>
+      <p style="margin:0 0 18px;font-size:13px;color:var(--ink2)">Components reference the role. Never a hex.</p>
+      <div style="display:grid;gap:10px">
+        <sc-for list="{{ colors }}" as="c" hint-placeholder-count="12">
+          <div style="display:grid;grid-template-columns:44px 132px 1fr auto;gap:14px;align-items:center;min-height:44px">
+            <div style="width:44px;height:44px;border-radius:14px;background:var(--bg0);box-shadow:inset 0 0 0 1px var(--stroke2);position:relative;overflow:hidden">
+              <div style="position:absolute;inset:0;background:{{ c.swatch }}"></div>
+            </div>
+            <div style="font-size:15px;font-weight:700">{{ c.name }}</div>
+            <div style="font-size:13px;color:var(--ink2)">{{ c.use }}</div>
+            <div style="font-size:12px;color:var(--ink3);font-family:ui-monospace,SFMono-Regular,Menlo,monospace">{{ c.value }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <p style="margin:18px 0 0;padding-top:14px;box-shadow:inset 0 1px 0 var(--stroke2);font-size:13px;line-height:1.5;color:var(--ink2)"><span style="color:var(--ink);font-weight:700">danger</span> is reserved for genuine safety: a target under the calorie floor, a wellbeing concern. A missed day, an over-target day and an empty state are all <span style="color:var(--ink);font-weight:700">ink2</span>.</p>
+    </div>
+
+    <div style="display:grid;gap:20px">
+      <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:24px">
+        <p style="margin:0 0 4px;font-size:17px;font-weight:700">Type</p>
+        <p style="margin:0 0 18px;font-size:13px;color:var(--ink2)">SF system stack for UI. Manrope 800 for titles and every big numeral.</p>
+        <div style="display:grid;gap:16px">
+          <div><div style="font-family:'Manrope',system-ui,sans-serif;font-size:76px;font-weight:800;letter-spacing:-.035em;line-height:1">1,480</div><div style="font-size:12px;color:var(--ink3);margin-top:6px">hero numeral · Manrope 800 · 76 / 1 · −0.035em</div></div>
+          <div><div style="font-family:'Manrope',system-ui,sans-serif;font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1">Title</div><div style="font-size:12px;color:var(--ink3);margin-top:6px">title · Manrope 800 · 40 desktop, 34 phone · −0.03em</div></div>
+          <div><div style="font-size:22px;font-weight:600;letter-spacing:-.01em;line-height:1.25">Lis speaks at this size on Home.</div><div style="font-size:12px;color:var(--ink3);margin-top:6px">headline · SF 600 · 22 / 1.25</div></div>
+          <div><div style="font-size:17px;line-height:1.45">Body large, for Lis on onboarding and fields.</div><div style="font-size:12px;color:var(--ink3);margin-top:6px">body-lg · SF 400 · 17 / 1.45</div></div>
+          <div><div style="font-size:15px;font-weight:600">Control label · 15 / 600</div><div style="font-size:12px;color:var(--ink3);margin-top:6px">buttons, nav, pills</div></div>
+          <div><div style="font-size:13px;color:var(--ink2)">Meta · 13 · ink2</div></div>
+          <div><div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-text)">Eyebrow · 12 · 0.08em</div></div>
+        </div>
+      </div>
+
+      <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:24px">
+        <p style="margin:0 0 4px;font-size:17px;font-weight:700">Material tiers</p>
+        <p style="margin:0 0 16px;font-size:13px;color:var(--ink2)">Heavier means it floats above. Pick by what a surface does.</p>
+        <div style="display:grid;gap:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:18px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2)"><span style="font-size:14px;font-weight:600">surface</span><span style="font-size:12px;color:var(--ink2)">content in the page · glass · no blur</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:18px;background:var(--glass);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow)"><span style="font-size:14px;font-weight:600">panel</span><span style="font-size:12px;color:var(--ink2)">chrome over content · glass · blur 24</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:18px;background:var(--glass-strong);backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow-deep)"><span style="font-size:14px;font-weight:600">heavy</span><span style="font-size:12px;color:var(--ink2)">sheet, tab bar · glass-strong · blur 40</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;gap:20px">
+      <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:24px">
+        <p style="margin:0 0 4px;font-size:17px;font-weight:700">Spacing</p>
+        <p style="margin:0 0 16px;font-size:13px;color:var(--ink2)">4-base. Gap between siblings, never margins.</p>
+        <div style="display:grid;gap:8px">
+          <sc-for list="{{ spacing }}" as="s" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:36px 1fr 150px;gap:12px;align-items:center;min-height:24px">
+              <span style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">{{ s.px }}</span>
+              <div style="height:12px;border-radius:999px;background:var(--accent);width:{{ s.px }}px"></div>
+              <span style="font-size:12px;color:var(--ink2)">{{ s.use }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:24px">
+        <p style="margin:0 0 4px;font-size:17px;font-weight:700">Radius</p>
+        <p style="margin:0 0 16px;font-size:13px;color:var(--ink2)">Nested surfaces step down one size.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+          <sc-for list="{{ radii }}" as="r" hint-placeholder-count="8">
+            <div style="display:grid;gap:6px;justify-items:center">
+              <div style="width:56px;height:56px;background:var(--glass-strong);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2);border-radius:{{ r.px }}px"></div>
+              <span style="font-size:12px;font-weight:700">{{ r.label }}</span>
+              <span style="font-size:11px;color:var(--ink2);text-align:center;line-height:1.3">{{ r.use }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="border-radius:28px;background:var(--glass);box-shadow:inset 0 1px 0 var(--stroke),inset 0 0 0 1px var(--stroke2),var(--shadow);padding:24px">
+        <p style="margin:0 0 4px;font-size:17px;font-weight:700">Controls and motion</p>
+        <div style="display:grid;gap:8px;margin-top:14px;font-size:13px">
+          <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--ink2)">Heights</span><span style="font-weight:600">36 chip · 38 segment · 44 min target · 48 button · 52 field · 64 tab bar</span></div>
+          <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--ink2)">Hairline</span><span style="font-weight:600">inset 0 1px 0 stroke + inset 0 0 0 1px stroke2</span></div>
+          <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--ink2)">Press</span><span style="font-weight:600">scale .98 · opacity .78 · 100 ms</span></div>
+          <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--ink2)">Durations</span><span style="font-weight:600">swap 180 · rise 260 · sheet 320 ms</span></div>
+          <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--ink2)">Ease</span><span style="font-weight:600">cubic-bezier(.22, 1, .36, 1)</span></div>
+          <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--ink2)">Reduced motion</span><span style="font-weight:600">keep opacity and colour fades; drop travel, scale, sweeps</span></div>
+          <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--ink2)">Focus</span><span style="font-weight:600">3 px accent outline, 3 px offset, follows radius</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-for>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      themes: ['light', 'dark'],
+      colors: [
+        { name: 'ink', use: 'primary text, current step, target tick', swatch: 'var(--ink)', value: 'ink' },
+        { name: 'ink2', use: 'secondary text, empty states, over-target notes', swatch: 'var(--ink2)', value: 'ink · 62 / 66 %' },
+        { name: 'ink3', use: 'tertiary, grabber, placeholders', swatch: 'var(--ink3)', value: 'ink · 40 / 42 %' },
+        { name: 'stroke', use: 'top-edge highlight on glass', swatch: 'var(--stroke)', value: 'white · 90 / 22 %' },
+        { name: 'stroke2', use: 'hairline, dividers, field ring', swatch: 'var(--stroke2)', value: 'ink · 6 / white · 7 %' },
+        { name: 'glass', use: 'translucent surface, chips, ghost buttons', swatch: 'var(--glass)', value: 'white · 52 / 7 %' },
+        { name: 'glass-strong', use: 'selected segment, heavy tier', swatch: 'var(--glass-strong)', value: 'white · 78 / 12 %' },
+        { name: 'field', use: 'input fill', swatch: 'var(--field)', value: 'white · 70 / 8 %' },
+        { name: 'track', use: 'meter and ring track, segmented ground', swatch: 'var(--track)', value: 'ink · 8 / white · 10 %' },
+        { name: 'accent', use: 'the one brand colour: fills, progress, primary button', swatch: 'var(--accent)', value: '#30d158' },
+        { name: 'accent-text', use: 'accent as a word, AA on glass', swatch: 'var(--accent-text)', value: '#157a34 / #3ade63' },
+        { name: 'accent-ink', use: 'text on an accent fill', swatch: 'var(--accent-ink)', value: '#04120a' },
+        { name: 'danger', use: 'safety only: floors, wellbeing', swatch: 'var(--danger)', value: '#ff453a' },
+        { name: 'danger-text', use: 'danger as a word, AA on glass', swatch: 'var(--danger-text)', value: '#c9271b / #ffa9a2' },
+        { name: 'bg0 · glow1 · glow2', use: 'ground and the two radial washes behind the glass', swatch: 'linear-gradient(135deg,var(--glow1),var(--bg0) 50%,var(--glow2))', value: 'wash' },
+      ],
+      spacing: [
+        { px: 4, use: 'icon to label, dot to text' },
+        { px: 8, use: 'chips in a row, list rows' },
+        { px: 12, use: 'nav row, form field gap' },
+        { px: 16, use: 'card gap, phone gutter' },
+        { px: 20, use: 'card padding, phone' },
+        { px: 24, use: 'card padding, desktop' },
+        { px: 32, use: 'section gap' },
+        { px: 40, use: 'screen gutter, desktop' },
+      ],
+      radii: [
+        { px: 9, label: '9', use: 'brand mark' },
+        { px: 12, label: '12', use: 'small tile' },
+        { px: 14, label: '14', use: 'nav row, swatch' },
+        { px: 18, label: '18', use: 'field, inner card' },
+        { px: 26, label: '26', use: 'rail' },
+        { px: 28, label: '28', use: 'card, panel' },
+        { px: 36, label: '36', use: 'sheet' },
+        { px: 999, label: 'pill', use: 'button, chip, meter' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
