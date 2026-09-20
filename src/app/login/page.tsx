@@ -2,13 +2,13 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { isLocalDevLoginEnabled } from '@kayamo/features/auth';
 import { authCallbackPathFromSearch } from '@/lib/auth-landing';
+import { isClerkConfigured } from '@/lib/clerk';
 import { LoginView } from './login-view';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Sign in | KayaMo',
-  description:
-    'Sign in to KayaMo with an email link, or explore the separate local demo.',
+  description: 'Sign in to KayaMo with your email and password, or explore the local demo.',
 };
 
 export default async function LoginPage({
@@ -22,7 +22,7 @@ export default async function LoginPage({
 
   return (
     <Suspense>
-      <LoginView localDev={isLocalDevLoginEnabled()} />
+      <LoginView localDev={isLocalDevLoginEnabled()} clerk={isClerkConfigured()} />
     </Suspense>
   );
 }

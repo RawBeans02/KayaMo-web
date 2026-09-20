@@ -30,9 +30,17 @@ describe('protected routes', () => {
 
   // Next requires the proxy matcher to be a literal it can parse at compile
   // time, so it cannot be derived from PROTECTED_ROUTES in code. This is the
-  // link instead: the literal must equal the list plus the two extras.
+  // link instead: the literal must equal the list plus the entry pages, the
+  // Clerk bridge and Clerk's own proxied path.
   it('is exactly what the proxy matcher matches', () => {
-    expect(proxyConfig.matcher).toEqual([...PROTECTED_ROUTES, '/app/:path*', '/login']);
+    expect(proxyConfig.matcher).toEqual([
+      ...PROTECTED_ROUTES,
+      '/app/:path*',
+      '/login',
+      '/sign-up',
+      '/auth/bridge',
+      '/__clerk/(.*)',
+    ]);
   });
 
   it('gates the legacy /app tree and nothing public', () => {

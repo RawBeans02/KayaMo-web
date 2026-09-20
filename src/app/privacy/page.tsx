@@ -41,8 +41,8 @@ export default function PrivacyPage() {
         <li>
           <strong>Account access:</strong> your email address, an account identifier,
           and the session information that keeps you signed in and keeps your data
-          separate from everyone else&rsquo;s. There are no passwords; sign-in is by
-          emailed link.
+          separate from everyone else&rsquo;s. Sign-in, including your password, is
+          handled by Clerk on our behalf.
         </li>
         <li>
           <strong>Your entries:</strong> what you choose to record, such as goals,
@@ -95,7 +95,8 @@ export default function PrivacyPage() {
 
       <h2>Service providers</h2>
       <p>
-        KayaMo runs on Supabase (accounts and data) and Vercel (hosting). Lis uses
+        KayaMo runs on Clerk (sign-in and accounts), Supabase (data) and Vercel
+        (hosting). Lis uses
         OpenAI for the AI features. Online food lookups use USDA FoodData Central and
         Open Food Facts. Support email is handled through Google&rsquo;s mail service.
         These providers operate outside the Philippines, so information they process

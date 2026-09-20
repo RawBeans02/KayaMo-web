@@ -1,3 +1,5 @@
+import { ClerkProvider } from '@clerk/nextjs';
+import { isClerkConfigured } from '@/lib/clerk';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { Manrope } from 'next/font/google';
@@ -56,10 +58,20 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: LOCALE_BOOT }} />
       </head>
       <body className="min-h-full antialiased">
-        {/* The wash the glass refracts. Inert, behind everything. */}
-        <div className="kgWash" aria-hidden="true" />
-        {children}
+        <AuthProvider>
+          {/* The wash the glass refracts. Inert, behind everything. */}
+          <div className="kgWash" aria-hidden="true" />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
+}
+
+/**
+ * Clerk wraps the tree only when its publishable key is set; without it the
+ * provider would throw, and the demo and CI's key-less build must still run.
+ */
+function AuthProvider({ children }: { children: ReactNode }) {
+  return isClerkConfigured() ? <ClerkProvider>{children}</ClerkProvider> : <>{children}</>;
 }

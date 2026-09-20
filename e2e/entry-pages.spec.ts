@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+const CLERK = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+
 test.describe('public entry pages', () => {
   test.use({ colorScheme: 'light' });
   test.skip(
@@ -20,22 +22,16 @@ test.describe('public entry pages', () => {
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
       ).toBe(true);
       await page.goto('/login');
-      await expect(
-        page.getByRole('textbox', { name: 'Email', exact: true }),
-      ).toBeVisible();
-      await expect(
-        page.getByRole('button', { name: 'Email me a sign-in link' }),
-      ).toBeVisible();
+      await expect(page.locator('[data-login-form]')).toBeVisible();
+      if (CLERK) await expect(page.locator('.cl-rootBox')).toBeVisible({ timeout: 15_000 });
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
       ).toBe(true);
       if (width < 800) {
         // The login shows no mascot (Lis's face renders on the Lis surface). The
-        // intent this guarded still holds: on a phone the email field must come
+        // intent this guarded still holds: on a phone the form must come
         // before any supporting copy.
-        const form = await page
-          .getByRole('textbox', { name: 'Email', exact: true })
-          .boundingBox();
+        const form = await page.locator('[data-login-form]').boundingBox();
         const help = await page
           .getByRole('group', { name: 'Need help signing in?' })
           .or(page.getByText('Need help signing in?'))
@@ -57,16 +53,12 @@ test.describe('public entry pages', () => {
     await expect(page.locator('html')).toHaveAttribute('data-kayamo-theme', 'night');
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-kayamo-theme', 'night');
-    await page.getByRole('textbox', { name: 'Email', exact: true }).focus();
-    // macOS WebKit follows Safari's default keyboard policy: Option-Tab
-    // reaches every control, while plain Tab skips buttons. Keep the same
-    // focus assertion and exercise the platform's native keyboard shortcut.
-    await page.keyboard.press(
-      browserName === 'webkit' && process.platform === 'darwin' ? 'Alt+Tab' : 'Tab',
-    );
-    await expect(
-      page.getByRole('button', { name: 'Email me a sign-in link' }),
-    ).toBeFocused();
+    // The form is Clerk's own; keyboard order inside it is theirs to keep.
+    // Ours to keep: the theme survives a reload and the help control is
+    // reachable by keyboard.
+    await page.getByText('Need help signing in?').focus();
+    await expect(page.getByText('Need help signing in?')).toBeFocused();
+    void browserName;
     await page.screenshot({
       path: testInfo.outputPath('login-night.png'),
       fullPage: true,
@@ -91,77 +83,19 @@ test.describe('public entry pages', () => {
     expect(resumed).toBe(original);
   });
 
-  // Intercept every OTP request; no real emails are sent by these tests.
-  test('email success, cooldown, resend, and change-address flow', async ({ page }) => {
-    let calls = 0;
-    await page.route('**/auth/v1/otp**', async (route) => {
-      calls++;
-      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
-    });
-    await page.goto('/login');
-    await page.clock.install();
-    await page
-      .getByRole('textbox', { name: 'Email', exact: true })
-      .fill('entry-review@example.com');
-    await page.getByRole('button', { name: 'Email me a sign-in link' }).click();
-    await expect(page.getByRole('status')).toContainText('entry-review@example.com');
-    await expect(page.getByRole('status')).not.toContainText('Inbucket');
-    await expect(
-      page.getByRole('button', { name: /Request another link in/ }),
-    ).toBeDisabled();
-    expect(calls).toBe(1);
-    await page.clock.runFor(61_000);
-    await page.getByRole('button', { name: 'Resend sign-in link' }).click();
-    await expect(page.getByRole('status')).toContainText('Check your inbox');
-    expect(calls).toBe(2);
-    await page.getByRole('button', { name: 'Use a different email' }).click();
-    await expect(page.getByRole('textbox', { name: 'Email', exact: true })).toBeFocused();
-    await expect(page.getByRole('status')).toHaveCount(0);
-  });
-
-  test('rate limiting is recoverable and hides backend details', async ({ page }) => {
-    await page.route('**/auth/v1/otp**', (route) =>
-      route.fulfill({
-        status: 429,
-        contentType: 'application/json',
-        body: JSON.stringify({ msg: 'internal provider detail' }),
-      }),
-    );
-    await page.goto('/login');
-    await page
-      .getByRole('textbox', { name: 'Email', exact: true })
-      .fill('entry-review@example.com');
-    await page.getByRole('button', { name: 'Email me a sign-in link' }).click();
-    await expect(
-      page.getByRole('alert').filter({ hasText: 'Too many requests' }),
-    ).toBeVisible();
-    await expect(page.getByText('internal provider detail')).toHaveCount(0);
-    await expect(
-      page.getByRole('button', { name: /Request another link in/ }),
-    ).toBeDisabled();
-  });
-
-  test('callback states and demo copy are honest', async ({ page }) => {
-    await page.goto('/login?sent=1&from=demo');
-    await expect(page.getByRole('status')).toContainText('Check your inbox');
+  test('bridge errors and demo copy are honest', async ({ page }) => {
+    await page.goto('/login?from=demo');
     await expect(
       page.getByText('Signing in does not transfer', { exact: false }),
     ).toBeVisible();
-    await page.getByRole('button', { name: 'Use a different email' }).click();
-    await expect(page.getByRole('status')).toHaveCount(0);
-    await page.goto('/login?error=This%20link%20has%20expired');
+    // A failed bridge comes back here with a plain sentence, never a provider's.
+    await page.goto('/login?error=We%20could%20not%20open%20your%20workspace%20this%20time.');
     await expect(
-      page.getByRole('alert').filter({ hasText: 'This link has expired' }),
+      page.getByRole('alert').filter({ hasText: 'could not open your workspace' }),
     ).toBeVisible();
-    // The alert is server-rendered, so its visibility says nothing about
-    // whether React has attached the onChange that dismisses it. Wait for the
-    // form's post-mount marker; WebKit in CI typed before hydration and lost
-    // the event.
-    await expect(page.locator('[data-hydrated]')).toBeVisible();
-    await page
-      .getByRole('textbox', { name: 'Email', exact: true })
-      .fill('entry-review@example.com');
-    await expect(page.getByText('This link has expired')).toHaveCount(0);
+    await page.goto('/sign-up');
+    await expect(page.getByRole('heading', { name: /Create your KayaMo account/ })).toBeVisible();
+    await expect(page.locator('[data-login-mode="sign-up"]')).toBeVisible();
   });
 
   test('demo opens without a competing rail and Lis uses one destination', async ({

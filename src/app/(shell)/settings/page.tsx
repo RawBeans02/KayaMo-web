@@ -3,6 +3,7 @@ import { createServerSupabase } from '@/lib/supabase/server';
 import { AppearanceSettings } from '@/shell/appearance-settings';
 import { CompanionSettings } from '@/shell/companion-settings';
 import { SignOutButton } from '@/shell/sign-out-button';
+import { isClerkConfigured } from '@/lib/clerk';
 import { BotanicalIcon } from '@kayamo/features/desktop';
 import { LEGAL_ROUTES, SUPPORT_EMAIL, supportMailto } from '@/lib/legal';
 import styles from '@/shell/settings.module.css';
@@ -216,7 +217,7 @@ export default async function SettingsPage() {
           </p>
         ) : (
           <div className={styles.signOut}>
-            <SignOutButton />
+            <SignOutButton clerk={isClerkConfigured()} />
           </div>
         )}
       </div>

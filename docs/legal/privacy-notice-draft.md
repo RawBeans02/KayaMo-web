@@ -44,7 +44,7 @@ sensitive information without taking appropriate precautions.
 
 ## Service providers
 
-The current website uses Supabase for account/data services, Vercel for website
+The current website uses Clerk for sign-in and accounts, Supabase for data services, Vercel for website
 hosting, OpenAI for configured AI features, and USDA FoodData Central/Open Food Facts
 for relevant online nutrition lookups. Support sent to the Gmail address is processed
 through Google's email service. Providers may operate in other countries.
