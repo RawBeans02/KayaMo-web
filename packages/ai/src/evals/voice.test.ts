@@ -167,6 +167,7 @@ describe('the robot-tell bank', () => {
         'assist-you-with': 'I can help you with your plan.',
         apology: "You're right — I'm sorry, I shouldn't have said that.",
         'pollinator-pun': "Let's buzz through your day.",
+        litotes: "Not a bad day, and that walk was no small thing.",
       };
       const text = sample[tell.id];
       expect(text, `no sample written for ${tell.id}`).toBeDefined();
@@ -180,8 +181,35 @@ describe('the robot-tell bank', () => {
       'That sounds like a heavy week. What is the one thing that would help most?',
       'Twenty minutes is enough for something real. Push or pull today?',
       'I would need access to your food and workouts before I can log that.',
+      // Plain negatives are fine; only the "not bad" shape is the tell.
+      'That is not on your plan today. Want it there?',
+      'Nothing logged yet, which is exactly right for a first day.',
+      'I do not know what you had for lunch; tell me and I will draft it.',
     ];
     for (const text of human) {
+      expect(findRobotTells(text), text).toEqual([]);
+    }
+  });
+
+  it('names the common shapes of litotes and lets the straight version pass', () => {
+    const slips = [
+      "That's not too bad for a Monday.",
+      'Skipping it was not the worst idea.',
+      "It isn't unusual to feel that way.",
+      'Three days running is no small feat.',
+      'Your week was far from terrible.',
+    ];
+    for (const text of slips) {
+      expect(findRobotTells(text).map((hit) => hit.id), text).toContain('litotes');
+    }
+    const straight = [
+      'A quiet day for a Monday.',
+      'Skipping it was a fair call.',
+      'Many people feel that way.',
+      'Three days running is a real run.',
+      'Your week landed close to target.',
+    ];
+    for (const text of straight) {
       expect(findRobotTells(text), text).toEqual([]);
     }
   });
